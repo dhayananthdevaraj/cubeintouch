@@ -126,7 +126,7 @@
 
 .qb-welcome-subtitle {
   font-size: 18px;
-  color: #ffffff;
+  color: #868e96;
   margin-bottom: 40px;
   font-weight: 500;
 }
@@ -142,13 +142,19 @@
   resize: vertical;
   margin-bottom: 24px;
   transition: all 0.2s ease;
-  background: #000000;
+  background: #f8f9fa;
+  color: #212529;
+}
+
+.qb-token-input::placeholder {
+  color: #868e96;
+  opacity: 1;
 }
 
 .qb-token-input:focus {
   outline: none;
   border-color: #4c6ef5;
-  background: gainsboro;
+  background: white;
   box-shadow: 0 0 0 3px rgba(76, 110, 245, 0.1);
 }
 
@@ -267,14 +273,15 @@
   border-radius: 10px;
   font-size: 15px;
   transition: all 0.2s ease;
-  background: gainsboro;
+  background: #f8f9fa;
   font-weight: 500;
+  color: #5e5d5d;
 }
 
 .qb-input:focus {
   outline: none;
   border-color: #4c6ef5;
-  background: gray;
+  background: white;
   box-shadow: 0 0 0 3px rgba(76, 110, 245, 0.1);
 }
 
