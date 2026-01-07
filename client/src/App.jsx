@@ -28,7 +28,6 @@ export default function App() {
             <div className="app-content">
               <Routes>
                 <Route path="/" element={<Dashboard />} />
-                <Route path="/index.html" element={<Navigate to="/" replace />} />
                 <Route path="/finder" element={<Finder />} />
                 <Route path="/course-qb" element={<CourseQBFinder />} />
                 <Route path="/qb-access" element={<QBAccess />} />
