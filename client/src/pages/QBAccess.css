@@ -142,7 +142,7 @@
   resize: vertical;
   margin-bottom: 24px;
   transition: all 0.2s ease;
-  background: #727272;
+  background: #000000;
 }
 
 .qb-token-input:focus {
