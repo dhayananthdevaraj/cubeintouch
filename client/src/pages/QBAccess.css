@@ -142,13 +142,13 @@
   resize: vertical;
   margin-bottom: 24px;
   transition: all 0.2s ease;
-  background: #f8f9fa;
+  background: #727272;
 }
 
 .qb-token-input:focus {
   outline: none;
   border-color: #4c6ef5;
-  background: white;
+  background: gainsboro;
   box-shadow: 0 0 0 3px rgba(76, 110, 245, 0.1);
 }
 
