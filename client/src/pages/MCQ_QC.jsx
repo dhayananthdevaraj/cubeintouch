@@ -3,7 +3,7 @@ import { useState } from "react";
 import { DEPARTMENT_IDS } from "../config";
 
 const API_BASE = "https://api.examly.io/api";
-const QC_API = "http://localhost:4000/qc";
+const QC_API = "https://cubeintouch-backend.onrender.com/qc";
 
 // Debug: Check if URLs are valid
 console.log("API_BASE:", API_BASE);
@@ -144,7 +144,7 @@ function extractAuthToken(raw) {
         }
       } catch (healthErr) {
         console.warn("Backend health check failed:", healthErr.message);
-        showAlert("⚠️ Cannot connect to backend on http://localhost:4000. Make sure it's running!", "danger");
+        showAlert("⚠️ Cannot connect to backend on https://cubeintouch-backend.onrender.com. Make sure it's running!", "danger");
         setIsLoading(false);
         return;
       }
