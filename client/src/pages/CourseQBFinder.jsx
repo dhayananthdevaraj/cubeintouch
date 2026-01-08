@@ -1,4 +1,3 @@
-
 // import { useState, useEffect } from "react";
 // import { DEPARTMENT_IDS } from "../config";
 // import "./CourseQBFinder.css";
@@ -38,6 +37,7 @@
 //   const [allQuestions, setAllQuestions] = useState([]);
 //   const [usedQuestionIds, setUsedQuestionIds] = useState(new Set());
 //   const [allQuestionIdsBeforeClone, setAllQuestionIdsBeforeClone] = useState([]);
+//   const [showWeekDropdown, setShowWeekDropdown] = useState(false);
 
 //   useEffect(() => {
 //     if (token) setUI("search");
@@ -190,7 +190,7 @@
 //       headers,
 //       body: JSON.stringify({
 //         qb_id: qbId,
-//         q_id: qIds,  // Make sure this is ONLY the selected IDs
+//         q_id: qIds,
 //         g_id: null
 //       })
 //     });
@@ -371,6 +371,79 @@
 //     setSelectedTests(new Set());
 //   };
 
+//   const selectWeekTests = (weekPattern) => {
+//     const weekTestIds = new Set();
+//     moduleTree.forEach(mod => {
+//       if (mod.name.toLowerCase().includes(weekPattern.toLowerCase())) {
+//         mod.directTests.forEach(t => weekTestIds.add(t.id));
+//         mod.subModules.forEach(sub => {
+//           sub.tests.forEach(t => weekTestIds.add(t.id));
+//         });
+//       }
+//     });
+//     setSelectedTests(new Set([...selectedTests, ...weekTestIds]));
+//     showAlert(`✅ Selected tests from ${weekPattern}`, "success");
+//   };
+
+//   const selectWeekPracticeTests = (weekPattern) => {
+//     const practiceTestIds = new Set();
+//     moduleTree.forEach(mod => {
+//       if (mod.name.toLowerCase().includes(weekPattern.toLowerCase())) {
+//         mod.directTests.forEach(t => {
+//           if (t.name.toLowerCase().includes('practice')) {
+//             practiceTestIds.add(t.id);
+//           }
+//         });
+//         mod.subModules.forEach(sub => {
+//           sub.tests.forEach(t => {
+//             if (t.name.toLowerCase().includes('practice')) {
+//               practiceTestIds.add(t.id);
+//             }
+//           });
+//         });
+//       }
+//     });
+//     setSelectedTests(new Set([...selectedTests, ...practiceTestIds]));
+//     showAlert(`✅ Selected Practice tests from ${weekPattern}`, "success");
+//   };
+
+//   const selectWeekKCQTests = (weekPattern) => {
+//     const kcqTestIds = new Set();
+//     moduleTree.forEach(mod => {
+//       if (mod.name.toLowerCase().includes(weekPattern.toLowerCase())) {
+//         mod.directTests.forEach(t => {
+//           if (t.name.toLowerCase().includes('kcq') || t.name.toLowerCase().includes('kc')) {
+//             kcqTestIds.add(t.id);
+//           }
+//         });
+//         mod.subModules.forEach(sub => {
+//           sub.tests.forEach(t => {
+//             if (t.name.toLowerCase().includes('kcq') || t.name.toLowerCase().includes('kc')) {
+//               kcqTestIds.add(t.id);
+//             }
+//           });
+//         });
+//       }
+//     });
+//     setSelectedTests(new Set([...selectedTests, ...kcqTestIds]));
+//     showAlert(`✅ Selected KCQ tests from ${weekPattern}`, "success");
+//   };
+
+//   const getWeekList = () => {
+//     const weeks = new Set();
+//     moduleTree.forEach(mod => {
+//       const weekMatch = mod.name.match(/week\s*\d+/i);
+//       if (weekMatch) {
+//         weeks.add(weekMatch[0]);
+//       }
+//     });
+//     return Array.from(weeks).sort((a, b) => {
+//       const numA = parseInt(a.match(/\d+/)[0]);
+//       const numB = parseInt(b.match(/\d+/)[0]);
+//       return numA - numB;
+//     });
+//   };
+
 //   async function handleFetchQB() {
 //     if (selectedTests.size === 0) {
 //       showAlert("Please select at least one test", "warning");
@@ -465,7 +538,6 @@
 //   }
 
 //   const handleCloneQuestions = async () => {
-//     // Get selected question IDs
 //     const selectedQIds = Array.from(selectedQuestions);
 //     console.log("🔄 Starting clone with selected IDs:", selectedQIds);
     
@@ -474,11 +546,9 @@
 //       return;
 //     }
 
-//     // FIRST: Fetch ALL questions to get complete list of IDs
 //     showOverlay("📚 Fetching current questions for comparison...");
     
 //     try {
-//       // Get ALL current questions in QB (not just displayed ones)
 //       const allCurrentQuestions = await fetchQBQuestions(selectedQB.qb_id);
 //       const currentQuestionIds = allCurrentQuestions.map(q => q.q_id);
       
@@ -487,7 +557,6 @@
       
 //       hideOverlay();
       
-//       // Now clone the selected questions
 //       showOverlay(`🔄 Cloning ${selectedQIds.length} question(s)...`);
 
 //       const result = await cloneQuestions(selectedQB.qb_id, selectedQIds);
@@ -499,20 +568,16 @@
 //       if (result.success) {
 //         showAlert(`✅ Successfully cloned ${selectedQIds.length} question(s)!`, "success");
         
-//         // Switch to all questions view
 //         setShowAllQuestions(true);
 //         showOverlay("📚 Refreshing questions to find cloned ones...");
         
 //         try {
-//           // Fetch all questions again to get updated data
 //           const updatedQuestions = await fetchQBQuestions(selectedQB.qb_id);
 //           setAllQuestions(updatedQuestions);
 //           setQbQuestions(updatedQuestions);
           
-//           // Get updated IDs
 //           const updatedQuestionIds = updatedQuestions.map(q => q.q_id);
           
-//           // Find newly added question IDs (ones that weren't there before)
 //           const newQuestionIds = [];
 //           for (const id of updatedQuestionIds) {
 //             if (!currentQuestionIds.includes(id)) {
@@ -527,12 +592,8 @@
 //           console.log("New question count:", newQuestionIds.length);
 //           console.log("Selected count:", selectedQIds.length);
           
-//           // Only mark as cloned if the new IDs match the selected count
 //           if (newQuestionIds.length > 0) {
-//             // IMPORTANT: Only mark as cloned if it's a reasonable number
-//             // If newQuestionIds is huge (like 31), it means ALL unused were cloned
 //             if (newQuestionIds.length === selectedQIds.length) {
-//               // Good case: Only cloned what was selected
 //               setClonedQuestions(prev => [...prev, ...newQuestionIds]);
 //               console.log("🎯 Auto-selecting cloned questions:", newQuestionIds);
 //               setSelectedQuestions(new Set(newQuestionIds));
@@ -540,24 +601,19 @@
 //               hideOverlay();
 //               showAlert(`✅ Found ${newQuestionIds.length} cloned question(s)! They are highlighted in green.`, "success");
 //             } else {
-//               // Bad case: Cloned more than selected (like cloning 31 instead of 1)
 //               console.warn("⚠️ Cloned more questions than selected!");
 //               console.warn("Selected:", selectedQIds.length, "New:", newQuestionIds.length);
               
-//               // Try to identify which ones are actual clones based on the selected IDs
-//               // Look for questions with similar content to the selected ones
 //               const selectedQuestionsData = allCurrentQuestions.filter(q => selectedQIds.includes(q.q_id));
 //               const actualClones = [];
               
 //               newQuestionIds.forEach(newId => {
 //                 const newQ = updatedQuestions.find(q => q.q_id === newId);
 //                 if (newQ) {
-//                   // Check if this new question matches any selected question content
 //                   selectedQuestionsData.forEach(selectedQ => {
 //                     const newContent = newQ.question_data || '';
 //                     const selectedContent = selectedQ.question_data || '';
                     
-//                     // If first 100 characters match, consider it a clone
 //                     if (newContent.substring(0, 100) === selectedContent.substring(0, 100)) {
 //                       actualClones.push(newId);
 //                     }
@@ -573,7 +629,6 @@
 //                 hideOverlay();
 //                 showAlert(`✅ Found ${actualClones.length} cloned question(s)! The API cloned ${newQuestionIds.length} total.`, "warning");
 //               } else {
-//                 // Fallback: Just mark all new ones as cloned
 //                 setClonedQuestions(prev => [...prev, ...newQuestionIds]);
 //                 console.log("⚠️ Could not identify actual clones, marking all new as cloned:", newQuestionIds);
 //                 setSelectedQuestions(new Set(newQuestionIds));
@@ -636,32 +691,25 @@
 //     return;
 //   }
 
-//   // Store target QB name before closing modal
 //   const targetQBName = selectedTargetQB.qb_name;
 //   const targetQBId = selectedTargetQB.qb_id;
 
-//   // Close modal FIRST
 //   setShowMoveModal(false);
   
-//   // Small delay to let modal close animation complete
 //   await sleep(300);
 
-//   // NOW show the overlay
 //   showOverlay(`📦 Moving ${questionsToMove.length} question(s)...`);
 
 //   try {
 //     let successCount = 0;
 //     let failCount = 0;
 
-//     // Process in batches of 3 using Promise.all
 //     const batchSize = 3;
 //     for (let i = 0; i < questionsToMove.length; i += batchSize) {
 //       const batch = questionsToMove.slice(i, i + batchSize);
       
-//       // Update overlay with progress
 //       showOverlay(`📦 Moving: ${Math.min(i + batchSize, questionsToMove.length)}/${questionsToMove.length}`);
       
-//       // Process batch in parallel
 //       const batchPromises = batch.map(qId =>
 //         moveQuestion(
 //           qId,
@@ -680,33 +728,27 @@
 
 //       await Promise.all(batchPromises);
       
-//       // Small delay between batches to avoid rate limiting
 //       if (i + batchSize < questionsToMove.length) {
 //         await sleep(300);
 //       }
 //     }
 
-//     // Hide overlay
 //     hideOverlay();
     
-//     // Clear state
 //     setClonedQuestions([]);
 //     setSelectedQuestions(new Set());
 //     setMoveSearchTerm("");
 //     setMoveSearchResults([]);
 //     setSelectedTargetQB(null);
     
-//     // Small delay before showing success alert
 //     await sleep(200);
     
-//     // Show success message
 //     if (successCount > 0) {
 //       showAlert(
 //         `✅ Moved ${successCount} question(s) to ${targetQBName}${failCount > 0 ? ` (${failCount} failed)` : ""}`,
 //         "success"
 //       );
       
-//       // Refresh questions based on current view mode
 //       showOverlay("🔄 Refreshing questions...");
 //       try {
 //         if (showAllQuestions) {
@@ -732,7 +774,6 @@
 //     console.error(err);
 //   }
 // };
-
 
 //   const exportCSV = () => {
 //     if (!qbResults.length) {
@@ -774,7 +815,6 @@
 
 //   const toggleQuestionView = async () => {
 //     if (showAllQuestions) {
-//       // Switch back to showing only used questions
 //       const usedQuestions = allQuestions.filter(q => usedQuestionIds.has(q.q_id));
 //       setQbQuestions(usedQuestions);
 //       setShowAllQuestions(false);
@@ -782,7 +822,6 @@
 //       setClonedQuestions([]);
 //       showAlert("Showing only questions used in selected tests", "info");
 //     } else {
-//       // Switch to showing all questions
 //       if (allQuestions.length === 0) {
 //         showOverlay("📚 Fetching all questions from QB...");
 //         try {
@@ -807,7 +846,6 @@
 
 //   return (
 //     <div className="qb-finder-container">
-//       {/* Loading Overlay */}
 //       {overlay && (
 //         <div className="qb-overlay">
 //           <div className="qb-overlay-content">
@@ -817,14 +855,12 @@
 //         </div>
 //       )}
 
-//       {/* Alert */}
 //       {alert && (
 //         <div className={`qb-alert qb-alert-${alert.type}`}>
 //           {alert.msg}
 //         </div>
 //       )}
 
-//       {/* Move Modal */}
 //       {showMoveModal && (
 //         <div className="qb-modal-backdrop" onClick={() => setShowMoveModal(false)}>
 //           <div className="qb-modal" onClick={(e) => e.stopPropagation()}>
@@ -895,7 +931,6 @@
 //         </div>
 //       )}
 
-//       {/* Welcome Screen */}
 //       {ui === "welcome" && (
 //         <div className="qb-welcome">
 //           <h2 className="qb-welcome-title">🎓 Course Question Bank Finder</h2>
@@ -918,11 +953,9 @@
 //         </div>
 //       )}
 
-//       {/* Search Screen */}
 //       {ui === "search" && (
 //         <div className="qb-card">
-//           <h3 className="qb-title">🔍 Search Course</h3>
-
+//         <h3 className="qb-title">📘 Course → QB Finder</h3>
 //           <div className="qb-form-group">
 //             <label className="qb-label">Course Name</label>
 //             <input
@@ -954,24 +987,157 @@
 
 //           {status && <div className="qb-status">{status}</div>}
 
-//           {/* Module Tree */}
 //           {moduleTree.length > 0 && (
 //             <div className="qb-tree-section">
 //               <div className="qb-tree-header">
 //                 <h4 className="qb-subtitle">📚 Modules & Tests</h4>
 //                 <div className="qb-toggle-buttons">
-//                   <button
+//                   {/* <button
 //                     onClick={selectAllTests}
 //                     className="qb-button qb-button-small qb-button-secondary"
 //                   >
 //                     ☑️ All
-//                   </button>
+//                   </button> */}
 //                   <button
 //                     onClick={deselectAllTests}
 //                     className="qb-button qb-button-small qb-button-secondary"
 //                   >
 //                     ☐ None
 //                   </button>
+                  
+//                   {/* Week-wise Selection Dropdown */}
+//                   <div className="qb-week-dropdown-container" style={{ position: 'relative', display: 'inline-block' }}>
+//                     <button
+//                       onClick={() => setShowWeekDropdown(!showWeekDropdown)}
+//                       className="qb-button qb-button-small qb-button-info"
+//                     >
+//                       📅 Week Select
+//                     </button>
+                    
+//                     {showWeekDropdown && (
+//                       <div className="qb-week-dropdown" style={{
+//                         position: 'absolute',
+//                         top: '100%',
+//                         right: '0',
+//                         background: 'white',
+//                         border: '1px solid #ddd',
+//                         borderRadius: '8px',
+//                         boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+//                         minWidth: '250px',
+//                         zIndex: 1000,
+//                         marginTop: '4px'
+//                       }}>
+//                         <div style={{
+//                           padding: '12px',
+//                           borderBottom: '1px solid #eee',
+//                           fontWeight: 'bold',
+//                           fontSize: '14px',
+//                           color: '#333'
+//                         }}>
+//                           Select by Week
+//                         </div>
+                        
+//                         {getWeekList().map((week) => (
+//                           <div key={week} style={{
+//                             padding: '8px 12px',
+//                             borderBottom: '1px solid #f5f5f5'
+//                           }}>
+//                             <div style={{
+//                               fontWeight: '500',
+//                               marginBottom: '6px',
+//                               color: '#555',
+//                               fontSize: '13px'
+//                             }}>
+//                               {week.charAt(0).toUpperCase() + week.slice(1)}
+//                             </div>
+//                             <div style={{
+//                               display: 'flex',
+//                               gap: '6px',
+//                               flexWrap: 'wrap'
+//                             }}>
+//                               <button
+//                                 onClick={() => {
+//                                   selectWeekTests(week);
+//                                   setShowWeekDropdown(false);
+//                                 }}
+//                                 className="qb-button qb-button-small"
+//                                 style={{
+//                                   padding: '4px 10px',
+//                                   fontSize: '11px',
+//                                   background: '#4CAF50',
+//                                   color: 'white',
+//                                   border: 'none',
+//                                   borderRadius: '4px',
+//                                   cursor: 'pointer',
+//                                   flex: '1'
+//                                 }}
+//                               >
+//                                 ✅ All Tests
+//                               </button>
+//                               <button
+//                                 onClick={() => {
+//                                   selectWeekPracticeTests(week);
+//                                   setShowWeekDropdown(false);
+//                                 }}
+//                                 className="qb-button qb-button-small"
+//                                 style={{
+//                                   padding: '4px 10px',
+//                                   fontSize: '11px',
+//                                   background: '#2196F3',
+//                                   color: 'white',
+//                                   border: 'none',
+//                                   borderRadius: '4px',
+//                                   cursor: 'pointer',
+//                                   flex: '1'
+//                                 }}
+//                               >
+//                                 📝 Practice
+//                               </button>
+//                               <button
+//                                 onClick={() => {
+//                                   selectWeekKCQTests(week);
+//                                   setShowWeekDropdown(false);
+//                                 }}
+//                                 className="qb-button qb-button-small"
+//                                 style={{
+//                                   padding: '4px 10px',
+//                                   fontSize: '11px',
+//                                   background: '#FF9800',
+//                                   color: 'white',
+//                                   border: 'none',
+//                                   borderRadius: '4px',
+//                                   cursor: 'pointer',
+//                                   flex: '1'
+//                                 }}
+//                               >
+//                                 🎯 KCQ
+//                               </button>
+//                             </div>
+//                           </div>
+//                         ))}
+                        
+//                         <div style={{
+//                           padding: '8px 12px',
+//                           textAlign: 'center'
+//                         }}>
+//                           <button
+//                             onClick={() => setShowWeekDropdown(false)}
+//                             style={{
+//                               padding: '6px 16px',
+//                               fontSize: '12px',
+//                               background: '#f5f5f5',
+//                               color: '#666',
+//                               border: 'none',
+//                               borderRadius: '4px',
+//                               cursor: 'pointer'
+//                             }}
+//                           >
+//                             Close
+//                           </button>
+//                         </div>
+//                       </div>
+//                     )}
+//                   </div>
 //                 </div>
 //               </div>
 
@@ -1052,7 +1218,6 @@
 //         </div>
 //       )}
 
-//       {/* Results Screen - QB List */}
 //       {ui === "results" && !selectedQB && (
 //         <div className="qb-card">
 //           <div className="qb-results-header">
@@ -1181,7 +1346,6 @@
 //         </div>
 //       )}
 
-//       {/* ================= QUESTIONS DETAIL SCREEN ================= */}
 //       {ui === "results" && selectedQB && (
 //         <div className="qb-card">
 //           <div className="qb-detail-header">
@@ -1198,7 +1362,6 @@
 //             </div>
 
 //             <div className="qb-header-actions">
-//               {/* Refresh Button */}
 //               <button
 //                 onClick={async () => {
 //                   showOverlay("🔄 Refreshing questions...");
@@ -1220,7 +1383,6 @@
 //                 🔄 Refresh
 //               </button>
 
-//               {/* View Toggle Button */}
 //               <button
 //                 onClick={toggleQuestionView}
 //                 className="qb-button qb-button-small qb-button-secondary"
@@ -1229,7 +1391,6 @@
 //                 {showAllQuestions ? "👁️ Show Used Only" : "👁️ Show All"}
 //               </button>
 
-//               {/* Clone Button */}
 //               <button
 //                 onClick={handleCloneQuestions}
 //                 disabled={selectedQuestions.size === 0}
@@ -1241,7 +1402,6 @@
 //                 🔄 Clone ({selectedQuestions.size})
 //               </button>
 
-//               {/* Move Button - Only show when we're in "Show All" mode AND have cloned questions */}
 //               {showAllQuestions && (clonedQuestions.length > 0 || selectedQuestions.size > 0) && (
 //                 <button
 //                   onClick={() => {
@@ -1260,7 +1420,6 @@
 //                 </button>
 //               )}
 
-//               {/* Debug Button */}
 //               <button
 //                 onClick={() => {
 //                   console.log("🔍 DEBUG: Checking cloned status");
@@ -1279,7 +1438,6 @@
 //                 🐛 Debug
 //               </button>
 
-//               {/* Back Button */}
 //               <button
 //                 onClick={() => {
 //                   setSelectedQB(null);
@@ -1296,7 +1454,6 @@
 //             </div>
 //           </div>
 
-//           {/* View Mode Indicator */}
 //           <div className="qb-view-mode-indicator">
 //             <span className={`qb-view-mode-badge ${showAllQuestions ? 'qb-view-mode-all' : 'qb-view-mode-used'}`}>
 //               {showAllQuestions ? "📚 Viewing ALL questions" : "🎯 Viewing USED questions only"}
@@ -1365,7 +1522,6 @@
 //                   const isCloned = clonedQuestions.includes(q.q_id);
 //                   const isSelected = selectedQuestions.has(q.q_id);
                   
-//                   // Debug log for each cloned question
 //                   if (isCloned) {
 //                     console.log(`✅ Q${idx + 1} (${q.q_id}) is marked as cloned`);
 //                   }
@@ -1445,6 +1601,7 @@
 //     </div>
 //   );
 // }
+
 import { useState, useEffect } from "react";
 import { DEPARTMENT_IDS } from "../config";
 import "./CourseQBFinder.css";
@@ -1601,31 +1758,54 @@ export default function CourseQBFinder() {
   async function fetchQBQuestions(qbId) {
     console.log("📥 fetchQBQuestions called for QB:", qbId);
     
-    const res = await fetch(`${API}/api/v2/questionfilter`, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({
-        qb_id: qbId,
-        page: 1,
-        limit: 200,
-        type: "Single"
-      })
-    });
+    let allQuestions = [];
+    let page = 1;
+    const limit = 200;
+    let hasMore = true;
+    
+    while (hasMore) {
+      const res = await fetch(`${API}/api/v2/questionfilter`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          qb_id: qbId,
+          page: page,
+          limit: limit,
+          type: "Single"
+        })
+      });
 
-    const json = await res.json();
-    const questions = json?.non_group_questions || [];
+      const json = await res.json();
+      const questions = json?.non_group_questions || [];
+      
+      if (questions.length > 0) {
+        allQuestions = [...allQuestions, ...questions];
+        console.log(`📄 Page ${page}: Fetched ${questions.length} questions (Total so far: ${allQuestions.length})`);
+        
+        // If we got fewer questions than the limit, we've reached the end
+        if (questions.length < limit) {
+          hasMore = false;
+        } else {
+          page++;
+          // Small delay to avoid rate limiting
+          await sleep(300);
+        }
+      } else {
+        hasMore = false;
+      }
+    }
     
-    console.log("📊 Total questions fetched:", questions.length);
+    console.log("📊 Total questions fetched across all pages:", allQuestions.length);
     
-    if (questions.length > 0) {
-      console.log("🔍 Sample questions:", questions.slice(0, 3).map(q => ({
+    if (allQuestions.length > 0) {
+      console.log("🔍 Sample questions:", allQuestions.slice(0, 3).map(q => ({
         q_id: q.q_id,
         imported: q.imported,
         question_data: q.question_data?.substring(0, 50) + '...'
       })));
     }
     
-    return questions;
+    return allQuestions;
   }
 
   async function cloneQuestions(qbId, qIds) {
@@ -2402,7 +2582,8 @@ const handleMoveQuestions = async () => {
 
       {ui === "search" && (
         <div className="qb-card">
-        <h3 className="qb-title">📘 Course → QB Finder</h3>
+          <h3 className="qb-title">📘 Course → QB Finder</h3>
+
           <div className="qb-form-group">
             <label className="qb-label">Course Name</label>
             <input
@@ -3026,14 +3207,30 @@ const handleMoveQuestions = async () => {
                       />
 
                       <div className="qb-question-meta">
-                        <span>
-                          Type:{" "}
-                          {q.question_editor_type === 1 ? "MCQ" : "Other"}
+                        <span className="qb-meta-item">
+                          <span className="qb-meta-label">Type:</span>
+                          <span className="qb-meta-value">
+                            {q.question_editor_type === 1 ? "MCQ" : "Other"}
+                          </span>
                         </span>
-                        <span>QB: {q.qb_id?.slice(0, 8) || 'N/A'}…</span>
+                        <span className="qb-meta-item">
+                          <span className="qb-meta-label">QB:</span>
+                          <span className="qb-meta-value qb-mono" title={q.qb_id}>
+                            {q.qb_id?.slice(0, 8) || 'N/A'}…
+                          </span>
+                        </span>
                         {q.imported && q.imported !== "original_question" && (
-                          <span className="qb-imported-info" title={`Cloned from: ${q.imported}`}>
-                            🔗 Clone
+                          <span className="qb-meta-item qb-imported-info" title={`Cloned from: ${q.imported}`}>
+                            <span className="qb-meta-label">🔗</span>
+                            <span className="qb-meta-value">Cloned</span>
+                          </span>
+                        )}
+                        {q.difficulty_level && (
+                          <span className="qb-meta-item">
+                            <span className="qb-meta-label">Level:</span>
+                            <span className={`qb-meta-value qb-difficulty qb-difficulty-${q.difficulty_level.toLowerCase()}`}>
+                              {q.difficulty_level}
+                            </span>
                           </span>
                         )}
                       </div>
