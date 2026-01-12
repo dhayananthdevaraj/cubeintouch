@@ -283,6 +283,7 @@
   border-radius: 8px 8px 0 0;
 }
 
+
 .qb-module-header:hover {
   background: linear-gradient(135deg, #0c5cde 0%, #0a4fc7 100%);
 }
@@ -929,4 +930,122 @@
 
 .qb-question-card.qb-question-cloned.new-clone {
   animation: highlightPulse 1.5s ease-in-out;
+}
+/* Range Select with Fixed Height */
+.range-select {
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 13px;
+  border: 1.5px solid #ced4da;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  font-weight: 500;
+  color: #495057;
+  transition: all 0.2s ease;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236c757d'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 16px;
+  padding-right: 30px;
+  
+  /* Fixed height to show exactly 10 items */
+  height: 200px; /* Adjust this based on your item height */
+}
+
+/* Select with size attribute for scrollable behavior */
+.range-select[size] {
+  padding: 0;
+  background-position: right 10px top 12px;
+}
+
+/* Hide the default scrollbar and show custom one */
+.range-select::-webkit-scrollbar {
+  width: 8px;
+}
+
+.range-select::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.range-select::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.range-select::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Individual option styling */
+.range-select option {
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #495057;
+  background: white;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  line-height: 1.4;
+}
+
+/* Last option should not have bottom border */
+.range-select option:last-child {
+  border-bottom: none;
+}
+
+/* Hover and selected states */
+.range-select option:hover {
+  background-color: #f8f9fa;
+}
+
+.range-select option:checked,
+.range-select option:focus {
+  background-color: #0d6efd;
+  color: white;
+  font-weight: 600;
+}
+
+/* Container for better layout */
+.range-select-container {
+  position: relative;
+  flex: 1;
+}
+
+.range-select-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: #6c757d;
+  margin-bottom: 6px;
+}
+
+/* For Firefox */
+.range-select::-moz-focus-inner {
+  border: 0;
+}
+
+/* Remove default arrow when size is set */
+.range-select[size] {
+  background-image: none;
+  padding-right: 10px;
+}
+
+/* Arrow indicator for scrollable selects */
+.range-select-container::after {
+  content: "↕ Scroll for more";
+  position: absolute;
+  bottom: -18px;
+  left: 0;
+  right: 0;
+  font-size: 10px;
+  color: #6c757d;
+  text-align: center;
+  opacity: 0.8;
+  pointer-events: none;
 }
