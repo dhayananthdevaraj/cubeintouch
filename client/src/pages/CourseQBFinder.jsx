@@ -3428,6 +3428,8 @@
 //   );
 // }
 //below good
+
+
 import { useState, useEffect } from "react";
 import { DEPARTMENT_IDS } from "../config";
 import "./CourseQBFinder.css";
@@ -3865,17 +3867,48 @@ export default function CourseQBFinder() {
     
     // PRIORITY 1: "Week" pattern - Check FIRST (highest priority)
     // Matches: "Week 1", "Week 2", "Week 1 Day 3", etc.
-    const weekMatch = lowerName.match(/week\s*(\d+)/i);
-    if (weekMatch) {
+    // const weekMatch = lowerName.match(/week\s*(\d+)/i);
+    // if (weekMatch) {
+    //   return {
+    //     identifier: `Week ${weekMatch[1]}`,
+    //     display: `Week ${weekMatch[1]}`,
+    //     order: parseInt(weekMatch[1]),
+    //     type: 'week'
+    //   };
+    // }
+
+
+    // PRIORITY 1: "Week X Day Y" pattern - Check FIRST (highest priority)
+    // Matches: "Week 1 Day 3", "Week 2 Day 5", etc.
+    const weekDayMatch = lowerName.match(/week\s*(\d+)\s*day\s*(\d+)/i);
+    if (weekDayMatch) {
+      const weekNum = parseInt(weekDayMatch[1]);
+      const dayNum = parseInt(weekDayMatch[2]);
+      // Create composite order: week * 100 + day
+      const compositeOrder = weekNum * 100 + dayNum;
       return {
-        identifier: `Week ${weekMatch[1]}`,
-        display: `Week ${weekMatch[1]}`,
-        order: parseInt(weekMatch[1]),
+        identifier: `Week ${weekNum} Day ${dayNum}`,
+        display: `Week ${weekNum} Day ${dayNum}`,
+        order: compositeOrder,
         type: 'week'
       };
     }
-    
+
+    // PRIORITY 2: "Week" pattern without day
+    // Matches: "Week 1", "Week 2", etc.
+    const weekMatch = lowerName.match(/week\s*(\d+)/i);
+    if (weekMatch) {
+      const weekNum = parseInt(weekMatch[1]);
+      return {
+        identifier: `Week ${weekNum}`,
+        display: `Week ${weekNum}`,
+        order: weekNum * 100, // Use week * 100 to be before any Week X Day Y
+        type: 'week'
+      };
+    }
+        
     // PRIORITY 2: "Day" pattern - Check AFTER Week
+    // PRIORITY 3: "Day" pattern - Check AFTER Week patterns
     // Matches: "Day 01", "Day 1", "Day 02", etc.
     const dayMatch = lowerName.match(/day\s*(\d+)/i);
     if (dayMatch) {
