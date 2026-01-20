@@ -2720,6 +2720,50 @@ export default function CourseQBFinder() {
     return json?.[0]?.non_group_questions || [];
   }
 
+  // NEW: Fetch full test details including test_rules for Rule-Based tests
+async function fetchFullTestDetails(t_id) {
+  const res = await fetch(`${API}/api/v2/test/${t_id}`, {
+    headers: { Authorization: token }
+  });
+  const json = await res.json();
+  return json;
+}
+
+// NEW: Extract all unique QB IDs and names from test_rules
+function extractQBsFromTestRules(testDetails) {
+  const qbMap = new Map();
+  
+  if (!testDetails?.test_rules || !Array.isArray(testDetails.test_rules)) {
+    return qbMap;
+  }
+
+  console.log("📋 Extracting QBs from test_rules...");
+
+  testDetails.test_rules.forEach((section, sectionIdx) => {
+    if (Array.isArray(section)) {
+      section.forEach((blocks, blockIdx) => {
+        if (Array.isArray(blocks)) {
+          blocks.forEach((block, ruleIdx) => {
+            if (block?.questionbank && Array.isArray(block.questionbank)) {
+              console.log(`📦 Section ${sectionIdx}, Block ${blockIdx}, Rule ${ruleIdx}: Found ${block.questionbank.length} QBs`);
+              
+              block.questionbank.forEach(qb => {
+                if (qb.qb_id && qb.qb_name) {
+                  qbMap.set(qb.qb_id, qb.qb_name);
+                  console.log(`  ✅ Added: ${qb.qb_name} (${qb.qb_id})`);
+                }
+              });
+            }
+          });
+        }
+      });
+    }
+  });
+
+  console.log(`📊 Total unique QBs extracted from test_rules: ${qbMap.size}`);
+  return qbMap;
+}
+
   async function getQuestionBanks(qbIdList) {
     if (!qbIdList || qbIdList.length === 0) {
       return [];
@@ -3468,6 +3512,7 @@ async function checkQBForRuleBasedTests(qbId, questions) {
 
     try {
       const allQBIds = new Set();
+      const qbIdToNameMap = new Map();
       let processedTests = 0;
       const qbToTestMap = {};
       const testQMap = {};
@@ -3502,43 +3547,116 @@ async function checkQBForRuleBasedTests(qbId, questions) {
           if (actualTId) break;
         }
 
-        if (actualTId) {
-          try {
-            const questions = await fetchTestDetailsForModule(actualTId);
-            testQMap[actualTId] = questions;
-            
-            questions.forEach((q) => {
-              if (q.qb_id) {
-                allQBIds.add(q.qb_id);
-                
-                if (!qbToTestMap[q.qb_id]) {
-                  qbToTestMap[q.qb_id] = {};
-                }
-                if (!qbToTestMap[q.qb_id][testName]) {
-                  qbToTestMap[q.qb_id][testName] = [];
-                }
-                qbToTestMap[q.qb_id][testName].push(q.q_id);
-                
-                if (!qbMetadata[q.qb_id]) {
-                  qbMetadata[q.qb_id] = {
-                    hasRuleBasedTest: false,
-                    ruleBasedTests: []
-                  };
-                }
-                if (isRuleBased) {
-                  qbMetadata[q.qb_id].hasRuleBasedTest = true;
-                  if (!qbMetadata[q.qb_id].ruleBasedTests.includes(testName)) {
-                    qbMetadata[q.qb_id].ruleBasedTests.push(testName);
-                  }
-                }
-              }
-            });
 
-            await sleep(200);
-          } catch (err) {
-            console.warn(`Failed to fetch test ${actualTId}:`, err);
+//old
+        // if (actualTId) {
+        //   try {
+        //     const questions = await fetchTestDetailsForModule(actualTId);
+        //     testQMap[actualTId] = questions;
+            
+        //     questions.forEach((q) => {
+        //       if (q.qb_id) {
+        //         allQBIds.add(q.qb_id);
+                
+        //         if (!qbToTestMap[q.qb_id]) {
+        //           qbToTestMap[q.qb_id] = {};
+        //         }
+        //         if (!qbToTestMap[q.qb_id][testName]) {
+        //           qbToTestMap[q.qb_id][testName] = [];
+        //         }
+        //         qbToTestMap[q.qb_id][testName].push(q.q_id);
+                
+        //         if (!qbMetadata[q.qb_id]) {
+        //           qbMetadata[q.qb_id] = {
+        //             hasRuleBasedTest: false,
+        //             ruleBasedTests: []
+        //           };
+        //         }
+        //         if (isRuleBased) {
+        //           qbMetadata[q.qb_id].hasRuleBasedTest = true;
+        //           if (!qbMetadata[q.qb_id].ruleBasedTests.includes(testName)) {
+        //             qbMetadata[q.qb_id].ruleBasedTests.push(testName);
+        //           }
+        //         }
+        //       }
+        //     });
+
+        //     await sleep(200);
+        //   } catch (err) {
+        //     console.warn(`Failed to fetch test ${actualTId}:`, err);
+        //   }
+        // }
+
+        if (actualTId) {
+  try {
+    // ✅ NEW: For Rule-Based tests, fetch full test details to get test_rules
+    if (isRuleBased) {
+      console.log(`🎲 Processing Rule-Based test: ${testName}`);
+      showOverlay(`🎲 Extracting QBs from Rule-Based test: ${testName}`);
+      
+      const fullTestDetails = await fetchFullTestDetails(actualTId);
+      const qbMapFromRules = extractQBsFromTestRules(fullTestDetails);
+      
+      console.log(`✅ Found ${qbMapFromRules.size} QBs in test_rules for "${testName}"`);
+      
+      // Add all QBs from test_rules
+      qbMapFromRules.forEach((qbName, qbId) => {
+        allQBIds.add(qbId);
+        qbIdToNameMap.set(qbId, qbName);
+        
+        if (!qbMetadata[qbId]) {
+          qbMetadata[qbId] = {
+            hasRuleBasedTest: true,
+            ruleBasedTests: [testName]
+          };
+        } else {
+          qbMetadata[qbId].hasRuleBasedTest = true;
+          if (!qbMetadata[qbId].ruleBasedTests.includes(testName)) {
+            qbMetadata[qbId].ruleBasedTests.push(testName);
           }
         }
+        
+        if (!qbToTestMap[qbId]) {
+          qbToTestMap[qbId] = {};
+        }
+        if (!qbToTestMap[qbId][testName]) {
+          qbToTestMap[qbId][testName] = [];
+        }
+      });
+      
+      console.log(`📊 Total QBs after processing "${testName}": ${allQBIds.size}`);
+    } else {
+      // For non-Rule-Based tests, use existing logic
+      const questions = await fetchTestDetailsForModule(actualTId);
+      testQMap[actualTId] = questions;
+      
+      questions.forEach((q) => {
+        if (q.qb_id) {
+          allQBIds.add(q.qb_id);
+          
+          if (!qbToTestMap[q.qb_id]) {
+            qbToTestMap[q.qb_id] = {};
+          }
+          if (!qbToTestMap[q.qb_id][testName]) {
+            qbToTestMap[q.qb_id][testName] = [];
+          }
+          qbToTestMap[q.qb_id][testName].push(q.q_id);
+          
+          if (!qbMetadata[q.qb_id]) {
+            qbMetadata[q.qb_id] = {
+              hasRuleBasedTest: false,
+              ruleBasedTests: []
+            };
+          }
+        }
+      });
+    }
+
+    await sleep(200);
+  } catch (err) {
+    console.warn(`Failed to fetch test ${actualTId}:`, err);
+  }
+}
 
         processedTests++;
       }
@@ -3552,18 +3670,72 @@ async function checkQBForRuleBasedTests(qbId, questions) {
 
       showOverlay(`📚 Fetching details for ${allQBIds.size} question bank(s)...`);
 
-      const qbList = await getQuestionBanks(Array.from(allQBIds));
+      // const qbList = await getQuestionBanks(Array.from(allQBIds));
       
-      const enhancedQbList = qbList.map(qb => ({
-        ...qb,
-        hasRuleBasedTest: qbMetadata[qb.qb_id]?.hasRuleBasedTest || false,
-        ruleBasedTests: qbMetadata[qb.qb_id]?.ruleBasedTests || []
-      }));
+      // const enhancedQbList = qbList.map(qb => ({
+      //   ...qb,
+      //   hasRuleBasedTest: qbMetadata[qb.qb_id]?.hasRuleBasedTest || false,
+      //   ruleBasedTests: qbMetadata[qb.qb_id]?.ruleBasedTests || []
+      // }));
 
-      setTestQuestionMap(qbToTestMap);
-      setQbResults(enhancedQbList);
-      setUI("results");
-      showAlert(`✅ Found ${enhancedQbList.length} question bank(s)`, "success");
+      // setTestQuestionMap(qbToTestMap);
+      // setQbResults(enhancedQbList);
+      // setUI("results");
+      // showAlert(`✅ Found ${enhancedQbList.length} question bank(s)`, "success");
+
+      const qbList = await getQuestionBanks(Array.from(allQBIds));
+
+// ✅ NEW: For QBs that came from test_rules only, add QB name if missing
+const enhancedQbList = qbList.map(qb => {
+  const enhancedQb = {
+    ...qb,
+    hasRuleBasedTest: qbMetadata[qb.qb_id]?.hasRuleBasedTest || false,
+    ruleBasedTests: qbMetadata[qb.qb_id]?.ruleBasedTests || []
+  };
+  
+  if (!enhancedQb.qb_name && qbIdToNameMap.has(qb.qb_id)) {
+    enhancedQb.qb_name = qbIdToNameMap.get(qb.qb_id);
+    console.log(`📝 Added QB name from test_rules: ${enhancedQb.qb_name}`);
+  }
+  
+  return enhancedQb;
+});
+
+// ✅ NEW: Add QBs that were in test_rules but not returned by getQuestionBanks
+const returnedQbIds = new Set(qbList.map(qb => qb.qb_id));
+const missingQbIds = Array.from(allQBIds).filter(id => !returnedQbIds.has(id));
+
+if (missingQbIds.length > 0) {
+  console.log(`⚠️ ${missingQbIds.length} QBs from test_rules not returned by API, adding manually...`);
+  
+  missingQbIds.forEach(qbId => {
+    const qbName = qbIdToNameMap.get(qbId) || `Unknown QB (${qbId.slice(0, 8)})`;
+    console.log(`  📌 Adding missing QB: ${qbName}`);
+    
+    enhancedQbList.push({
+      qb_id: qbId,
+      qb_name: qbName,
+      questionCount: 0,
+      user_role: "unknown",
+      hasRuleBasedTest: qbMetadata[qbId]?.hasRuleBasedTest || false,
+      ruleBasedTests: qbMetadata[qbId]?.ruleBasedTests || [],
+      fromTestRulesOnly: true
+    });
+  });
+}
+
+console.log(`✅ Final QB list count: ${enhancedQbList.length}`);
+console.log(`✅ Rule-Based QBs: ${enhancedQbList.filter(qb => qb.hasRuleBasedTest).length}`);
+
+setTestQuestionMap(qbToTestMap);
+setQbResults(enhancedQbList);
+setUI("results");
+
+const ruleBasedCount = enhancedQbList.filter(qb => qb.hasRuleBasedTest).length;
+showAlert(
+  `✅ Found ${enhancedQbList.length} question bank(s)${ruleBasedCount > 0 ? ` (${ruleBasedCount} Rule-Based)` : ""}`,
+  "success"
+);
     } catch (err) {
       showAlert("Error: " + err.message, "danger");
       console.error(err);
@@ -4762,10 +4934,25 @@ async function checkQBForRuleBasedTests(qbId, questions) {
                           : undefined
                       }}
                     >
-                      <td className="qb-td">
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                          <strong>{qb.qb_name}</strong>
-                          {qb.hasRuleBasedTest && (
+                    <td className="qb-td">
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <strong>{qb.qb_name}</strong>
+                        
+                        {/* NEW: Indicator for QBs from test_rules */}
+                        {qb.fromTestRulesOnly && (
+                          <span 
+                            style={{
+                              fontSize: '11px',
+                              color: '#6c757d',
+                              fontStyle: 'italic'
+                            }}
+                            title="This QB was extracted from test_rules (no questions loaded)"
+                          >
+                            📋 From test rules
+                          </span>
+                        )}
+                        
+                        {qb.hasRuleBasedTest && (
                             <span 
                               style={{
                                 fontSize: '11px',
@@ -4782,9 +4969,11 @@ async function checkQBForRuleBasedTests(qbId, questions) {
                           )}
                         </div>
                       </td>
-                      <td className="qb-td">
-                        <span className="qb-badge">{qb.questionCount}</span>
-                      </td>
+                    <td className="qb-td">
+                      <span className="qb-badge">
+                        {qb.fromTestRulesOnly ? '?' : qb.questionCount}
+                      </span>
+                    </td>
                       <td className="qb-td">{qb.user_role}</td>
                       <td className="qb-td qb-mono">{qb.qb_id}</td>
                       <td className="qb-td">
