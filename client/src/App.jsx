@@ -10,6 +10,7 @@ import MCQ_QC from "./pages/MCQ_QC";
 import CourseQBFinder from "./pages/CourseQBFinder";
 import QBAccess from "./pages/QBAccess";
 import "./App.css";
+import MetaCorporate from "./pages/MetaCorporate";
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -32,6 +33,7 @@ export default function App() {
                 <Route path="/course-qb" element={<CourseQBFinder />} />
                 <Route path="/qb-access" element={<QBAccess />} />
                 <Route path="/mcq-qc" element={<MCQ_QC />} />
+                <Route path="/meta-thinker" element={<MetaCorporate />} />
               </Routes>
             </div>
           </div>

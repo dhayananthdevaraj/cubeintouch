@@ -1,14 +1,17 @@
 // src/components/Sidebar.jsx
 import { NavLink } from "react-router-dom";
+import viteLogo from "../assets/vite.svg";
 import "./Sidebar.css";
 
 export default function Sidebar() {
   return (
     <aside className="sidebar">
       {/* Brand Header */}
-      <div className="sidebar-brand">
+     <div className="sidebar-brand">
         <div className="brand-logo">
-          <span className="brand-icon">📚</span>
+          <span className="brand-icon">
+            <img src={viteLogo} alt="CubeInTouch" style={{ width: "100%", height: "100%" }} />
+          </span>
           <div className="brand-content">
             <h4 className="brand-title">CubeInTouch</h4>
             <span className="brand-subtitle">Support Tools</span>
@@ -46,6 +49,12 @@ export default function Sidebar() {
         <NavLink to="/qb-access" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
           <span className="nav-icon">🔄</span>
           <span className="nav-text">QB Access</span>
+          <span className="nav-indicator"></span>
+        </NavLink>
+
+         <NavLink to="/meta-thinker" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
+          <span className="nav-icon">📝</span>
+          <span className="nav-text">Meta Thinker</span>
           <span className="nav-indicator"></span>
         </NavLink>
       </nav>

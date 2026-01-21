@@ -37,6 +37,12 @@ export default function Topbar() {
           icon: "🔍",
           subtitle: "Validate Questions"
         };
+      case "/meta-thinker":
+        return {
+          title: "Meta Thinker",
+          icon: "📝",
+          subtitle: "Edit Question Bank Metadata"
+        };
       default:
         return {
           title: "Support Hub",

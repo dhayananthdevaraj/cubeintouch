@@ -45,6 +45,15 @@ export default function Dashboard() {
       gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
     },
     {
+      id: 'meta-thinker',
+      icon: '📝',
+      title: 'Meta Thinker',
+      description: 'Edit question bank metadata.',
+      path: '/meta-thinker',
+      status: 'coming-soon',
+      gradient: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+    },
+    {
       id: 'reports',
       icon: '📊',
       title: 'Reports',
@@ -60,6 +69,7 @@ export default function Dashboard() {
       status: 'coming-soon',
       gradient: 'linear-gradient(135deg, #30cfd0 0%, #330867 100%)',
     },
+    
   ];
 
   const handleCardClick = (tool) => {
@@ -247,7 +257,7 @@ export default function Dashboard() {
             <span className="logo-text">CubeInTouch Support Hub</span>
           </div>
           <div className="footer-info">
-            <span>v1.0.0</span>
+            <span>v27.0.1</span>
             <span className="footer-divider">•</span>
             <span>Built for Excellence</span>
           </div>
