@@ -379,7 +379,7 @@
 //             <div className="meta-title-section">
 //               <div className="meta-ai-badge">🤖</div>
 //               <div className="meta-title-content">
-//                 <h1>Meta Thinker</h1>
+//                 <h1>Meta Thinkly-X</h1>
 //                 <div className="meta-subtitle">
 //                   AI-Powered Question Metadata Editor
 //                   <div className="meta-ai-indicator">
@@ -427,7 +427,7 @@
 //             <div className="meta-title-section">
 //               <div className="meta-ai-badge">🤖</div>
 //               <div className="meta-title-content">
-//                 <h1>Meta Thinker</h1>
+//                 <h1>Meta Thinkly-X</h1>
 //                 <div className="meta-subtitle">
 //                   AI-Powered Question Metadata Editor
 //                   <div className="meta-ai-indicator">
@@ -1088,7 +1088,7 @@ export default function MetaCorporate() {
             <div className="meta-title-section">
               <div className="meta-ai-badge">🤖</div>
               <div className="meta-title-content">
-                <h1>Meta Thinker</h1>
+                <h1>Meta Thinkly-X</h1>
                 <div className="meta-subtitle">
                   AI-Powered Question Metadata Editor
                   <div className="meta-ai-indicator">
@@ -1136,7 +1136,7 @@ export default function MetaCorporate() {
             <div className="meta-title-section">
               <div className="meta-ai-badge">🤖</div>
               <div className="meta-title-content">
-                <h1>Meta Thinker</h1>
+                <h1>Meta Thinkly-X</h1>
                 <div className="meta-subtitle">
                   AI-Powered Question Metadata Editor
                   <div className="meta-ai-indicator">

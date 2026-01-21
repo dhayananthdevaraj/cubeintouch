@@ -37,9 +37,9 @@ export default function Topbar() {
           icon: "🔍",
           subtitle: "Validate Questions"
         };
-      case "/meta-thinker":
+      case "/meta-thinkly":
         return {
-          title: "Meta Thinker",
+          title: "Meta Thinkly-X",
           icon: "📝",
           subtitle: "Edit Question Bank Metadata"
         };

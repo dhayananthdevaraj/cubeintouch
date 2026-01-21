@@ -52,9 +52,9 @@ export default function Sidebar() {
           <span className="nav-indicator"></span>
         </NavLink>
 
-         <NavLink to="/meta-thinker" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
+         <NavLink to="/meta-thinkly" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
           <span className="nav-icon">📝</span>
-          <span className="nav-text">Meta Thinker</span>
+          <span className="nav-text">Meta Thinkly-X</span>
           <span className="nav-indicator"></span>
         </NavLink>
       </nav>
