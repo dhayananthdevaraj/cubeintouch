@@ -967,7 +967,7 @@ export default function MetaCorporate() {
       setQuestions(fetchedQuestions);
       
       hideOverlay();
-      showAlert(`✅ Loaded ${fetchedQuestions.length} questions from ${qb.qb_name}`, "success");
+      showAlert(`Loaded ${fetchedQuestions.length} questions from ${qb.qb_name}`, "success");
       setProcessStep("loaded");
     } catch (err) {
       hideOverlay();
@@ -989,7 +989,7 @@ export default function MetaCorporate() {
       const suggestions = await analyzeWithAI(questions);
       setAiSuggestions(suggestions);
       hideOverlay();
-      showAlert(`✅ AI analysis complete! ${suggestions.length} suggestions ready`, "success");
+      showAlert(`AI analysis complete! ${suggestions.length} suggestions ready`, "success");
       setProcessStep("suggestions");
     } catch (err) {
       hideOverlay();
@@ -1036,7 +1036,7 @@ export default function MetaCorporate() {
     hideOverlay();
     
     if (failCount === 0) {
-      showAlert(`✅ Successfully updated all ${successCount} questions!`, "success");
+      showAlert(`Successfully updated all ${successCount} questions!`, "success");
     } else {
       showAlert(`⚠️ Updated ${successCount} questions, ${failCount} failed`, "warning");
     }
