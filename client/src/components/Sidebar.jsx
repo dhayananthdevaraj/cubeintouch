@@ -57,6 +57,13 @@ export default function Sidebar() {
           <span className="nav-text">Meta Thinkly-X</span>
           <span className="nav-indicator"></span>
         </NavLink>
+
+         <NavLink to="/mcq-uploader" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
+          <span className="nav-icon">📤</span>
+          <span className="nav-text">MCQ Sync</span>
+          <span className="nav-indicator"></span>
+        </NavLink>
+
       </nav>
     </aside>
   );

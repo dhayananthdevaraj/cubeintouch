@@ -43,6 +43,12 @@ export default function Topbar() {
           icon: "📝",
           subtitle: "Edit Question Bank Metadata"
         };
+        case "/mcq-uploader":
+        return {
+          title: "MCQ Sync",
+          icon: "📤",
+          subtitle: "Upload Excel/CSV MCQ Questions"
+        };
       default:
         return {
           title: "Support Hub",

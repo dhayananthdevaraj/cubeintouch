@@ -54,6 +54,15 @@ export default function Dashboard() {
       gradient: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
     },
     {
+      id: 'mcq-uploader',
+      icon: '📤',
+      title: 'MCQ Sync',
+      description: 'Bulk upload MCQ questions from Excel/CSV files to question banks.',
+      path: '/mcq-uploader',
+      status: isAuthenticated ? 'active' : 'inactive',
+      gradient: 'linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%)',
+    },
+    {
       id: 'reports',
       icon: '📊',
       title: 'Reports',
