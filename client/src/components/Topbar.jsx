@@ -47,7 +47,7 @@ export default function Topbar() {
         return {
           title: "MCQ Sync",
           icon: "📤",
-          subtitle: "Upload Excel/CSV MCQ Questions"
+          subtitle: "Upload json MCQ Questions"
         };
       default:
         return {
