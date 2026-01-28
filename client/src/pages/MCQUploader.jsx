@@ -245,7 +245,7 @@ export default function MCQUploader() {
           qb_code: qbCode || null,
           qb_description: qbDescription || null,
           tags: [],
-          b_d_id: selectedDepartments.map(dept => dept.value), // Array of department values
+          b_d_id: selectedDepartments, // Send full department objects, not just values
           departmentChanged: true,
           visibility: "Within Department",
           price: 0,
@@ -607,7 +607,7 @@ export default function MCQUploader() {
       {ui === "welcome" && (
         <div className="mcq-welcome">
           <div className="mcq-welcome-icon">📤</div>
-          <h2 className="mcq-welcome-title">MCQ Sync</h2>
+          <h2 className="mcq-welcome-title">MCQ Bulk Uploader</h2>
           <p className="mcq-welcome-subtitle">Upload JSON files with MCQ questions</p>
 
           <textarea
@@ -695,7 +695,7 @@ export default function MCQUploader() {
               </div>
 
               <div className="mcq-form-group">
-                <label className="mcq-label">Department</label>
+                <label className="mcq-label">Department * (Searchable - Multi-select)</label>
                 <input
                   type="text"
                   value={departmentSearch}
