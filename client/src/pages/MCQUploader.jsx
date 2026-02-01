@@ -332,48 +332,106 @@ export default function MCQUploader() {
   };
 
   // Convert JSON format to API format
-  const convertToAPIFormat = (question, qbId, userId) => {
-    const optionsArray = question.options.map(opt => ({
-      text: `<p>${opt}</p>`,
-      media: ""
-    }));
+  // const convertToAPIFormat = (question, qbId, userId) => {
+  //   const optionsArray = question.options.map(opt => ({
+  //     text: `<p>${opt}</p>`,
+  //     media: ""
+  //   }));
 
-    const correctAnswer = optionsArray[question.correctOptionIndex]?.text || "";
+  //   const correctAnswer = optionsArray[question.correctOptionIndex]?.text || "";
 
-    let questionData = `<p>${question.questionDescription}</p>`;
+  //   let questionData = `<p>${question.questionDescription}</p>`;
     
-    // Add code snippet if present
-    if (question.hascodeSnippet && question.codeSnippet) {
-      questionData += `$$$examly${question.codeSnippet}`;
-    }
+  //   // Add code snippet if present
+  //   if (question.hascodeSnippet && question.codeSnippet) {
+  //     questionData += `$$$examly${question.codeSnippet}`;
+  //   }
 
-    return {
-      question_type: "mcq_single_correct",
-      question_data: questionData,
-      options: optionsArray,
-      answer: {
-        args: [correctAnswer],
-        partial: []
-      },
-      subject_id: null,
-      topic_id: null,
-      sub_topic_id: null,
-      blooms_taxonomy: null,
-      course_outcome: null,
-      program_outcome: null,
-      hint: [],
-      answer_explanation: {
-        args: []
-      },
-      manual_difficulty: question.difficultyLevel || "Medium",
-      question_editor_type: question.hascodeSnippet ? 3 : 1,
-      linked_concepts: "",
-      tags: question.tags ? [question.tags] : [""],
-      question_media: [],
-      qb_id: qbId,
-      createdBy: userId
-    };
+  //   return {
+  //     question_type: "mcq_single_correct",
+  //     question_data: questionData,
+  //     options: optionsArray,
+  //     answer: {
+  //       args: [correctAnswer],
+  //       partial: []
+  //     },
+  //     subject_id: null,
+  //     topic_id: null,
+  //     sub_topic_id: null,
+  //     blooms_taxonomy: null,
+  //     course_outcome: null,
+  //     program_outcome: null,
+  //     hint: [],
+  //     answer_explanation: {
+  //       args: []
+  //     },
+  //     manual_difficulty: question.difficultyLevel || "Medium",
+  //     question_editor_type: question.hascodeSnippet ? 3 : 1,
+  //     linked_concepts: "",
+  //     tags: question.tags ? [question.tags] : [""],
+  //     question_media: [],
+  //     qb_id: qbId,
+  //     createdBy: userId
+  //   };
+  // };
+
+  // Convert JSON format to API format
+const convertToAPIFormat = (question, qbId, userId) => {
+  const optionsArray = question.options.map(opt => ({
+    text: `<p>${opt}</p>`,
+    media: ""
+  }));
+
+  const correctAnswer = optionsArray[question.correctOptionIndex]?.text || "";
+
+  let questionData = `<p>${question.questionDescription}</p>`;
+  
+  // Add code snippet if present
+  if (question.hascodeSnippet && question.codeSnippet) {
+    questionData += `$$$examly${question.codeSnippet}`;
+  }
+
+  // Process tags: split comma-separated string into array
+  let tagsArray = [""];
+  if (question.tags) {
+    tagsArray = question.tags
+      .split(',')
+      .map(tag => tag.trim())
+      .filter(tag => tag.length > 0);
+    
+    // Fallback to empty string if no valid tags after processing
+    if (tagsArray.length === 0) {
+      tagsArray = [""];
+    }
+  }
+
+  return {
+    question_type: "mcq_single_correct",
+    question_data: questionData,
+    options: optionsArray,
+    answer: {
+      args: [correctAnswer],
+      partial: []
+    },
+    subject_id: null,
+    topic_id: null,
+    sub_topic_id: null,
+    blooms_taxonomy: null,
+    course_outcome: null,
+    program_outcome: null,
+    hint: [],
+    answer_explanation: {
+      args: []
+    },
+    manual_difficulty: question.difficultyLevel || "Medium",
+    question_editor_type: question.hascodeSnippet ? 3 : 1,
+    linked_concepts: "",
+    tags: tagsArray,
+    question_media: [],
+    qb_id: qbId,
+    createdBy: userId
   };
+};
 
   // Upload questions in batches
   const uploadQuestions = async () => {
