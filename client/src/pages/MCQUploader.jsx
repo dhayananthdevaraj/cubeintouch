@@ -1,4 +1,3 @@
-// src/pages/MCQUploader.jsx
 import { useState } from "react";
 import "./MCQUploader.css";
 import { B_D_ID_OPTIONS } from "../config";
@@ -47,8 +46,8 @@ export default function MCQUploader() {
   const [overlay, setOverlay] = useState(false);
   const [overlayText, setOverlayText] = useState("");
 
-  // Batch settings
-  const [batchSize, setBatchSize] = useState(5);
+  // Fixed batch size
+  const batchSize = 5;
 
   const showAlert = (msg, type = "warning") => {
     setAlert({ msg, type });
@@ -110,6 +109,25 @@ export default function MCQUploader() {
     setUploadResults(null);
     setShowPreview(false);
     setPreviewIndex(0);
+  };
+
+  const handleReload = () => {
+    // Clear all input fields and reset to initial state
+    setJsonInput("");
+    setSelectedFile(null);
+    setParsedQuestions([]);
+    setUploadResults(null);
+    setUploadProgress({ current: 0, total: 0 });
+    setShowPreview(false);
+    setPreviewIndex(0);
+    
+    // Clear file input
+    const fileInput = document.getElementById("file-input");
+    if (fileInput) {
+      fileInput.value = "";
+    }
+    
+    showAlert("🔄 All inputs cleared!", "success");
   };
 
   const headers = {
@@ -300,6 +318,82 @@ export default function MCQUploader() {
     }
   };
 
+  // Validate individual question structure
+  const validateQuestion = (question, index) => {
+    const errors = [];
+    const questionNum = index + 1;
+
+    // Required fields validation
+    if (!question.difficultyLevel || typeof question.difficultyLevel !== 'string') {
+      errors.push(`Q${questionNum}: Missing or invalid 'difficultyLevel' (must be a string)`);
+    } else {
+      const validDifficulties = ['Easy', 'Medium', 'Hard'];
+      if (!validDifficulties.includes(question.difficultyLevel)) {
+        errors.push(`Q${questionNum}: 'difficultyLevel' must be one of: Easy, Medium, Hard`);
+      }
+    }
+
+    if (!question.subtopic || typeof question.subtopic !== 'string') {
+      errors.push(`Q${questionNum}: Missing or invalid 'subtopic' (must be a string)`);
+    }
+
+    if (!question.questionDescription || typeof question.questionDescription !== 'string') {
+      errors.push(`Q${questionNum}: Missing or invalid 'questionDescription' (must be a string)`);
+    }
+
+    if (typeof question.hascodeSnippet !== 'boolean') {
+      errors.push(`Q${questionNum}: Missing or invalid 'hascodeSnippet' (must be true or false)`);
+    }
+
+    if (!question.hasOwnProperty('codeSnippet')) {
+      errors.push(`Q${questionNum}: Missing 'codeSnippet' field`);
+    } else if (typeof question.codeSnippet !== 'string') {
+      errors.push(`Q${questionNum}: 'codeSnippet' must be a string (use empty string "" if no code)`);
+    }
+
+    // Validate options array
+    if (!question.options || !Array.isArray(question.options)) {
+      errors.push(`Q${questionNum}: Missing or invalid 'options' (must be an array)`);
+    } else {
+      if (question.options.length < 2) {
+        errors.push(`Q${questionNum}: 'options' must have at least 2 choices`);
+      }
+      if (question.options.length > 6) {
+        errors.push(`Q${questionNum}: 'options' should not exceed 6 choices`);
+      }
+      question.options.forEach((opt, idx) => {
+        if (typeof opt !== 'string' || opt.trim() === '') {
+          errors.push(`Q${questionNum}: Option ${idx + 1} must be a non-empty string`);
+        }
+      });
+    }
+
+    // Validate correctOptionIndex
+    if (!question.hasOwnProperty('correctOptionIndex')) {
+      errors.push(`Q${questionNum}: Missing 'correctOptionIndex'`);
+    } else if (typeof question.correctOptionIndex !== 'number') {
+      errors.push(`Q${questionNum}: 'correctOptionIndex' must be a number`);
+    } else if (question.options && Array.isArray(question.options)) {
+      if (question.correctOptionIndex < 0 || question.correctOptionIndex >= question.options.length) {
+        errors.push(`Q${questionNum}: 'correctOptionIndex' (${question.correctOptionIndex}) is out of range (must be 0-${question.options.length - 1})`);
+      }
+    }
+
+    // Validate tags
+    if (!question.hasOwnProperty('tags')) {
+      errors.push(`Q${questionNum}: Missing 'tags' field`);
+    } else if (typeof question.tags !== 'string') {
+      errors.push(`Q${questionNum}: 'tags' must be a string (comma-separated values)`);
+    }
+
+    // Logical validation: if hascodeSnippet is true, codeSnippet should not be empty
+    if (question.hascodeSnippet === true && (!question.codeSnippet || question.codeSnippet.trim() === '')) {
+      errors.push(`Q${questionNum}: 'hascodeSnippet' is true but 'codeSnippet' is empty`);
+    }
+
+    return errors;
+  };
+
   // Parse and validate JSON
   const parseJSON = () => {
     if (!jsonInput.trim()) {
@@ -311,127 +405,97 @@ export default function MCQUploader() {
       const parsed = JSON.parse(jsonInput);
       const questions = Array.isArray(parsed) ? parsed : [parsed];
       
-      // Validate structure
-      const validQuestions = questions.filter(q => 
-        q.questionDescription && 
-        q.options && 
-        Array.isArray(q.options) &&
-        q.correctOptionIndex !== undefined
-      );
-
-      if (validQuestions.length === 0) {
-        showAlert("No valid questions found in JSON", "danger");
+      if (questions.length === 0) {
+        showAlert("JSON array is empty", "danger");
         return;
       }
 
-      setParsedQuestions(validQuestions);
-      showAlert(`✅ Parsed ${validQuestions.length} valid question(s)`, "success");
+      // Validate each question and collect all errors
+      let allErrors = [];
+      questions.forEach((q, idx) => {
+        const errors = validateQuestion(q, idx);
+        allErrors = allErrors.concat(errors);
+      });
+
+      if (allErrors.length > 0) {
+        // Show first 5 errors in alert
+        const errorPreview = allErrors.slice(0, 5).join('\n');
+        const moreErrors = allErrors.length > 5 ? `\n... and ${allErrors.length - 5} more errors` : '';
+        
+        showAlert(
+          `❌ Validation failed with ${allErrors.length} error(s):\n\n${errorPreview}${moreErrors}`,
+          "danger"
+        );
+        
+        // Log all errors to console for debugging
+        console.error("All validation errors:", allErrors);
+        return;
+      }
+
+      setParsedQuestions(questions);
+      showAlert(`✅ Validated ${questions.length} question(s) successfully!`, "success");
     } catch (err) {
       showAlert("Invalid JSON format: " + err.message, "danger");
     }
   };
 
   // Convert JSON format to API format
-  // const convertToAPIFormat = (question, qbId, userId) => {
-  //   const optionsArray = question.options.map(opt => ({
-  //     text: `<p>${opt}</p>`,
-  //     media: ""
-  //   }));
+  const convertToAPIFormat = (question, qbId, userId) => {
+    const optionsArray = question.options.map(opt => ({
+      text: `<p>${opt}</p>`,
+      media: ""
+    }));
 
-  //   const correctAnswer = optionsArray[question.correctOptionIndex]?.text || "";
+    const correctAnswer = optionsArray[question.correctOptionIndex]?.text || "";
 
-  //   let questionData = `<p>${question.questionDescription}</p>`;
+    let questionData = `<p>${question.questionDescription}</p>`;
     
-  //   // Add code snippet if present
-  //   if (question.hascodeSnippet && question.codeSnippet) {
-  //     questionData += `$$$examly${question.codeSnippet}`;
-  //   }
-
-  //   return {
-  //     question_type: "mcq_single_correct",
-  //     question_data: questionData,
-  //     options: optionsArray,
-  //     answer: {
-  //       args: [correctAnswer],
-  //       partial: []
-  //     },
-  //     subject_id: null,
-  //     topic_id: null,
-  //     sub_topic_id: null,
-  //     blooms_taxonomy: null,
-  //     course_outcome: null,
-  //     program_outcome: null,
-  //     hint: [],
-  //     answer_explanation: {
-  //       args: []
-  //     },
-  //     manual_difficulty: question.difficultyLevel || "Medium",
-  //     question_editor_type: question.hascodeSnippet ? 3 : 1,
-  //     linked_concepts: "",
-  //     tags: question.tags ? [question.tags] : [""],
-  //     question_media: [],
-  //     qb_id: qbId,
-  //     createdBy: userId
-  //   };
-  // };
-
-  // Convert JSON format to API format
-const convertToAPIFormat = (question, qbId, userId) => {
-  const optionsArray = question.options.map(opt => ({
-    text: `<p>${opt}</p>`,
-    media: ""
-  }));
-
-  const correctAnswer = optionsArray[question.correctOptionIndex]?.text || "";
-
-  let questionData = `<p>${question.questionDescription}</p>`;
-  
-  // Add code snippet if present
-  if (question.hascodeSnippet && question.codeSnippet) {
-    questionData += `$$$examly${question.codeSnippet}`;
-  }
-
-  // Process tags: split comma-separated string into array
-  let tagsArray = [""];
-  if (question.tags) {
-    tagsArray = question.tags
-      .split(',')
-      .map(tag => tag.trim())
-      .filter(tag => tag.length > 0);
-    
-    // Fallback to empty string if no valid tags after processing
-    if (tagsArray.length === 0) {
-      tagsArray = [""];
+    // Add code snippet if present
+    if (question.hascodeSnippet && question.codeSnippet) {
+      questionData += `$$$examly${question.codeSnippet}`;
     }
-  }
 
-  return {
-    question_type: "mcq_single_correct",
-    question_data: questionData,
-    options: optionsArray,
-    answer: {
-      args: [correctAnswer],
-      partial: []
-    },
-    subject_id: null,
-    topic_id: null,
-    sub_topic_id: null,
-    blooms_taxonomy: null,
-    course_outcome: null,
-    program_outcome: null,
-    hint: [],
-    answer_explanation: {
-      args: []
-    },
-    manual_difficulty: question.difficultyLevel || "Medium",
-    question_editor_type: question.hascodeSnippet ? 3 : 1,
-    linked_concepts: "",
-    tags: tagsArray,
-    question_media: [],
-    qb_id: qbId,
-    createdBy: userId
+    // Process tags: split comma-separated string into array
+    let tagsArray = [""];
+    if (question.tags) {
+      tagsArray = question.tags
+        .split(',')
+        .map(tag => tag.trim())
+        .filter(tag => tag.length > 0);
+      
+      // Fallback to empty string if no valid tags after processing
+      if (tagsArray.length === 0) {
+        tagsArray = [""];
+      }
+    }
+
+    return {
+      question_type: "mcq_single_correct",
+      question_data: questionData,
+      options: optionsArray,
+      answer: {
+        args: [correctAnswer],
+        partial: []
+      },
+      subject_id: null,
+      topic_id: null,
+      sub_topic_id: null,
+      blooms_taxonomy: null,
+      course_outcome: null,
+      program_outcome: null,
+      hint: [],
+      answer_explanation: {
+        args: []
+      },
+      manual_difficulty: question.difficultyLevel || "Medium",
+      question_editor_type: question.hascodeSnippet ? 3 : 1,
+      linked_concepts: "",
+      tags: tagsArray,
+      question_media: [],
+      qb_id: qbId,
+      createdBy: userId
+    };
   };
-};
 
   // Upload questions in batches
   const uploadQuestions = async () => {
@@ -692,6 +756,13 @@ const convertToAPIFormat = (question, qbId, userId) => {
             <h3 className="mcq-title">🏗️ Question Bank Setup</h3>
             <div className="mcq-header-actions">
               <button
+                onClick={handleReload}
+                className="mcq-button mcq-button-secondary mcq-button-small"
+                title="Clear All Inputs"
+              >
+                🔄 Reload
+              </button>
+              <button
                 onClick={clearToken}
                 className="mcq-button mcq-button-danger mcq-button-small"
               >
@@ -908,6 +979,13 @@ const convertToAPIFormat = (question, qbId, userId) => {
             </div>
             <div className="mcq-header-actions">
               <button
+                onClick={handleReload}
+                className="mcq-button mcq-button-secondary mcq-button-small"
+                title="Clear All Inputs"
+              >
+                🔄 Reload
+              </button>
+              <button
                 onClick={() => {
                   setUI("setup");
                   setCreatedQB(null);
@@ -977,24 +1055,6 @@ const convertToAPIFormat = (question, qbId, userId) => {
               </div>
             </div>
 
-            {/* Batch Size Setting */}
-            <div className="mcq-settings-section">
-              <label className="mcq-label">
-                Batch Size: <strong>{batchSize}</strong> questions per batch
-              </label>
-              <input
-                type="range"
-                min="1"
-                max="10"
-                value={batchSize}
-                onChange={(e) => setBatchSize(parseInt(e.target.value))}
-                className="mcq-slider"
-              />
-              <p className="mcq-hint">
-                💡 Smaller batches = more stable, Larger batches = faster
-              </p>
-            </div>
-
             {/* Parse Button */}
             <button
               onClick={parseJSON}
@@ -1011,7 +1071,7 @@ const convertToAPIFormat = (question, qbId, userId) => {
               <div className="mcq-preview-section">
                 <div className="mcq-preview-header">
                   <h4 className="mcq-preview-title">
-                    ✅ {parsedQuestions.length} Question(s) Ready
+                    ✅ {parsedQuestions.length} Question(s) Ready (Batch size: {batchSize})
                   </h4>
                   <button
                     onClick={() => setShowPreview(true)}
