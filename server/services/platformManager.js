@@ -5,7 +5,7 @@ import { qdrant } from "./vectorDB.js";
 const tokenCache = new Map();
 
 function tokenKey(token) {
-  return token.slice(-12).replace(/[^a-zA-Z0-9]/g, "");
+  return "prod_v1";  // Shared collection for all users
 }
 
 async function createCollections(key) {
@@ -56,22 +56,48 @@ async function createCollections(key) {
   return { subjects, subtopics };
 }
 
-async function fetchPlatformData(token) {
+// ✅ ADD RETRY LOGIC
+async function fetchPlatformData(token, retries = 3) {
+  
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      console.log(`📡 Fetching taxonomy (attempt ${attempt}/${retries})...`);
+      
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+      
+      const res = await fetch(
+        `${process.env.EXAMLY_API}/api/getalldetails`,
+        {
+          headers: { Authorization: token },
+          signal: controller.signal
+        }
+      );
 
-  const res = await fetch(
-    `${process.env.EXAMLY_API}/api/getalldetails`,
-    {
-      headers: { Authorization: token },
+      clearTimeout(timeout);
+
+      if (!res.ok) {
+        throw new Error(`Examly API returned ${res.status}`);
+      }
+
+      const json = await res.json();
+      console.log(`✅ Successfully fetched ${json.data?.length || 0} subtopics`);
+      
+      return json.data;
+      
+    } catch (err) {
+      console.error(`❌ Attempt ${attempt} failed:`, err.message);
+      
+      if (attempt === retries) {
+        throw new Error(`Failed to fetch taxonomy after ${retries} attempts: ${err.message}`);
+      }
+      
+      // Wait before retry (exponential backoff)
+      const waitTime = attempt * 2000; // 2s, 4s, 6s
+      console.log(`⏳ Waiting ${waitTime/1000}s before retry...`);
+      await new Promise(resolve => setTimeout(resolve, waitTime));
     }
-  );
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch platform taxonomy");
   }
-
-  const json = await res.json();
-
-  return json.data;
 }
 
 async function indexAll(token) {
@@ -80,7 +106,15 @@ async function indexAll(token) {
   const collections = await createCollections(key);
 
   console.log("📚 Fetching taxonomy from Examly...");
-  const platformData = await fetchPlatformData(token);
+  
+  // ✅ TRY TO FETCH WITH RETRIES
+  let platformData;
+  try {
+    platformData = await fetchPlatformData(token);
+  } catch (err) {
+    console.error("❌ Failed to fetch platform data:", err.message);
+    throw new Error("Unable to fetch taxonomy from Examly. Please try again later.");
+  }
 
   // ✅ COUNT EXPECTED DATA
   const subjectMap = new Map();
@@ -190,10 +224,10 @@ async function indexAll(token) {
   console.log("✅ Subjects indexed:", subjectPoints.length);
 
   //---------------------------------------
-  // SUBTOPIC INDEXING (FASTER: 100 batch size, no delays)
+  // SUBTOPIC INDEXING
   //---------------------------------------
 
-  const BATCH_SIZE = 100;  // ← INCREASED from 50
+  const BATCH_SIZE = 100;
   const subtopicTexts = [];
   const subtopicData = [];
 
@@ -228,8 +262,6 @@ async function indexAll(token) {
     allVectors.push(...vectors);
     
     console.log(`  ✓ Embedded ${Math.min(i + BATCH_SIZE, subtopicTexts.length)}/${subtopicTexts.length}`);
-    
-    // ← REMOVED DELAY (no await sleep)
   }
 
   const subtopicPoints = subtopicData.map((data, idx) => ({
