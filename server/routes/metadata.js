@@ -410,224 +410,303 @@
 // export default router;
 
 // routes/metadata.js - BACKWARD COMPATIBLE VERSION
+// import express from "express";
+// import { classifyQuestions } from "../services/metadataService.js";
+
+// const router = express.Router();
+
+// /**
+//  * Convert OLD format to NEW format
+//  * OLD: { availableSubjects, availableTopics, availableSubTopics }
+//  * NEW: { platformData }
+//  */
+// function convertToNewFormat(availableSubjects, availableTopics, availableSubTopics) {
+//   console.log('🔄 Converting old format to new platformData format...');
+  
+//   const platformData = [];
+  
+//   availableSubTopics.forEach(subTopic => {
+//     const topic = availableTopics.find(t => t.topic_id === subTopic.topic_id);
+//     const subject = availableSubjects.find(s => s.subject_id === topic?.subject_id);
+    
+//     if (topic && subject) {
+//       platformData.push({
+//         sub_topic_id: subTopic.sub_topic_id,
+//         name: subTopic.name,
+//         topic: {
+//           topic_id: topic.topic_id,
+//           name: topic.name,
+//           subject: {
+//             subject_id: subject.subject_id,
+//             name: subject.name
+//           }
+//         }
+//       });
+//     }
+//   });
+  
+//   console.log(`✅ Converted ${platformData.length} SubTopics to platformData format`);
+  
+//   return platformData;
+// }
+
+// /**
+//  * Extract question text from question objects
+//  */
+// function extractQuestions(questions) {
+//   // Check if questions are already strings
+//   if (questions.length > 0 && typeof questions[0] === 'string') {
+//     return questions;
+//   }
+  
+//   // Extract text from question objects
+//   return questions.map(q => {
+//     if (typeof q === 'object') {
+//       // Try common field names
+//       return q.question || q.text || q.question_text || q.content || JSON.stringify(q);
+//     }
+//     return String(q);
+//   });
+// }
+
+// /**
+//  * POST /analyze-metadata
+//  * BACKWARD COMPATIBLE - Accepts both old and new formats
+//  */
+// router.post("/", async (req, res) => {
+//   try {
+//     let { questions, platformData, availableSubjects, availableTopics, availableSubTopics } = req.body;
+
+//     // Validation
+//     if (!Array.isArray(questions) || questions.length === 0) {
+//       return res.status(400).json({ 
+//         error: "questions array is required and cannot be empty" 
+//       });
+//     }
+
+//     // BACKWARD COMPATIBILITY: Convert old format to new format
+//     if (!platformData && availableSubjects && availableTopics && availableSubTopics) {
+//       console.log('📦 OLD FORMAT DETECTED - Converting to new format...');
+//       platformData = convertToNewFormat(availableSubjects, availableTopics, availableSubTopics);
+//     }
+
+//     // Validate platformData
+//     if (!Array.isArray(platformData) || platformData.length === 0) {
+//       return res.status(400).json({
+//         error: "platformData array is required and cannot be empty",
+//         hint: "Send either 'platformData' (new format) or 'availableSubjects/Topics/SubTopics' (old format)"
+//       });
+//     }
+
+//     // Extract question text
+//     const questionTexts = extractQuestions(questions);
+
+//     console.log(`\n${'='.repeat(80)}`);
+//     console.log(`📊 DYNAMIC METADATA ANALYSIS`);
+//     console.log(`${'='.repeat(80)}`);
+//     console.log(`   Questions: ${questionTexts.length}`);
+//     console.log(`   Platform Data: ${platformData.length} SubTopics`);
+//     console.log(`   Format: ${availableSubjects ? 'OLD (converted)' : 'NEW (direct)'}`);
+//     console.log(`${'='.repeat(80)}\n`);
+
+//     // Run dynamic classification
+//     const results = await classifyQuestions(questionTexts, platformData);
+
+//     console.log(`\n✅ Analysis Complete: ${results.length} results\n`);
+    
+//     // Build response
+//     const successful = results.filter(r => !r.error).length;
+//     const highConfidence = results.filter(r => r.confidence >= 80).length;
+//     const avgConfidence = results.reduce((sum, r) => sum + (r.confidence || 0), 0) / results.length;
+
+//     // Map results back to original question format if needed
+//     const formattedResults = results.map((result, index) => {
+//       const originalQuestion = questions[index];
+      
+//       // If original was an object, include original fields
+//       if (typeof originalQuestion === 'object') {
+//         return {
+//           ...originalQuestion,
+//           suggested_subject_id: result.subject_id,
+//           suggested_subject_name: result.subject_name,
+//           suggested_topic_id: result.topic_id,
+//           suggested_topic_name: result.topic_name,
+//           suggested_sub_topic_id: result.sub_topic_id,
+//           suggested_sub_topic_name: result.sub_topic_name,
+//           confidence: result.confidence,
+//           ai_suggestion: result.ai_suggestion,
+//           match_score: result.match_score,
+//           match_type: result.match_type,
+//           error: result.error
+//         };
+//       }
+      
+//       // Otherwise return as-is
+//       return result;
+//     });
+
+//     res.json({
+//       suggestions: formattedResults, // Use "suggestions" for backward compatibility
+//       results: formattedResults,     // Also include "results" for new format
+//       metadata: {
+//         total_questions: questionTexts.length,
+//         successful: successful,
+//         failed: questionTexts.length - successful,
+//         high_confidence: highConfidence,
+//         medium_confidence: results.filter(r => r.confidence >= 60 && r.confidence < 80).length,
+//         low_confidence: results.filter(r => r.confidence < 60).length,
+//         average_confidence: Math.round(avgConfidence),
+//         mode: 'dynamic_ultimate',
+//         format_used: availableSubjects ? 'old_format_converted' : 'new_format_direct'
+//       }
+//     });
+
+//   } catch (err) {
+//     console.error("❌ Metadata Analysis Error:", err.message);
+//     console.error(err.stack);
+//     res.status(500).json({
+//       error: "Metadata analysis failed",
+//       detail: err.message
+//     });
+//   }
+// });
+
+// /**
+//  * GET /analyze-metadata/info
+//  */
+// router.get("/info", (req, res) => {
+//   res.json({
+//     system: "Dynamic Ultimate Metadata Classification",
+//     version: "2.0",
+//     backward_compatible: true,
+//     accepted_formats: {
+//       new_format: {
+//         questions: ["string array"],
+//         platformData: [
+//           {
+//             sub_topic_id: "string",
+//             name: "string",
+//             topic: {
+//               topic_id: "string",
+//               name: "string",
+//               subject: {
+//                 subject_id: "string",
+//                 name: "string"
+//               }
+//             }
+//           }
+//         ]
+//       },
+//       old_format: {
+//         questions: ["array of objects or strings"],
+//         availableSubjects: ["array"],
+//         availableTopics: ["array"],
+//         availableSubTopics: ["array"]
+//       }
+//     },
+//     features: [
+//       "Auto-learns from platform data",
+//       "Works for ALL subjects (60+)",
+//       "Resolves duplicate SubTopics",
+//       "Context-aware scoring",
+//       "Technology conflict prevention",
+//       "Backward compatible with old API format"
+//     ],
+//     accuracy: "85-90% overall, 90-95% for duplicate resolution",
+//     speed: "~500ms per question"
+//   });
+// });
+
+// /**
+//  * GET /analyze-metadata/health
+//  */
+// router.get("/health", (req, res) => {
+//   res.json({
+//     status: "healthy",
+//     service: "Dynamic Metadata Classification",
+//     version: "2.0",
+//     backward_compatible: true,
+//     timestamp: new Date().toISOString()
+//   });
+// });
+
 import express from "express";
-import { classifyQuestions } from "../services/metadataService.js";
+import { ensureIndexed } from "../services/platformManager.js";
+import { classifyQuestion } from "../services/vectorClassifier.js";
 
 const router = express.Router();
 
-/**
- * Convert OLD format to NEW format
- * OLD: { availableSubjects, availableTopics, availableSubTopics }
- * NEW: { platformData }
- */
-function convertToNewFormat(availableSubjects, availableTopics, availableSubTopics) {
-  console.log('🔄 Converting old format to new platformData format...');
-  
-  const platformData = [];
-  
-  availableSubTopics.forEach(subTopic => {
-    const topic = availableTopics.find(t => t.topic_id === subTopic.topic_id);
-    const subject = availableSubjects.find(s => s.subject_id === topic?.subject_id);
-    
-    if (topic && subject) {
-      platformData.push({
-        sub_topic_id: subTopic.sub_topic_id,
-        name: subTopic.name,
-        topic: {
-          topic_id: topic.topic_id,
-          name: topic.name,
-          subject: {
-            subject_id: subject.subject_id,
-            name: subject.name
-          }
-        }
-      });
-    }
-  });
-  
-  console.log(`✅ Converted ${platformData.length} SubTopics to platformData format`);
-  
-  return platformData;
-}
-
-/**
- * Extract question text from question objects
- */
-function extractQuestions(questions) {
-  // Check if questions are already strings
-  if (questions.length > 0 && typeof questions[0] === 'string') {
-    return questions;
-  }
-  
-  // Extract text from question objects
-  return questions.map(q => {
-    if (typeof q === 'object') {
-      // Try common field names
-      return q.question || q.text || q.question_text || q.content || JSON.stringify(q);
-    }
-    return String(q);
-  });
-}
-
-/**
- * POST /analyze-metadata
- * BACKWARD COMPATIBLE - Accepts both old and new formats
- */
-router.post("/", async (req, res) => {
+router.post("/analyze-metadata", async (req, res) => {
   try {
-    let { questions, platformData, availableSubjects, availableTopics, availableSubTopics } = req.body;
+    const token = req.headers.authorization;
 
-    // Validation
-    if (!Array.isArray(questions) || questions.length === 0) {
-      return res.status(400).json({ 
-        error: "questions array is required and cannot be empty" 
+    if (!token) {
+      return res.status(401).json({
+        error: "Authorization token required",
       });
     }
 
-    // BACKWARD COMPATIBILITY: Convert old format to new format
-    if (!platformData && availableSubjects && availableTopics && availableSubTopics) {
-      console.log('📦 OLD FORMAT DETECTED - Converting to new format...');
-      platformData = convertToNewFormat(availableSubjects, availableTopics, availableSubTopics);
+    if (token.length < 50) {
+      return res.status(401).json({
+        error: "Invalid token format",
+      });
     }
 
-    // Validate platformData
-    if (!Array.isArray(platformData) || platformData.length === 0) {
+    const { questions } = req.body;
+
+    if (!questions || !Array.isArray(questions)) {
       return res.status(400).json({
-        error: "platformData array is required and cannot be empty",
-        hint: "Send either 'platformData' (new format) or 'availableSubjects/Topics/SubTopics' (old format)"
+        error: "questions array required",
       });
     }
 
-    // Extract question text
-    const questionTexts = extractQuestions(questions);
+    console.log(`📥 Received ${questions.length} questions for analysis`);
 
-    console.log(`\n${'='.repeat(80)}`);
-    console.log(`📊 DYNAMIC METADATA ANALYSIS`);
-    console.log(`${'='.repeat(80)}`);
-    console.log(`   Questions: ${questionTexts.length}`);
-    console.log(`   Platform Data: ${platformData.length} SubTopics`);
-    console.log(`   Format: ${availableSubjects ? 'OLD (converted)' : 'NEW (direct)'}`);
-    console.log(`${'='.repeat(80)}\n`);
+    await ensureIndexed(token);
 
-    // Run dynamic classification
-    const results = await classifyQuestions(questionTexts, platformData);
+    const results = [];
 
-    console.log(`\n✅ Analysis Complete: ${results.length} results\n`);
-    
-    // Build response
-    const successful = results.filter(r => !r.error).length;
+    for (let i = 0; i < questions.length; i++) {
+      const q = questions[i];
+      
+      console.log(`🔍 Classifying question ${i + 1}/${questions.length}`);
+      
+      const result = await classifyQuestion(q, token);
+      results.push(result);
+    }
+
     const highConfidence = results.filter(r => r.confidence >= 80).length;
-    const avgConfidence = results.reduce((sum, r) => sum + (r.confidence || 0), 0) / results.length;
+    const mediumConfidence = results.filter(r => r.confidence >= 60 && r.confidence < 80).length;
+    const lowConfidence = results.filter(r => r.confidence < 60).length;
+    
+    const avgConfidence = Math.round(
+      results.reduce((sum, r) => sum + r.confidence, 0) / results.length
+    );
 
-    // Map results back to original question format if needed
-    const formattedResults = results.map((result, index) => {
-      const originalQuestion = questions[index];
-      
-      // If original was an object, include original fields
-      if (typeof originalQuestion === 'object') {
-        return {
-          ...originalQuestion,
-          suggested_subject_id: result.subject_id,
-          suggested_subject_name: result.subject_name,
-          suggested_topic_id: result.topic_id,
-          suggested_topic_name: result.topic_name,
-          suggested_sub_topic_id: result.sub_topic_id,
-          suggested_sub_topic_name: result.sub_topic_name,
-          confidence: result.confidence,
-          ai_suggestion: result.ai_suggestion,
-          match_score: result.match_score,
-          match_type: result.match_type,
-          error: result.error
-        };
-      }
-      
-      // Otherwise return as-is
-      return result;
-    });
+    console.log(`✅ Analysis complete: ${results.length} classifications`);
+    console.log(`📊 Stats: High=${highConfidence}, Med=${mediumConfidence}, Low=${lowConfidence}, Avg=${avgConfidence}%`);
 
     res.json({
-      suggestions: formattedResults, // Use "suggestions" for backward compatibility
-      results: formattedResults,     // Also include "results" for new format
+      success: true,
+      suggestions: results,
       metadata: {
-        total_questions: questionTexts.length,
-        successful: successful,
-        failed: questionTexts.length - successful,
+        mode: 'vector',
+        total_questions: results.length,
         high_confidence: highConfidence,
-        medium_confidence: results.filter(r => r.confidence >= 60 && r.confidence < 80).length,
-        low_confidence: results.filter(r => r.confidence < 60).length,
-        average_confidence: Math.round(avgConfidence),
-        mode: 'dynamic_ultimate',
-        format_used: availableSubjects ? 'old_format_converted' : 'new_format_direct'
+        medium_confidence: mediumConfidence,
+        low_confidence: lowConfidence,
+        average_confidence: avgConfidence
       }
     });
 
   } catch (err) {
-    console.error("❌ Metadata Analysis Error:", err.message);
-    console.error(err.stack);
+    console.error("❌ Error in analyze-metadata:", err);
+
     res.status(500).json({
-      error: "Metadata analysis failed",
-      detail: err.message
+      success: false,
+      error: err.message,
     });
   }
-});
-
-/**
- * GET /analyze-metadata/info
- */
-router.get("/info", (req, res) => {
-  res.json({
-    system: "Dynamic Ultimate Metadata Classification",
-    version: "2.0",
-    backward_compatible: true,
-    accepted_formats: {
-      new_format: {
-        questions: ["string array"],
-        platformData: [
-          {
-            sub_topic_id: "string",
-            name: "string",
-            topic: {
-              topic_id: "string",
-              name: "string",
-              subject: {
-                subject_id: "string",
-                name: "string"
-              }
-            }
-          }
-        ]
-      },
-      old_format: {
-        questions: ["array of objects or strings"],
-        availableSubjects: ["array"],
-        availableTopics: ["array"],
-        availableSubTopics: ["array"]
-      }
-    },
-    features: [
-      "Auto-learns from platform data",
-      "Works for ALL subjects (60+)",
-      "Resolves duplicate SubTopics",
-      "Context-aware scoring",
-      "Technology conflict prevention",
-      "Backward compatible with old API format"
-    ],
-    accuracy: "85-90% overall, 90-95% for duplicate resolution",
-    speed: "~500ms per question"
-  });
-});
-
-/**
- * GET /analyze-metadata/health
- */
-router.get("/health", (req, res) => {
-  res.json({
-    status: "healthy",
-    service: "Dynamic Metadata Classification",
-    version: "2.0",
-    backward_compatible: true,
-    timestamp: new Date().toISOString()
-  });
 });
 
 export default router;
