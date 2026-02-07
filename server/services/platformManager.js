@@ -38,16 +38,16 @@ async function createCollections(key) {
     console.log("✅ Created:", subtopics);
   }
   
-  // CREATE INDEX - CHANGED TO KEYWORD TYPE
+  // CREATE INDEX
   try {
     await qdrant.createPayloadIndex(subtopics, {
       field_name: "subject_id",
-      field_schema: "keyword",  // ← CHANGED from "integer"
+      field_schema: "keyword",
     });
     console.log("✅ Created keyword index on subject_id");
   } catch (err) {
     if (err.status === 409) {
-      console.log("⚠️ Index already exists");
+      console.log("ℹ️  Index already exists");
     } else {
       console.error("❌ Index creation failed:", err.message);
     }
@@ -79,22 +79,87 @@ async function indexAll(token) {
   const key = tokenKey(token);
   const collections = await createCollections(key);
 
-  console.log("📚 Fetching taxonomy...");
-
+  console.log("📚 Fetching taxonomy from Examly...");
   const platformData = await fetchPlatformData(token);
+
+  // ✅ COUNT EXPECTED DATA
+  const subjectMap = new Map();
+  platformData.forEach(item => {
+    const s = item.topic.subject;
+    subjectMap.set(s.subject_id, s.name);
+  });
+  
+  const expectedSubjects = subjectMap.size;
+  const expectedSubtopics = platformData.length;
+
+  // ✅ CHECK EXISTING DATA IN QDRANT
+  const subjectsInfo = await qdrant.getCollection(collections.subjects);
+  const subtopicsInfo = await qdrant.getCollection(collections.subtopics);
+
+  const currentSubjects = subjectsInfo.points_count || 0;
+  const currentSubtopics = subtopicsInfo.points_count || 0;
+
+  const hasSubjects = currentSubjects === expectedSubjects;
+  const hasSubtopics = currentSubtopics === expectedSubtopics;
+
+  // ✅ IF DATA IS UP-TO-DATE, SKIP INDEXING
+  if (hasSubjects && hasSubtopics) {
+    console.log(`✅ Collections up-to-date (no re-indexing needed):`);
+    console.log(`   📊 Subjects: ${currentSubjects}/${expectedSubjects}`);
+    console.log(`   📊 Subtopics: ${currentSubtopics}/${expectedSubtopics}`);
+    
+    const result = {
+      indexed: true,
+      subjects: collections.subjects,
+      subtopics: collections.subtopics,
+    };
+    
+    tokenCache.set(token, result);
+    return result;
+  }
+
+  // ✅ DATA CHANGED - RE-INDEX NEEDED
+  console.log(`🔄 Data changed - re-indexing required:`);
+  console.log(`   📊 Subjects: ${currentSubjects} → ${expectedSubjects} (${expectedSubjects - currentSubjects > 0 ? '+' : ''}${expectedSubjects - currentSubjects})`);
+  console.log(`   📊 Subtopics: ${currentSubtopics} → ${expectedSubtopics} (${expectedSubtopics - currentSubtopics > 0 ? '+' : ''}${expectedSubtopics - currentSubtopics})`);
+
+  // ✅ DELETE OLD COLLECTIONS
+  try {
+    await qdrant.deleteCollection(collections.subjects);
+    console.log(`🗑️  Deleted old subjects collection`);
+  } catch (err) {
+    console.log(`ℹ️  Subjects collection didn't exist`);
+  }
+
+  try {
+    await qdrant.deleteCollection(collections.subtopics);
+    console.log(`🗑️  Deleted old subtopics collection`);
+  } catch (err) {
+    console.log(`ℹ️  Subtopics collection didn't exist`);
+  }
+
+  // ✅ RECREATE COLLECTIONS
+  await qdrant.createCollection(collections.subjects, {
+    vectors: { size: 384, distance: "Cosine" },
+  });
+  console.log("✅ Recreated subjects collection");
+
+  await qdrant.createCollection(collections.subtopics, {
+    vectors: { size: 384, distance: "Cosine" },
+  });
+  console.log("✅ Recreated subtopics collection");
+
+  await qdrant.createPayloadIndex(collections.subtopics, {
+    field_name: "subject_id",
+    field_schema: "keyword",
+  });
+  console.log("✅ Created index on subject_id");
 
   //---------------------------------------
   // SUBJECT INDEXING
   //---------------------------------------
 
-  const subjectMap = new Map();
-
-  platformData.forEach(item => {
-    const s = item.topic.subject;
-    subjectMap.set(s.subject_id, s.name);
-  });
-
-  console.log(`🔍 Found ${subjectMap.size} unique subjects`);
+  console.log(`🔍 Indexing ${subjectMap.size} subjects...`);
 
   const subjectTexts = [];
   const subjectIds = [];
@@ -125,10 +190,10 @@ async function indexAll(token) {
   console.log("✅ Subjects indexed:", subjectPoints.length);
 
   //---------------------------------------
-  // SUBTOPIC INDEXING
+  // SUBTOPIC INDEXING (FASTER: 100 batch size, no delays)
   //---------------------------------------
 
-  const BATCH_SIZE = 50;
+  const BATCH_SIZE = 100;  // ← INCREASED from 50
   const subtopicTexts = [];
   const subtopicData = [];
 
@@ -164,7 +229,7 @@ async function indexAll(token) {
     
     console.log(`  ✓ Embedded ${Math.min(i + BATCH_SIZE, subtopicTexts.length)}/${subtopicTexts.length}`);
     
-    await new Promise(resolve => setTimeout(resolve, 100));
+    // ← REMOVED DELAY (no await sleep)
   }
 
   const subtopicPoints = subtopicData.map((data, idx) => ({
@@ -192,11 +257,11 @@ async function indexAll(token) {
 export async function ensureIndexed(token) {
 
   if (tokenCache.has(token)) {
-    console.log("✅ Using cached collections");
+    console.log("✅ Using in-memory cache");
     return tokenCache.get(token);
   }
 
-  console.log("⚡ First time setup — indexing vectors");
+  console.log("⚡ Checking indexing status...");
 
   return await indexAll(token);
 }

@@ -629,12 +629,14 @@
 //     timestamp: new Date().toISOString()
 //   });
 // });
-
 import express from "express";
 import { ensureIndexed } from "../services/platformManager.js";
 import { classifyQuestion } from "../services/vectorClassifier.js";
 
 const router = express.Router();
+
+// Track indexing status per token
+const indexingStatus = new Map();
 
 router.post("/analyze-metadata", async (req, res) => {
   try {
@@ -662,8 +664,49 @@ router.post("/analyze-metadata", async (req, res) => {
 
     console.log(`📥 Received ${questions.length} questions for analysis`);
 
-    await ensureIndexed(token);
+    // ✅ CHECK IF CURRENTLY INDEXING
+    const tokenKey = token.slice(-8);
+    const status = indexingStatus.get(tokenKey);
 
+    if (status === 'indexing') {
+      return res.status(503).json({
+        success: false,
+        error: "Indexing in progress. Please wait 2-3 minutes and try again.",
+        status: "indexing"
+      });
+    }
+
+    // ✅ TRY TO INDEX WITH 45-SECOND TIMEOUT
+    const indexingPromise = ensureIndexed(token);
+    const timeout = new Promise((resolve) => setTimeout(() => resolve('timeout'), 45000));
+    
+    const result = await Promise.race([indexingPromise, timeout]);
+
+    if (result === 'timeout') {
+      // Mark as indexing in background
+      indexingStatus.set(tokenKey, 'indexing');
+      
+      // Continue indexing in background
+      indexingPromise.then(() => {
+        indexingStatus.set(tokenKey, 'complete');
+        console.log("✅ Background indexing completed");
+      }).catch(err => {
+        console.error("❌ Background indexing failed:", err);
+        indexingStatus.delete(tokenKey);
+      });
+
+      return res.status(503).json({
+        success: false,
+        error: "First-time indexing in progress. This takes 3-5 minutes. Please try again in 3 minutes.",
+        status: "indexing",
+        estimatedTime: "3-5 minutes"
+      });
+    }
+
+    // ✅ INDEXING COMPLETE - MARK AS DONE
+    indexingStatus.set(tokenKey, 'complete');
+
+    // ✅ CLASSIFY QUESTIONS
     const results = [];
 
     for (let i = 0; i < questions.length; i++) {
@@ -671,8 +714,8 @@ router.post("/analyze-metadata", async (req, res) => {
       
       console.log(`🔍 Classifying question ${i + 1}/${questions.length}`);
       
-      const result = await classifyQuestion(q, token);
-      results.push(result);
+      const classificationResult = await classifyQuestion(q, token);
+      results.push(classificationResult);
     }
 
     const highConfidence = results.filter(r => r.confidence >= 80).length;
