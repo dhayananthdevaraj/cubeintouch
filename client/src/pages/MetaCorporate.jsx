@@ -4,7 +4,7 @@ import "./MetaCorporate.css";
 
 const API = "https://api.examly.io";
 // const AI_API = "http://localhost:4000";
- const AI_API = "https://cubeintouch-backend.onrender.com";
+const AI_API = "https://cubeintouch-backend.onrender.com";
 
 export default function MetaCorporate() {
   // Token Management
@@ -843,8 +843,8 @@ export default function MetaCorporate() {
                     <div style={{ fontSize: "24px", fontWeight: "800", color: "#4caf50" }}>{questions.length}</div>
                   </div>
                   <div style={{ background: "rgba(255, 255, 255, 0.05)", padding: "12px", borderRadius: "8px" }}>
-                    <div style={{ fontSize: "12px", color: "rgba(255, 255, 255, 0.5)", marginBottom: "4px" }}>Analysis Method</div>
-                    <div style={{ fontSize: "16px", fontWeight: "800", color: "#2196f3" }}>Vector Similarity</div>
+                    <div style={{ fontSize: "12px", color: "rgba(255, 255, 255, 0.5)", marginBottom: "4px" }}>Analyser</div>
+                    <div style={{ fontSize: "16px", fontWeight: "800", color: "#2196f3" }}>Vector AI</div>
                   </div>
                 </div>
               </div>
@@ -852,7 +852,7 @@ export default function MetaCorporate() {
               {/* First-time indexing notice */}
               <div style={{ background: "rgba(255, 152, 0, 0.1)", padding: "16px", borderRadius: "12px", border: "1px solid rgba(255, 152, 0, 0.3)", marginBottom: "20px" }}>
                 <div style={{ fontSize: "13px", color: "rgba(255, 255, 255, 0.8)", lineHeight: "1.6" }}>
-                  ℹ️ <strong>Note:</strong> First-time users may need to wait 3-5 minutes for initial setup. If you see a "setup in progress" message, please wait and try again.
+                  ℹ️ <strong>Note:</strong> First-time users may need to wait 5-7 minutes for initial setup. If you see a "setup in progress" message, please wait and try again.
                 </div>
               </div>
 
