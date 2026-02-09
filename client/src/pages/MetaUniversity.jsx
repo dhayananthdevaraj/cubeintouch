@@ -1,16 +1,16 @@
 import { useState } from "react";
-import { DEPARTMENT_IDS } from "../config";
+import { UNIVERSITY_DEPARTMENT_IDS } from "../configUniversity";
 import "./MetaCorporate.css";
 
 const API = "https://api.examly.io";
 // const AI_API = "http://localhost:4000";
 const AI_API = "https://cubeintouch-backend.onrender.com";
 
-export default function MetaCorporate({ onBack }) {
+export default function MetaUniversity({ onBack }) {
   // Token Management
   const [token, setToken] = useState(() => {
     try {
-      return localStorage.getItem("examly_token_meta") || "";
+      return localStorage.getItem("examly_token_meta_university") || "";
     } catch {
       return "";
     }
@@ -55,7 +55,7 @@ export default function MetaCorporate({ onBack }) {
 
   const showAlert = (msg, type = "warning") => {
     setAlert({ msg, type });
-    setTimeout(() => setAlert(null), 6000); // 6 seconds for indexing message
+    setTimeout(() => setAlert(null), 6000);
   };
 
   const showOverlay = (msg) => {
@@ -73,7 +73,7 @@ export default function MetaCorporate({ onBack }) {
       return;
     }
     try {
-      localStorage.setItem("examly_token_meta", tokenInput.trim());
+      localStorage.setItem("examly_token_meta_university", tokenInput.trim());
       setToken(tokenInput.trim());
       setTokenInput("");
       setUI("menu");
@@ -85,7 +85,7 @@ export default function MetaCorporate({ onBack }) {
 
   const clearToken = () => {
     try {
-      localStorage.removeItem("examly_token_meta");
+      localStorage.removeItem("examly_token_meta_university");
     } catch (err) {
       console.error("Failed to clear token:", err);
     }
@@ -113,7 +113,7 @@ export default function MetaCorporate({ onBack }) {
 
   // ==================== BACK NAVIGATION ====================
   
-  const handleBack = () => {
+  const handleBackStep = () => {
     if (processStep === "range_select") {
       setProcessStep("search");
       setSelectedQB(null);
@@ -138,8 +138,8 @@ export default function MetaCorporate({ onBack }) {
       headers,
       body: JSON.stringify({
         branch_id: "all",
-        department_id: DEPARTMENT_IDS,
-        limit: 25,
+        department_id: UNIVERSITY_DEPARTMENT_IDS,
+        limit: 200,
         mainDepartmentUser: true,
         page: 1,
         search: searchTerm,
@@ -199,13 +199,14 @@ export default function MetaCorporate({ onBack }) {
       const batch = questions.slice(start, end);
 
       setAnalysisProgress({ current: i + 1, total: totalBatches });
-      showOverlay(`🤖 Vector AI analyzing batch ${i + 1}/${totalBatches}...`);
+      showOverlay(`🤖 University Vector AI analyzing batch ${i + 1}/${totalBatches}...`);
 
       console.log(`📤 Sending batch ${i + 1}:`, {
         questionsCount: batch.length
       });
 
-      const res = await fetch(`${AI_API}/analyze-metadata`, {
+      // ✅ NEW ENDPOINT FOR UNIVERSITY
+      const res = await fetch(`${AI_API}/analyze-metadata-university`, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
@@ -224,14 +225,13 @@ export default function MetaCorporate({ onBack }) {
           if (errorData.status === 'indexing') {
             hideOverlay();
             showAlert(
-              `⏳ First-time setup: Your taxonomy is being indexed. This takes ${errorData.estimatedTime || '3-5 minutes'}. Please wait and try again.`, 
+              `⏳ First-time setup: University taxonomy is being indexed. This takes ${errorData.estimatedTime || '3-5 minutes'}. Please wait and try again.`, 
               "warning"
             );
             setProcessStep("loaded");
             return [];
           }
         } catch (parseErr) {
-          // If JSON parse fails, treat as generic 503
           hideOverlay();
           showAlert("⏳ Service temporarily unavailable. Please try again in a few minutes.", "warning");
           setProcessStep("loaded");
@@ -253,18 +253,15 @@ export default function MetaCorporate({ onBack }) {
       
       const batchResults = result.suggestions || result.results || result;
       
-      // Map results back to original question IDs
-    // Map results back to original question IDs
-        const mappedResults = batchResults.map((suggestion, idx) => {
-          const originalQuestion = batch[idx];
-          return {
-            ...suggestion,
-            q_id: originalQuestion.q_id,
-            question_preview: originalQuestion.question_data || originalQuestion.question || "N/A"  // ← NEW: Full question
-          };
-        });
+      const mappedResults = batchResults.map((suggestion, idx) => {
+        const originalQuestion = batch[idx];
+        return {
+          ...suggestion,
+          q_id: originalQuestion.q_id,
+          question_preview: originalQuestion.question_data || originalQuestion.question || "N/A"
+        };
+      });
       
-      // Store metadata from first batch
       if (result.metadata && i === 0) {
         setAnalysisMetadata(result.metadata);
       }
@@ -413,14 +410,12 @@ export default function MetaCorporate({ onBack }) {
 
     setProcessStep("analyzing");
     setAnalysisProgress({ current: 0, total: Math.ceil(questions.length / 5) });
-    showOverlay(`🤖 Starting Vector AI analysis...`);
+    showOverlay(`🤖 Starting University Vector AI analysis...`);
 
     try {
       const suggestions = await analyzeWithAI(questions);
       
-      // Check if indexing in progress (empty array returned)
       if (suggestions.length === 0) {
-        // Alert already shown in analyzeWithAI
         return;
       }
       
@@ -526,7 +521,6 @@ export default function MetaCorporate({ onBack }) {
       {overlay && (
         <div className="meta-overlay">
           <div className="meta-overlay-content">
-            {/* Animated AI Robot */}
             <div className="meta-ai-robot">
               <div className="robot-container">
                 <div className="robot-head">
@@ -555,7 +549,6 @@ export default function MetaCorporate({ onBack }) {
               </div>
             </div>
 
-            {/* Progress Circle for Analysis */}
             {processStep === "analyzing" && (
               <div className="meta-progress-circle">
                 <svg width="140" height="140">
@@ -588,7 +581,6 @@ export default function MetaCorporate({ onBack }) {
               </div>
             )}
 
-            {/* Progress Bar for Updates */}
             {processStep === "updating" && (
               <div className="meta-progress-bar-wrapper">
                 <div className="meta-progress-bar">
@@ -623,30 +615,24 @@ export default function MetaCorporate({ onBack }) {
 
       {/* Welcome Screen */}
       {ui === "welcome" && (
-
-        
         <div className="meta-card">
-
-           {onBack && (
-            <button
-              onClick={onBack}
-              className="meta-back-button"
-              style={{ marginBottom: "20px" }}
-            >
+          {/* Back to Organizations Button */}
+          <div style={{ marginBottom: "20px" }}>
+            <button onClick={onBack} className="meta-back-button">
               ← Back to Organizations
             </button>
-          )}
-          
+          </div>
+
           <div className="meta-header">
             <div className="meta-title-section">
-              <div className="meta-ai-badge">🤖</div>
+              <div className="meta-ai-badge">🎓</div>
               <div className="meta-title-content">
-                <h1>Meta Thinkly-X</h1>
+                <h1>Meta Thinkly-X University</h1>
                 <div className="meta-subtitle">
                   AI-Powered Question Metadata Editor
                   <div className="meta-ai-indicator">
                     <div className="meta-ai-dot"></div>
-                    <span>Powered by Vector AI</span>
+                    <span>Powered by University Vector AI</span>
                   </div>
                 </div>
               </div>
@@ -674,7 +660,7 @@ export default function MetaCorporate({ onBack }) {
 
             <div style={{ marginTop: "16px", padding: "16px", background: "rgba(102, 126, 234, 0.1)", borderRadius: "12px", border: "1px solid rgba(102, 126, 234, 0.2)" }}>
               <div style={{ fontSize: "13px", color: "rgba(255, 255, 255, 0.7)", lineHeight: "1.6" }}>
-                💡 <strong>Tip:</strong> Your token will be saved separately from other tools for enhanced security
+                💡 <strong>Tip:</strong> University token is stored separately from Corporate for data isolation
               </div>
             </div>
           </div>
@@ -687,14 +673,15 @@ export default function MetaCorporate({ onBack }) {
           {/* Header with Back and Logout Button */}
           <div className="meta-header">
             <div style={{ display: "flex", alignItems: "center", gap: "16px", flex: 1 }}>
-              {processStep !== "search" ? (
+              {processStep !== "search" && (
                 <button
-                  onClick={handleBack}
+                  onClick={handleBackStep}
                   className="meta-back-button"
                 >
                   ← Back
                 </button>
-              ) : onBack && (
+              )}
+              {processStep === "search" && (
                 <button
                   onClick={onBack}
                   className="meta-back-button"
@@ -703,7 +690,7 @@ export default function MetaCorporate({ onBack }) {
                 </button>
               )}
               <div className="meta-title-section">
-                <div className="meta-ai-badge">🤖</div>
+                <div className="meta-ai-badge">🎓</div>
                 <div className="meta-title-content">
                   <h1>Meta Thinkly-X</h1>
                   <div className="meta-subtitle">
@@ -846,16 +833,16 @@ export default function MetaCorporate({ onBack }) {
                 <div className="meta-editor-icon">📚</div>
                 <div className="meta-editor-info">
                   <h3>{selectedQB?.qb_name}</h3>
-                  <p>{questions.length} questions (#{rangeStart}-#{rangeEnd}) ready for AI analysis</p>
+                  <p>{questions.length} questions (#{rangeStart}-#{rangeEnd}) ready for Vector AI analysis</p>
                 </div>
               </div>
 
               <div style={{ background: "rgba(102, 126, 234, 0.1)", padding: "20px", borderRadius: "12px", border: "2px solid rgba(102, 126, 234, 0.3)", marginBottom: "24px" }}>
                 <div style={{ fontSize: "15px", fontWeight: "700", color: "#ffffff", marginBottom: "12px", display: "flex", alignItems: "center", gap: "10px" }}>
-                  🤖 Vector AI Analysis Ready
+                  🎓 Vector AI Analysis Ready
                 </div>
                 <div style={{ fontSize: "14px", color: "rgba(255, 255, 255, 0.7)", lineHeight: "1.6", marginBottom: "16px" }}>
-                  Our Vector AI will analyze each question using semantic similarity matching to suggest the most appropriate <strong>Subject</strong>, <strong>Topic</strong>, and <strong>SubTopic</strong>.
+                  Our Vector AI will analyze each question using semantic similarity matching to suggest the most appropriate <strong>Subject</strong>, <strong>Topic</strong>, and <strong>SubTopic</strong> from university taxonomy.
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "12px" }}>
                   <div style={{ background: "rgba(255, 255, 255, 0.05)", padding: "12px", borderRadius: "8px" }}>
@@ -869,10 +856,9 @@ export default function MetaCorporate({ onBack }) {
                 </div>
               </div>
 
-              {/* First-time indexing notice */}
               <div style={{ background: "rgba(255, 152, 0, 0.1)", padding: "16px", borderRadius: "12px", border: "1px solid rgba(255, 152, 0, 0.3)", marginBottom: "20px" }}>
                 <div style={{ fontSize: "13px", color: "rgba(255, 255, 255, 0.8)", lineHeight: "1.6" }}>
-                  ℹ️ <strong>Note:</strong> First-time users may need to wait 5-7 minutes for initial setup. If you see a "setup in progress" message, please wait and try again.
+                  ℹ️ <strong>Note:</strong> First-time users may need to wait 5-7 minutes for university taxonomy indexing. If you see a "setup in progress" message, please wait and try again.
                 </div>
               </div>
 
@@ -882,7 +868,7 @@ export default function MetaCorporate({ onBack }) {
                   className="meta-button meta-button-primary"
                   style={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" }}
                 >
-                  🤖 Analyze with Vector AI
+                  🎓 Analyze with Vector AI
                 </button>
                 <button
                   onClick={handleStartNew}
@@ -900,7 +886,7 @@ export default function MetaCorporate({ onBack }) {
               <div className="meta-editor-header">
                 <div className="meta-editor-icon">✨</div>
                 <div className="meta-editor-info">
-                  <h3>AI Suggestions Ready</h3>
+                  <h3>University AI Suggestions Ready</h3>
                   <p>{aiSuggestions.length} questions analyzed 
                     {analysisMetadata && ` (${analysisMetadata.mode} mode)`}
                   </p>

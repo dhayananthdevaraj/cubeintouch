@@ -1,6 +1,4 @@
 
-
-// server.js
 // import express from "express";
 // import cors from "cors";
 // import dotenv from "dotenv";
@@ -82,6 +80,7 @@ import helmet from "helmet";
 
 import qcRoutes from "./routes/qc.js";
 import metadataRoutes from "./routes/metadata.js";
+import metadataUniversityRoutes from "./routes/metadataUniversity.js"; // ✅ NEW
 import healthRoutes from "./routes/health.js";
 
 dotenv.config();
@@ -112,6 +111,7 @@ app.use(express.json({
 
 app.use("/qc", qcRoutes);
 app.use("/", metadataRoutes);
+app.use("/", metadataUniversityRoutes); // ✅ NEW UNIVERSITY ROUTE
 app.use("/health", healthRoutes);
 
 app.use((err, req, res, next) => {
@@ -138,9 +138,10 @@ app.listen(PORT, () => {
 =================================
 
 ✅ Running on port: ${PORT}
-✅ Health:  /health
-✅ QC:      /qc
-✅ AI:      /analyze-metadata
+✅ Health:     /health
+✅ QC:         /qc
+✅ Corporate:  /analyze-metadata
+✅ University: /analyze-metadata-university
 
 =================================
   `);

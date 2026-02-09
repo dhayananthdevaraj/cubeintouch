@@ -1,0 +1,242 @@
+/* ==================== ORGANIZATION SELECTION - PREMIUM THEME ==================== */
+
+.meta-access-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* ==================== ORGANIZATION SELECTION ==================== */
+.meta-org-selection {
+  max-width: 900px;
+  width: 100%;
+  text-align: center;
+  animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.meta-org-header {
+  margin-bottom: 40px;
+}
+
+.meta-org-title {
+  font-size: 36px;
+  font-weight: 800;
+  color: white;
+  margin: 0 0 12px 0;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  letter-spacing: -1px;
+  animation: slideDown 0.8s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.meta-org-subtitle {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.95);
+  margin: 0;
+  font-weight: 500;
+  letter-spacing: -0.2px;
+}
+
+/* ==================== ORGANIZATION GRID ==================== */
+.meta-org-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 28px;
+  margin-bottom: 36px;
+}
+
+.meta-org-card {
+  background: white;
+  border-radius: 20px;
+  padding: 36px 28px;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  border: 3px solid transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+.meta-org-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  transform: scaleX(0);
+  transition: transform 0.4s ease;
+}
+
+.meta-org-card:hover::before {
+  transform: scaleX(1);
+}
+
+.meta-org-card:hover {
+  transform: translateY(-12px) scale(1.02);
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.3);
+  border-color: #667eea;
+}
+
+.meta-org-icon {
+  font-size: 56px;
+  margin-bottom: 20px;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-15px);
+  }
+}
+
+.meta-org-name {
+  font-size: 22px;
+  font-weight: 800;
+  color: #212529;
+  margin: 0 0 12px 0;
+  letter-spacing: -0.4px;
+}
+
+.meta-org-description {
+  font-size: 14px;
+  color: #6c757d;
+  margin: 0 0 24px 0;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+.meta-org-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 12px 28px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  letter-spacing: -0.2px;
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+}
+
+.meta-org-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 12px 32px rgba(102, 126, 234, 0.5);
+}
+
+.meta-org-button:active {
+  transform: scale(0.98);
+}
+
+/* ==================== ORGANIZATION FOOTER ==================== */
+.meta-org-footer {
+  margin-top: 28px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.meta-org-hint {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+  font-weight: 500;
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 992px) {
+  .meta-org-title {
+    font-size: 44px;
+  }
+  
+  .meta-org-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+}
+
+@media (max-width: 768px) {
+  .meta-access-container {
+    padding: 30px 16px;
+  }
+
+  .meta-org-title {
+    font-size: 36px;
+  }
+
+  .meta-org-subtitle {
+    font-size: 18px;
+  }
+
+  .meta-org-header {
+    margin-bottom: 40px;
+  }
+
+  .meta-org-card {
+    padding: 40px 32px;
+  }
+
+  .meta-org-icon {
+    font-size: 64px;
+  }
+
+  .meta-org-name {
+    font-size: 24px;
+  }
+
+  .meta-org-description {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .meta-org-title {
+    font-size: 28px;
+  }
+
+  .meta-org-subtitle {
+    font-size: 16px;
+  }
+
+  .meta-org-card {
+    padding: 32px 24px;
+  }
+
+  .meta-org-button {
+    padding: 14px 32px;
+    font-size: 16px;
+  }
+}

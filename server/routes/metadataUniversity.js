@@ -1,14 +1,13 @@
-
 import express from "express";
-import { ensureIndexed } from "../services/platformManager.js";
-import { classifyQuestion } from "../services/vectorClassifier.js";
+import { ensureIndexedUniversity } from "../services/platformManagerUniversity.js";
+import { classifyQuestionUniversity } from "../services/vectorClassifierUniversity.js";
 
 const router = express.Router();
 
-// Track indexing status globally (not per token, since we use shared collections)
+// Track indexing status for university collections
 const indexingStatus = new Map();
 
-router.post("/analyze-metadata", async (req, res) => {
+router.post("/analyze-metadata-university", async (req, res) => {
   try {
     const token = req.headers.authorization;
 
@@ -32,23 +31,23 @@ router.post("/analyze-metadata", async (req, res) => {
       });
     }
 
-    console.log(`📥 Received ${questions.length} questions for analysis`);
+    console.log(`📥 [UNIVERSITY] Received ${questions.length} questions for analysis`);
 
-    // ✅ CHECK IF CURRENTLY INDEXING (use fixed key since collections are shared)
-    const tokenKey = "prod_v1";  // Same as platformManager
+    // ✅ CHECK IF CURRENTLY INDEXING (use university-specific key)
+    const tokenKey = "prod_v2_university";
     const status = indexingStatus.get(tokenKey);
 
     if (status === 'indexing') {
       return res.status(503).json({
         success: false,
-        error: "Indexing in progress. Please wait 5-7 minutes and try again.",
+        error: "University indexing in progress. Please wait 5-7 minutes and try again.",
         status: "indexing",
         estimatedTime: "5-7 minutes"
       });
     }
 
-    // ✅ TRY TO INDEX WITH 90-SECOND TIMEOUT (increased for 3 collections)
-    const indexingPromise = ensureIndexed(token);
+    // ✅ TRY TO INDEX WITH 90-SECOND TIMEOUT
+    const indexingPromise = ensureIndexedUniversity(token);
     const timeout = new Promise((resolve) => setTimeout(() => resolve('timeout'), 90000));
     
     const result = await Promise.race([indexingPromise, timeout]);
@@ -60,21 +59,21 @@ router.post("/analyze-metadata", async (req, res) => {
       // Continue indexing in background
       indexingPromise.then(() => {
         indexingStatus.set(tokenKey, 'complete');
-        console.log("✅ Background indexing completed");
+        console.log("✅ [UNIVERSITY] Background indexing completed");
       }).catch(err => {
-        console.error("❌ Background indexing failed:", err);
+        console.error("❌ [UNIVERSITY] Background indexing failed:", err);
         indexingStatus.delete(tokenKey);
       });
 
       return res.status(503).json({
         success: false,
-        error: "First-time indexing in progress. Indexing 3-level taxonomy (subjects, topics, subtopics) takes 5-7 minutes. Please wait and try again in 5 minutes.",
+        error: "First-time university taxonomy indexing in progress. Takes 5-7 minutes. Please wait and try again.",
         status: "indexing",
         estimatedTime: "5-7 minutes"
       });
     }
 
-    // ✅ INDEXING COMPLETE - MARK AS DONE
+    // ✅ INDEXING COMPLETE
     indexingStatus.set(tokenKey, 'complete');
 
     // ✅ CLASSIFY QUESTIONS
@@ -83,9 +82,9 @@ router.post("/analyze-metadata", async (req, res) => {
     for (let i = 0; i < questions.length; i++) {
       const q = questions[i];
       
-      console.log(`🔍 Classifying question ${i + 1}/${questions.length}`);
+      console.log(`🔍 [UNIVERSITY] Classifying question ${i + 1}/${questions.length}`);
       
-      const classificationResult = await classifyQuestion(q, token);
+      const classificationResult = await classifyQuestionUniversity(q, token);
       results.push(classificationResult);
     }
 
@@ -97,14 +96,14 @@ router.post("/analyze-metadata", async (req, res) => {
       results.reduce((sum, r) => sum + r.confidence, 0) / results.length
     );
 
-    console.log(`✅ Analysis complete: ${results.length} classifications`);
-    console.log(`📊 Stats: High=${highConfidence}, Med=${mediumConfidence}, Low=${lowConfidence}, Avg=${avgConfidence}%`);
+    console.log(`✅ [UNIVERSITY] Analysis complete: ${results.length} classifications`);
+    console.log(`📊 [UNIVERSITY] Stats: High=${highConfidence}, Med=${mediumConfidence}, Low=${lowConfidence}, Avg=${avgConfidence}%`);
 
     res.json({
       success: true,
       suggestions: results,
       metadata: {
-        mode: 'vector',
+        mode: 'vector_university',
         total_questions: results.length,
         high_confidence: highConfidence,
         medium_confidence: mediumConfidence,
@@ -114,7 +113,7 @@ router.post("/analyze-metadata", async (req, res) => {
     });
 
   } catch (err) {
-    console.error("❌ Error in analyze-metadata:", err);
+    console.error("❌ [UNIVERSITY] Error in analyze-metadata-university:", err);
 
     res.status(500).json({
       success: false,

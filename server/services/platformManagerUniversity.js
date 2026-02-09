@@ -1,4 +1,3 @@
-
 import fetch from "node-fetch";
 import { embedOne, embedBatch } from "./embedding.js";
 import { qdrant } from "./vectorDB.js";
@@ -6,11 +5,10 @@ import { qdrant } from "./vectorDB.js";
 const tokenCache = new Map();
 
 function tokenKey(token) {
-  return "prod_v1";
+  return "prod_v2_university"; // Fixed namespace for university
 }
 
 async function createCollections(key) {
-
   const subjects = `subjects_${key}`;
   const topics = `topics_${key}`;
   const subtopics = `subtopics_${key}`;
@@ -23,7 +21,7 @@ async function createCollections(key) {
     await qdrant.createCollection(subjects, {
       vectors: { size: 384, distance: "Cosine" },
     });
-    console.log("✅ Created:", subjects);
+    console.log("✅ [UNIVERSITY] Created:", subjects);
   }
 
   // CREATE TOPICS COLLECTION
@@ -31,7 +29,7 @@ async function createCollections(key) {
     await qdrant.createCollection(topics, {
       vectors: { size: 384, distance: "Cosine" },
     });
-    console.log("✅ Created:", topics);
+    console.log("✅ [UNIVERSITY] Created:", topics);
   }
 
   // CREATE SUBTOPICS COLLECTION
@@ -39,7 +37,7 @@ async function createCollections(key) {
     await qdrant.createCollection(subtopics, {
       vectors: { size: 384, distance: "Cosine" },
     });
-    console.log("✅ Created:", subtopics);
+    console.log("✅ [UNIVERSITY] Created:", subtopics);
   }
   
   // CREATE INDEXES
@@ -48,9 +46,9 @@ async function createCollections(key) {
       field_name: "subject_id",
       field_schema: "keyword",
     });
-    console.log("✅ Created index on topics.subject_id");
+    console.log("✅ [UNIVERSITY] Created index on topics.subject_id");
   } catch (err) {
-    if (err.status !== 409) console.error("Index creation failed:", err.message);
+    if (err.status !== 409) console.error("[UNIVERSITY] Index creation failed:", err.message);
   }
 
   try {
@@ -58,9 +56,9 @@ async function createCollections(key) {
       field_name: "subject_id",
       field_schema: "keyword",
     });
-    console.log("✅ Created index on subtopics.subject_id");
+    console.log("✅ [UNIVERSITY] Created index on subtopics.subject_id");
   } catch (err) {
-    if (err.status !== 409) console.error("Index creation failed:", err.message);
+    if (err.status !== 409) console.error("[UNIVERSITY] Index creation failed:", err.message);
   }
 
   try {
@@ -68,19 +66,18 @@ async function createCollections(key) {
       field_name: "topic_id",
       field_schema: "keyword",
     });
-    console.log("✅ Created index on subtopics.topic_id");
+    console.log("✅ [UNIVERSITY] Created index on subtopics.topic_id");
   } catch (err) {
-    if (err.status !== 409) console.error("Index creation failed:", err.message);
+    if (err.status !== 409) console.error("[UNIVERSITY] Index creation failed:", err.message);
   }
 
   return { subjects, topics, subtopics };
 }
 
 async function fetchPlatformData(token, retries = 3) {
-  
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
-      console.log(`📡 Fetching taxonomy (attempt ${attempt}/${retries})...`);
+      console.log(`📡 [UNIVERSITY] Fetching taxonomy (attempt ${attempt}/${retries})...`);
       
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 30000);
@@ -100,37 +97,36 @@ async function fetchPlatformData(token, retries = 3) {
       }
 
       const json = await res.json();
-      console.log(`✅ Successfully fetched ${json.data?.length || 0} subtopics`);
+      console.log(`✅ [UNIVERSITY] Successfully fetched ${json.data?.length || 0} subtopics`);
       
       return json.data;
       
     } catch (err) {
-      console.error(`❌ Attempt ${attempt} failed:`, err.message);
+      console.error(`❌ [UNIVERSITY] Attempt ${attempt} failed:`, err.message);
       
       if (attempt === retries) {
-        throw new Error(`Failed to fetch taxonomy after ${retries} attempts: ${err.message}`);
+        throw new Error(`Failed to fetch university taxonomy after ${retries} attempts: ${err.message}`);
       }
       
       const waitTime = attempt * 2000;
-      console.log(`⏳ Waiting ${waitTime/1000}s before retry...`);
+      console.log(`⏳ [UNIVERSITY] Waiting ${waitTime/1000}s before retry...`);
       await new Promise(resolve => setTimeout(resolve, waitTime));
     }
   }
 }
 
 async function indexAll(token) {
-
   const key = tokenKey(token);
   const collections = await createCollections(key);
 
-  console.log("📚 Fetching taxonomy from Examly...");
+  console.log("📚 [UNIVERSITY] Fetching taxonomy from Examly...");
   
   let platformData;
   try {
     platformData = await fetchPlatformData(token);
   } catch (err) {
-    console.error("❌ Failed to fetch platform data:", err.message);
-    throw new Error("Unable to fetch taxonomy from Examly. Please try again later.");
+    console.error("❌ [UNIVERSITY] Failed to fetch platform data:", err.message);
+    throw new Error("Unable to fetch university taxonomy from Examly. Please try again later.");
   }
 
   // ✅ BUILD MAPS FOR ALL THREE LEVELS
@@ -172,7 +168,7 @@ async function indexAll(token) {
 
   // ✅ IF ALL DATA IS UP-TO-DATE, SKIP
   if (hasSubjects && hasTopics && hasSubtopics) {
-    console.log(`✅ All collections up-to-date:`);
+    console.log(`✅ [UNIVERSITY] All collections up-to-date:`);
     console.log(`   📊 Subjects: ${currentSubjects}/${expectedSubjects}`);
     console.log(`   📊 Topics: ${currentTopics}/${expectedTopics}`);
     console.log(`   📊 Subtopics: ${currentSubtopics}/${expectedSubtopics}`);
@@ -189,7 +185,7 @@ async function indexAll(token) {
   }
 
   // ✅ RE-INDEX ALL THREE LEVELS
-  console.log(`🔄 Data changed - re-indexing:`);
+  console.log(`🔄 [UNIVERSITY] Data changed - re-indexing:`);
   console.log(`   📊 Subjects: ${currentSubjects} → ${expectedSubjects}`);
   console.log(`   📊 Topics: ${currentTopics} → ${expectedTopics}`);
   console.log(`   📊 Subtopics: ${currentSubtopics} → ${expectedSubtopics}`);
@@ -198,9 +194,9 @@ async function indexAll(token) {
   for (const collectionName of [collections.subjects, collections.topics, collections.subtopics]) {
     try {
       await qdrant.deleteCollection(collectionName);
-      console.log(`🗑️  Deleted ${collectionName}`);
+      console.log(`🗑️  [UNIVERSITY] Deleted ${collectionName}`);
     } catch (err) {
-      console.log(`ℹ️  ${collectionName} didn't exist`);
+      console.log(`ℹ️  [UNIVERSITY] ${collectionName} didn't exist`);
     }
   }
 
@@ -214,7 +210,7 @@ async function indexAll(token) {
   await qdrant.createCollection(collections.subtopics, {
     vectors: { size: 384, distance: "Cosine" },
   });
-  console.log("✅ Recreated all collections");
+  console.log("✅ [UNIVERSITY] Recreated all collections");
 
   // CREATE INDEXES
   await qdrant.createPayloadIndex(collections.topics, {
@@ -229,25 +225,26 @@ async function indexAll(token) {
     field_name: "topic_id",
     field_schema: "keyword",
   });
-  console.log("✅ Created all indexes");
+  console.log("✅ [UNIVERSITY] Created all indexes");
 
   //---------------------------------------
   // LEVEL 1: SUBJECT INDEXING
   //---------------------------------------
 
-  console.log(`🔍 Indexing ${subjectMap.size} subjects...`);
+  console.log(`🔍 [UNIVERSITY] Indexing ${subjectMap.size} subjects...`);
 
   const subjectTexts = [];
   const subjectIds = [];
 
-  for (const [id, name] of subjectMap) {
-    subjectTexts.push(
-      `${name}. Subject ${name}. Programming ${name}. Technical questions about ${name}. ${name} concepts and theory. MCQ exam for ${name}. ${name} assessment and quiz.`
-    );
-    subjectIds.push(id);
-  }
+for (const [id, name] of subjectMap) {
+  
+  subjectTexts.push(
+    `${name}. Questions about ${name}. ${name} problems. ${name} exam questions. University ${name} assessment. ${name} concepts and theory. Test on ${name}. ${name} quiz. Academic ${name} questions. ${name} problem solving. ${name} course material.`
+  );
+  subjectIds.push(id);
+}
 
-  console.log("⚡ Embedding subjects...");
+  console.log("⚡ [UNIVERSITY] Embedding subjects...");
   const subjectVectors = await embedBatch(subjectTexts);
 
   const subjectPoints = subjectIds.map((id, idx) => ({
@@ -263,27 +260,28 @@ async function indexAll(token) {
     points: subjectPoints,
   });
 
-  console.log("✅ Subjects indexed:", subjectPoints.length);
+  console.log("✅ [UNIVERSITY] Subjects indexed:", subjectPoints.length);
 
   //---------------------------------------
   // LEVEL 2: TOPIC INDEXING
   //---------------------------------------
 
-  console.log(`🔍 Indexing ${topicMap.size} topics...`);
+  console.log(`🔍 [UNIVERSITY] Indexing ${topicMap.size} topics...`);
 
   const topicTexts = [];
   const topicIds = [];
   const topicPayloads = [];
 
-  for (const [id, topic] of topicMap) {
-    topicTexts.push(
-      `${topic.topic_name}. ${topic.subject_name} ${topic.topic_name}. Technical questions about ${topic.topic_name}. ${topic.topic_name} programming concepts. MCQ for ${topic.topic_name}. ${topic.topic_name} quiz and assessment. ${topic.subject_name} - ${topic.topic_name} exam.`
-    );
-    topicIds.push(id);
-    topicPayloads.push(topic);
-  }
+for (const [id, topic] of topicMap) {
+  
+  topicTexts.push(
+    `${topic.topic_name}. ${topic.subject_name} ${topic.topic_name}. Questions on ${topic.topic_name}. ${topic.topic_name} problems and solutions. ${topic.subject_name} exam covering ${topic.topic_name}. ${topic.topic_name} concepts. University questions about ${topic.topic_name}. ${topic.topic_name} quiz questions. ${topic.topic_name} assessment. ${topic.topic_name} exercises and examples.`
+  );
+  topicIds.push(id);
+  topicPayloads.push(topic);
+}
 
-  console.log("⚡ Embedding topics in batches...");
+  console.log("⚡ [UNIVERSITY] Embedding topics in batches...");
   const BATCH_SIZE = 100;
   let topicVectors = [];
   
@@ -291,7 +289,7 @@ async function indexAll(token) {
     const batch = topicTexts.slice(i, i + BATCH_SIZE);
     const vectors = await embedBatch(batch);
     topicVectors.push(...vectors);
-    console.log(`  ✓ Embedded ${Math.min(i + BATCH_SIZE, topicTexts.length)}/${topicTexts.length} topics`);
+    console.log(`  ✓ [UNIVERSITY] Embedded ${Math.min(i + BATCH_SIZE, topicTexts.length)}/${topicTexts.length} topics`);
   }
 
   const topicPoints = topicIds.map((id, idx) => ({
@@ -304,57 +302,69 @@ async function indexAll(token) {
     points: topicPoints,
   });
 
-  console.log("✅ Topics indexed:", topicPoints.length);
+  console.log("✅ [UNIVERSITY] Topics indexed:", topicPoints.length);
 
   //---------------------------------------
   // LEVEL 3: SUBTOPIC INDEXING
   //---------------------------------------
 
-  const subtopicTexts = [];
-  const subtopicData = [];
+const subtopicTexts = [];
+const subtopicData = [];
 
-  for (const item of platformData) {
-    const subject = item.topic.subject.name;
-    const topic = item.topic.name;
-    const subtopic = item.name;
+for (const item of platformData) {
+  const subject = item.topic.subject.name;
+  const topic = item.topic.name;
+  const subtopic = item.name;
 
-    subtopicTexts.push(
-      `${subtopic}. ${topic} ${subtopic}. ${subject} ${topic} ${subtopic}. Questions about ${subtopic}. ${topic} - ${subtopic} concepts. MCQ on ${subtopic}. ${subtopic} programming quiz. Technical ${topic} assessment covering ${subtopic}.`
-    );
+  subtopicTexts.push(
+    `${subtopic}. ${topic} ${subtopic}. ${subject} ${topic} ${subtopic}. Questions about ${subtopic}. ${subtopic} problems. University exam on ${subtopic}. ${topic} questions covering ${subtopic}. ${subtopic} quiz. ${subject} ${subtopic} assessment. ${subtopic} concepts and examples. ${subtopic} exercises. ${topic} ${subtopic} tutorial.`
+  );
 
-    subtopicData.push({
-      id: item.sub_topic_id,
-      payload: {
-        subject_id: item.topic.subject.subject_id,
-        topic_id: item.topic.topic_id,
-        subtopic_id: item.sub_topic_id,
-        subject_name: subject,
-        topic_name: topic,
-        subtopic_name: subtopic,
-      }
-    });
-  }
-
-  console.log(`⚡ Embedding ${subtopicTexts.length} subtopics in batches...`);
-  let allSubtopicVectors = [];
-  
-  for (let i = 0; i < subtopicTexts.length; i += BATCH_SIZE) {
-    const batch = subtopicTexts.slice(i, i + BATCH_SIZE);
-    const vectors = await embedBatch(batch);
-    allSubtopicVectors.push(...vectors);
-    console.log(`  ✓ Embedded ${Math.min(i + BATCH_SIZE, subtopicTexts.length)}/${subtopicTexts.length} subtopics`);
-  }
-
-  const subtopicPoints = subtopicData.map((data, idx) => ({
-    ...data,
-    vector: allSubtopicVectors[idx],
-  }));
-
-  await qdrant.upsert(collections.subtopics, {
-    points: subtopicPoints,
+  subtopicData.push({
+    id: item.sub_topic_id,
+    payload: {
+      subject_id: item.topic.subject.subject_id,
+      topic_id: item.topic.topic_id,
+      subtopic_id: item.sub_topic_id,
+      subject_name: subject,
+      topic_name: topic,
+      subtopic_name: subtopic,
+    }
   });
+}
 
-  console.log("🔥 Subtopics indexed:", subtopicPoints.length);
+console.log(`⚡ [UNIVERSITY] Embedding ${subtopicTexts.length} subtopics in batches...`);
+let allSubtopicVectors = [];
+
+for (let i = 0; i < subtopicTexts.length; i += BATCH_SIZE) {
+  const batch = subtopicTexts.slice(i, i + BATCH_SIZE);
+  const vectors = await embedBatch(batch);
+  allSubtopicVectors.push(...vectors);
+  console.log(`  ✓ [UNIVERSITY] Embedded ${Math.min(i + BATCH_SIZE, subtopicTexts.length)}/${subtopicTexts.length} subtopics`);
+}
+
+const subtopicPoints = subtopicData.map((data, idx) => ({
+  ...data,
+  vector: allSubtopicVectors[idx],
+}));
+
+// ✅ BATCH UPSERT TO AVOID PAYLOAD SIZE LIMIT (33MB for Qdrant)
+console.log(`📦 [UNIVERSITY] Upserting ${subtopicPoints.length} subtopics in batches...`);
+const UPSERT_BATCH_SIZE = 500; // Safe batch size
+const totalUpsertBatches = Math.ceil(subtopicPoints.length / UPSERT_BATCH_SIZE);
+
+for (let i = 0; i < subtopicPoints.length; i += UPSERT_BATCH_SIZE) {
+  const batchNumber = Math.floor(i / UPSERT_BATCH_SIZE) + 1;
+  const batch = subtopicPoints.slice(i, i + UPSERT_BATCH_SIZE);
+  
+  console.log(`  ✓ [UNIVERSITY] Upserting batch ${batchNumber}/${totalUpsertBatches} (${batch.length} points)`);
+  
+  await qdrant.upsert(collections.subtopics, {
+    points: batch,
+  });
+}
+
+console.log("🔥 [UNIVERSITY] Subtopics indexed:", subtopicPoints.length);
 
   const result = {
     indexed: true,
@@ -368,14 +378,13 @@ async function indexAll(token) {
   return result;
 }
 
-export async function ensureIndexed(token) {
-
+export async function ensureIndexedUniversity(token) {
   if (tokenCache.has(token)) {
-    console.log("✅ Using in-memory cache");
+    console.log("✅ [UNIVERSITY] Using in-memory cache");
     return tokenCache.get(token);
   }
 
-  console.log("⚡ Checking indexing status...");
+  console.log("⚡ [UNIVERSITY] Checking indexing status...");
 
   return await indexAll(token);
 }
