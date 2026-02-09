@@ -50,7 +50,7 @@ export default function Dashboard() {
       title: 'Meta Thinkly-X',
       description: 'Edit question bank metadata.',
       path: '/meta-thinkly',
-      status: 'coming-soon',
+      status: 'active',
       gradient: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
     },
     {
