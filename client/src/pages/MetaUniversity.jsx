@@ -199,7 +199,7 @@ export default function MetaUniversity({ onBack }) {
       const batch = questions.slice(start, end);
 
       setAnalysisProgress({ current: i + 1, total: totalBatches });
-      showOverlay(`🤖 University Vector AI analyzing batch ${i + 1}/${totalBatches}...`);
+      showOverlay(`🤖 Vector AI analyzing batch ${i + 1}/${totalBatches}...`);
 
       console.log(`📤 Sending batch ${i + 1}:`, {
         questionsCount: batch.length
@@ -410,7 +410,7 @@ export default function MetaUniversity({ onBack }) {
 
     setProcessStep("analyzing");
     setAnalysisProgress({ current: 0, total: Math.ceil(questions.length / 5) });
-    showOverlay(`🤖 Starting University Vector AI analysis...`);
+    showOverlay(`🤖 Starting Vector AI analysis...`);
 
     try {
       const suggestions = await analyzeWithAI(questions);
@@ -632,7 +632,7 @@ export default function MetaUniversity({ onBack }) {
                   AI-Powered Question Metadata Editor
                   <div className="meta-ai-indicator">
                     <div className="meta-ai-dot"></div>
-                    <span>Powered by University Vector AI</span>
+                    <span>Powered by Vector AI</span>
                   </div>
                 </div>
               </div>
@@ -886,7 +886,7 @@ export default function MetaUniversity({ onBack }) {
               <div className="meta-editor-header">
                 <div className="meta-editor-icon">✨</div>
                 <div className="meta-editor-info">
-                  <h3>University AI Suggestions Ready</h3>
+                  <h3>Vector AI Suggestions Ready</h3>
                   <p>{aiSuggestions.length} questions analyzed 
                     {analysisMetadata && ` (${analysisMetadata.mode} mode)`}
                   </p>
