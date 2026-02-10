@@ -1395,7 +1395,7 @@ export default function MetaCorporate({ onBack }) {
     }
     
     const csv =
-      "TechStack,Topic,Subtopic,Easy,Medium,Hard,Total\n" +
+      "Subject,Topic,Subtopic,Easy,Medium,Hard,Total\n" +
       metaSummaryData.map(r =>
         `"${r.TechStack}","${r.Topic}","${r.Subtopic}",${r.Easy},${r.Medium},${r.Hard},${r.Total}`
       ).join("\n");
