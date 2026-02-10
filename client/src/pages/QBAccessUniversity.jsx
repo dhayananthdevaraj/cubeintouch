@@ -1,3 +1,4 @@
+
 // import { useState } from "react";
 // import { UNIVERSITY_DEPARTMENT_IDS, UNIVERSITY_B_D_ID_OPTIONS } from "../configUniversity";
 // import "./QBAccessCorporate.css";
@@ -193,7 +194,7 @@
 //     let allQuestions = [];
 //     let page = 1;
 //     let hasMore = true;
-//     const limit = 200;
+//     const limit = 2000;
 
 //     while (hasMore) {
 //       console.log(`📄 Fetching page ${page}...`);
@@ -229,23 +230,51 @@
 //     return allQuestions;
 //   }
 
-//   async function moveQuestions(questionIds, questionTypes, targetQbId, currentQbId) {
-//     const qIdString = questionIds.join(",");
-//     const qTypeString = questionTypes.join(",");
+//   async function moveQuestionsBatch(questionIds, questionTypes, targetQbId, currentQbId, batchSize = 100) {
+//     const totalQuestions = questionIds.length;
+//     const totalBatches = Math.ceil(totalQuestions / batchSize);
+    
+//     console.log(`📦 Moving ${totalQuestions} questions in ${totalBatches} batches of ${batchSize}`);
+    
+//     let movedCount = 0;
+    
+//     for (let i = 0; i < totalBatches; i++) {
+//       const start = i * batchSize;
+//       const end = Math.min(start + batchSize, totalQuestions);
+//       const batchIds = questionIds.slice(start, end);
+//       const batchTypes = questionTypes.slice(start, end);
+      
+//       const qIdString = batchIds.join(",");
+//       const qTypeString = batchTypes.join(",");
+      
+//       showOverlay(`📦 Moving batch ${i + 1}/${totalBatches} (${batchIds.length} questions)...`);
+      
+//       console.log(`📦 Batch ${i + 1}/${totalBatches}: Moving ${batchIds.length} questions`);
+      
+//       const res = await fetch(
+//         `${API}/api/questionMove?q_id=${qIdString}&q_type=${qTypeString}&qb_id=${targetQbId}&current_qb_id=${currentQbId}`,
+//         {
+//           method: "GET",
+//           headers: { Authorization: token }
+//         }
+//       );
 
-//     const res = await fetch(
-//       `${API}/api/questionMove?q_id=${qIdString}&q_type=${qTypeString}&qb_id=${targetQbId}&current_qb_id=${currentQbId}`,
-//       {
-//         method: "GET",
-//         headers: { Authorization: token }
+//       const json = await res.json();
+//       if (!json.success) {
+//         throw new Error(`Failed to move batch ${i + 1}: ${json.message || "Unknown error"}`);
 //       }
-//     );
-
-//     const json = await res.json();
-//     if (!json.success) {
-//       throw new Error(json.message || "Failed to move questions");
+      
+//       movedCount += batchIds.length;
+//       console.log(`✅ Batch ${i + 1}/${totalBatches} completed. Total moved: ${movedCount}/${totalQuestions}`);
+      
+//       // Small delay between batches to avoid rate limiting
+//       if (i < totalBatches - 1) {
+//         await sleep(500);
+//       }
 //     }
-//     return json;
+    
+//     console.log(`🎉 All ${totalQuestions} questions moved successfully!`);
+//     return { success: true, movedCount };
 //   }
 
 //   async function deleteQuestionBank(qbId, qbName) {
@@ -256,7 +285,7 @@
 //         branch_id: "all",
 //         department_id: UNIVERSITY_DEPARTMENT_IDS,
 //         ids: [qbId],
-//         limit: 25,
+//         limit: 100,
 //         mainDepartmentUser: true,
 //         page: 1,
 //         search: qbName,
@@ -537,16 +566,16 @@
 //     const questionCount = selectedQuestions.length;
 
 //     try {
-//       showOverlay(`📦 Moving ${questionCount} question(s) in bulk...`);
+//       showOverlay(`📦 Preparing to move ${questionCount} question(s) in batches of 100...`);
 
 //       const questionsToMove = allQuestions.filter(q => selectedQuestions.includes(q.q_id));
 //       const questionIds = questionsToMove.map(q => q.q_id);
 //       const questionTypes = questionsToMove.map(q => q.question_type || "mcq_single_correct");
 
-//       // Move all questions in single API call
-//       await moveQuestions(questionIds, questionTypes, selectedTargetQB.qb_id, clonedQBs[0].qb_id);
+//       // Move all questions in batches of 100
+//       const moveResult = await moveQuestionsBatch(questionIds, questionTypes, selectedTargetQB.qb_id, clonedQBs[0].qb_id, 100);
       
-//       console.log(`✅ Moved ${questionCount} questions successfully`);
+//       console.log(`✅ Moved ${moveResult.movedCount} questions successfully`);
 
 //       await sleep(500);
       
@@ -576,12 +605,12 @@
       
 //       if (failedDeletes.length === 0) {
 //         showAlert(
-//           `✅ Successfully moved ${questionCount} question(s) to ${targetQBName} and deleted all ${clonedQBs.length} cloned QB(s)`,
+//           `✅ Successfully moved ${questionCount} question(s) to ${targetQBName} in batches and deleted all ${clonedQBs.length} cloned QB(s)`,
 //           "success"
 //         );
 //       } else {
 //         showAlert(
-//           `✅ Moved ${questionCount} question(s) to ${targetQBName}. Deleted ${deletedCount}/${clonedQBs.length} QB(s). Failed: ${failedDeletes.join(", ")}`,
+//           `✅ Moved ${questionCount} question(s) to ${targetQBName} in batches. Deleted ${deletedCount}/${clonedQBs.length} QB(s). Failed: ${failedDeletes.join(", ")}`,
 //           "warning"
 //         );
 //       }
@@ -1173,7 +1202,7 @@
 //                     className={`qb-button qb-button-success ${selectedQuestions.length === 0 ? "qb-button-disabled" : ""}`}
 //                     style={{ marginTop: "16px" }}
 //                   >
-//                     📦 Move {selectedQuestions.length} Selected Questions & Delete Clone
+//                     📦 Move {selectedQuestions.length} Questions (Batches of 100) & Auto-Delete Clones
 //                   </button>
 //                 </div>
 //               )}
@@ -1195,7 +1224,7 @@
 //                 <div className="qb-success-icon">✅</div>
 //                 <h3 className="qb-success-title">Operation Completed!</h3>
 //                 <p className="qb-success-message">
-//                   All selected questions have been moved to the target QB and the cloned QB has been deleted successfully.
+//                   All selected questions have been moved to the target QB in batches of 100 and all cloned QBs have been deleted successfully.
 //                 </p>
 
 //                 <button
@@ -1658,11 +1687,26 @@ export default function QBAccessUniversity({ onBack }) {
       // Merge all questions from all cloned QBs
       const allQuestionsFromAllQBs = clonedResults.flatMap(qb => qb.questions);
       
-      // Extract unique tags and question types from all questions
+      // ✅ CRITICAL FIX: Deduplicate questions by q_id
+      const uniqueQuestionsMap = new Map();
+      allQuestionsFromAllQBs.forEach(q => {
+        if (!uniqueQuestionsMap.has(q.q_id)) {
+          uniqueQuestionsMap.set(q.q_id, q);
+        }
+      });
+      const uniqueQuestions = Array.from(uniqueQuestionsMap.values());
+      
+      console.log(`📊 Question Deduplication:
+        - Raw Total: ${allQuestionsFromAllQBs.length}
+        - Unique: ${uniqueQuestions.length}
+        - Duplicates Removed: ${allQuestionsFromAllQBs.length - uniqueQuestions.length}
+      `);
+      
+      // Extract unique tags and question types from unique questions
       const tagsSet = new Set();
       const typesSet = new Set();
       
-      allQuestionsFromAllQBs.forEach(q => {
+      uniqueQuestions.forEach(q => {
         if (q.tags && Array.isArray(q.tags)) {
           q.tags.forEach(tag => tagsSet.add(tag.name));
         }
@@ -1674,15 +1718,21 @@ export default function QBAccessUniversity({ onBack }) {
       const tags = Array.from(tagsSet);
       const types = Array.from(typesSet);
 
-      setAvailableTags(tags);
-      setAvailableQuestionTypes(types);
-      setAllQuestions(allQuestionsFromAllQBs);
-      
-      // Auto-filter by "stverified" tag
-      const filtered = allQuestionsFromAllQBs.filter(q => 
+      // ✅ CRITICAL FIX: Pre-filter by "stverified" tag BEFORE setting state
+      const filtered = uniqueQuestions.filter(q => 
         q.tags && q.tags.some(tag => tag.name === "stverified")
       );
       
+      console.log(`🔍 Pre-filtering by "stverified":
+        - Total Unique Questions: ${uniqueQuestions.length}
+        - Filtered (stverified): ${filtered.length}
+        - Filter Ratio: ${((filtered.length / uniqueQuestions.length) * 100).toFixed(1)}%
+      `);
+      
+      // ✅ CRITICAL FIX: Update all state together to avoid race conditions
+      setAvailableTags(tags);
+      setAvailableQuestionTypes(types);
+      setAllQuestions(uniqueQuestions);
       setFilteredQuestions(filtered);
       setSelectedQuestions(filtered.map(q => q.q_id));
       setClonedQBs(clonedResults);
@@ -1690,39 +1740,49 @@ export default function QBAccessUniversity({ onBack }) {
 
       hideOverlay();
       
+      const duplicateInfo = allQuestionsFromAllQBs.length !== uniqueQuestions.length 
+        ? ` (${allQuestionsFromAllQBs.length - uniqueQuestions.length} duplicates removed)`
+        : '';
+      
       const allComplete = totalQuestionsFetched >= totalQuestionsExpected;
       const statusMessage = allComplete
-        ? `✅ Successfully cloned ${selectedSourceQBs.length} QB(s) with ${totalQuestionsFetched} total questions! ${filtered.length} questions auto-selected with "stverified" tag.`
-        : `⚠️ Cloned ${selectedSourceQBs.length} QB(s) with ${totalQuestionsFetched}/${totalQuestionsExpected} questions. ${filtered.length} questions auto-selected.`;
+        ? `✅ Successfully cloned ${selectedSourceQBs.length} QB(s) with ${uniqueQuestions.length} unique questions${duplicateInfo}! ${filtered.length} questions auto-selected with "stverified" tag.`
+        : `⚠️ Cloned ${selectedSourceQBs.length} QB(s) with ${uniqueQuestions.length} unique questions${duplicateInfo}. ${filtered.length} questions auto-selected.`;
       
       showAlert(statusMessage, allComplete ? "success" : "warning");
+      
     } catch (err) {
       hideOverlay();
       showAlert("Error during batch clone: " + err.message, "danger");
-      console.error(err);
+      console.error("Batch Clone Error:", err);
     }
   };
 
   const handleApplyFilters = () => {
     let filtered = [...allQuestions];
 
-    // Filter by tags
+    console.log(`🔍 Apply Filters: Starting with ${filtered.length} questions`);
+
+    // Filter by tags (OR logic - question must have at least one of the selected tags)
     if (selectedTags.length > 0) {
       filtered = filtered.filter(q => 
         q.tags && q.tags.some(tag => selectedTags.includes(tag.name))
       );
+      console.log(`🏷️ After tag filter (${selectedTags.join(', ')}): ${filtered.length} questions`);
     }
 
-    // Filter by question types
+    // Filter by question types (OR logic)
     if (selectedQuestionTypes.length > 0) {
       filtered = filtered.filter(q => 
         selectedQuestionTypes.includes(q.question_type)
       );
+      console.log(`📝 After type filter (${selectedQuestionTypes.join(', ')}): ${filtered.length} questions`);
     }
 
     setFilteredQuestions(filtered);
     setSelectedQuestions(filtered.map(q => q.q_id));
-    showAlert(`Filtered to ${filtered.length} questions`, "success");
+    
+    showAlert(`Filtered to ${filtered.length} questions (${filtered.length}/${allQuestions.length})`, "success");
   };
 
   const handleToggleQuestion = (qId) => {
@@ -2257,7 +2317,12 @@ export default function QBAccessUniversity({ onBack }) {
                   ))}
                 </div>
                 <div className="qb-info-meta" style={{ paddingTop: "12px", borderTop: "2px solid rgba(76, 110, 245, 0.3)" }}>
-                  <strong>Total:</strong> {allQuestions.length} questions • <strong>Filtered:</strong> {filteredQuestions.length} questions • <strong>Selected:</strong> {selectedQuestions.length} questions
+                  <strong>Total Unique:</strong> {allQuestions.length} questions • <strong>Filtered:</strong> {filteredQuestions.length} questions • <strong>Selected:</strong> {selectedQuestions.length} questions
+                  {allQuestions.length > filteredQuestions.length && (
+                    <span style={{ color: "#fa5252", marginLeft: "8px" }}>
+                      ({allQuestions.length - filteredQuestions.length} filtered out)
+                    </span>
+                  )}
                 </div>
               </div>
 
