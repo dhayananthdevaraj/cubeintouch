@@ -968,37 +968,59 @@ const handleNextRange = () => {
                     →
                   </div>
                   
-                <div className="meta-range-input-group">
-                  <label>End Question</label>
-                  <input
-                    type="number"
-                    min={rangeStart}
-                    max={Math.min(rangeStart + 99, allQuestions.length)}
-                    value={rangeEnd}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      // ✅ Allow any input while typing (including empty)
-                      setRangeEnd(value === '' ? '' : parseInt(value) || rangeEnd);
-                    }}
-                    onBlur={(e) => {
-                      // ✅ Validate only when user leaves the field
-                      let value = parseInt(e.target.value);
-                      
-                      if (isNaN(value) || value < rangeStart) {
-                        value = rangeStart;
+              <div className="meta-range-input-group">
+                <label>End Question</label>
+                <input
+                  type="number"
+                  min={rangeStart}
+                  // ✅ REMOVED max attribute to allow free typing
+                  value={rangeEnd}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    // ✅ Allow completely free typing - no validation during typing
+                    if (value === '') {
+                      setRangeEnd('');
+                    } else {
+                      const numValue = parseInt(value);
+                      if (!isNaN(numValue)) {
+                        setRangeEnd(numValue);
                       }
-                      
-                      const maxAllowed = Math.min(rangeStart + 99, allQuestions.length);
-                      if (value > maxAllowed) {
-                        value = maxAllowed;
-                        showAlert("Maximum range is 100 questions", "warning");
-                      }
-                      
+                    }
+                  }}
+                  onBlur={(e) => {
+                    // ✅ Validate ONLY when user leaves the field
+                    let value = parseInt(e.target.value);
+                    
+                    // Handle empty or invalid input
+                    if (isNaN(value) || value < rangeStart) {
+                      value = rangeStart;
                       setRangeEnd(value);
-                    }}
-                    className="meta-input"
-                  />
-                </div>
+                      return;
+                    }
+                    
+                    // Enforce maximum total questions
+                    if (value > allQuestions.length) {
+                      value = allQuestions.length;
+                      setRangeEnd(value);
+                      showAlert(`Maximum end question is ${allQuestions.length}`, "warning");
+                      return;
+                    }
+                    
+                    // ✅ Enforce 100 question range limit
+                    const selectedCount = value - rangeStart + 1;
+                    if (selectedCount > 100) {
+                      const maxEnd = rangeStart + 99;
+                      setRangeEnd(maxEnd);
+                      showAlert("Maximum range is 100 questions", "warning");
+                      return;
+                    }
+                    
+                    // Valid value
+                    setRangeEnd(value);
+                  }}
+                  className="meta-input"
+                />
+              </div>
                 </div>
 
                 <div className="meta-range-preview">
