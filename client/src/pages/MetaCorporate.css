@@ -261,6 +261,8 @@
   position: relative;
 }
 
+
+
 .meta-input {
   width: 100%;
   padding: 16px 24px;
@@ -1042,5 +1044,89 @@
   
   .meta-progress-circle {
     transform: scale(0.8);
+  }
+}
+
+/* ✅ Meta Summary Modal Improvements */
+.meta-summary-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+/* Table wrapper with scroll */
+.meta-summary-table-wrapper {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 350px; /* ✅ REDUCED from 500px */
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Sticky table header */
+.meta-summary-table-wrapper table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.meta-summary-table-wrapper thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(102, 126, 234, 0.9);
+  backdrop-filter: blur(10px);
+}
+
+.meta-summary-table-wrapper thead th {
+  padding: 12px;
+  font-weight: 700;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.meta-summary-table-wrapper tbody tr {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.meta-summary-table-wrapper tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.meta-summary-table-wrapper tbody tr:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transition: background 0.2s ease;
+}
+
+.meta-summary-table-wrapper tbody td {
+  padding: 12px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Scrollbar styling */
+.meta-summary-table-wrapper::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.meta-summary-table-wrapper::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.meta-summary-table-wrapper::-webkit-scrollbar-thumb {
+  background: rgba(102, 126, 234, 0.5);
+  border-radius: 4px;
+}
+
+.meta-summary-table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: rgba(102, 126, 234, 0.7);
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .meta-summary-table-wrapper {
+    max-height: 300px; /* ✅ REDUCED for mobile */
   }
 }
