@@ -1613,17 +1613,37 @@ export default function MetaCorporate({ onBack }) {
     }
   };
 
-  const handleConfirmRange = () => {
-    if (rangeStart < 1 || rangeEnd > allQuestions.length || rangeStart > rangeEnd) {
-      showAlert("Invalid range selected", "danger");
-      return;
-    }
+  // const handleConfirmRange = () => {
+  //   if (rangeStart < 1 || rangeEnd > allQuestions.length || rangeStart > rangeEnd) {
+  //     showAlert("Invalid range selected", "danger");
+  //     return;
+  //   }
 
-    const selectedQuestions = allQuestions.slice(rangeStart - 1, rangeEnd);
-    setQuestions(selectedQuestions);
-    setProcessStep("loaded");
-    showAlert(`Selected ${selectedQuestions.length} questions (${rangeStart}-${rangeEnd})`, "success");
-  };
+  //   const selectedQuestions = allQuestions.slice(rangeStart - 1, rangeEnd);
+  //   setQuestions(selectedQuestions);
+  //   setProcessStep("loaded");
+  //   showAlert(`Selected ${selectedQuestions.length} questions (${rangeStart}-${rangeEnd})`, "success");
+  // };
+
+  const handleConfirmRange = () => {
+  const selectedCount = rangeEnd - rangeStart + 1;
+  
+  if (rangeStart < 1 || rangeEnd > allQuestions.length || rangeStart > rangeEnd) {
+    showAlert("Invalid range selected", "danger");
+    return;
+  }
+  
+  // ✅ ADD THIS CHECK
+  if (selectedCount > 100) {
+    showAlert("Maximum range is 100 questions. Please select a smaller range.", "danger");
+    return;
+  }
+
+  const selectedQuestions = allQuestions.slice(rangeStart - 1, rangeEnd);
+  setQuestions(selectedQuestions);
+  setProcessStep("loaded");
+  showAlert(`Selected ${selectedQuestions.length} questions (${rangeStart}-${rangeEnd})`, "success");
+};
 
   const handleAnalyzeWithAI = async () => {
     if (questions.length === 0) {
@@ -1709,7 +1729,7 @@ export default function MetaCorporate({ onBack }) {
 
   const handleNextRange = () => {
     const nextStart = rangeEnd + 1;
-    const nextEnd = Math.min(nextStart + 49, allQuestions.length);
+    const nextEnd = Math.min(nextStart + 49, allQuestions.length); // ✅ Changed from 49 to keep default 50
     
     setRangeStart(nextStart);
     setRangeEnd(nextEnd);
@@ -1718,6 +1738,7 @@ export default function MetaCorporate({ onBack }) {
     setQuestions([]);
     setAnalysisMetadata(null);
   };
+
 
   const handleStartNew = () => {
     resetState();
@@ -2035,16 +2056,54 @@ export default function MetaCorporate({ onBack }) {
                   </div>
                   
                   <div className="meta-range-input-group">
-                    <label>End Question</label>
-                    <input
-                      type="number"
-                      min={rangeStart}
-                      max={allQuestions.length}
-                      value={rangeEnd}
-                      onChange={(e) => setRangeEnd(Math.min(allQuestions.length, parseInt(e.target.value) || rangeEnd))}
-                      className="meta-input"
-                    />
-                  </div>
+                  <label>End Question</label>
+                  <input
+                    type="number"
+                    min={rangeStart}
+                    max={Math.min(rangeStart + 99, allQuestions.length)}
+                    value={rangeEnd}
+                    onChange={(e) => {
+                      const inputValue = e.target.value;
+                      
+                      // ✅ Allow empty input for backspace/deletion
+                      if (inputValue === '') {
+                        setRangeEnd('');
+                        return;
+                      }
+                      
+                      const newEnd = parseInt(inputValue);
+                      
+                      // ✅ Check if it's a valid number
+                      if (isNaN(newEnd)) {
+                        return;
+                      }
+                      
+                      // ✅ Enforce minimum
+                      if (newEnd < rangeStart) {
+                        setRangeEnd(rangeStart);
+                        return;
+                      }
+                      
+                      // ✅ Enforce maximum (100 range limit)
+                      const maxAllowed = Math.min(rangeStart + 99, allQuestions.length);
+                      if (newEnd > maxAllowed) {
+                        setRangeEnd(maxAllowed);
+                        showAlert("Maximum range is 100 questions", "warning");
+                        return;
+                      }
+                      
+                      // ✅ Set the valid value
+                      setRangeEnd(newEnd);
+                    }}
+                    onBlur={(e) => {
+                      // ✅ Handle empty field on blur - reset to rangeStart
+                      if (e.target.value === '' || isNaN(parseInt(e.target.value))) {
+                        setRangeEnd(rangeStart);
+                      }
+                    }}
+                    className="meta-input"
+                  />
+                </div>
                 </div>
 
                 <div className="meta-range-preview">
