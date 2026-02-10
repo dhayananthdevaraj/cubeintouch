@@ -1409,7 +1409,7 @@ export default function QBAccessUniversity({ onBack }) {
     let allQuestions = [];
     let page = 1;
     let hasMore = true;
-    const limit = 200;
+    const limit = 2000;
 
     while (hasMore) {
       console.log(`📄 Fetching page ${page}...`);
@@ -1500,7 +1500,7 @@ export default function QBAccessUniversity({ onBack }) {
         branch_id: "all",
         department_id: UNIVERSITY_DEPARTMENT_IDS,
         ids: [qbId],
-        limit: 25,
+        limit: 100,
         mainDepartmentUser: true,
         page: 1,
         search: qbName,
