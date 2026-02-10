@@ -2474,7 +2474,7 @@ export default function MetaCorporate({ onBack }) {
             <table>
               <thead>
                 <tr>
-                  <th style={{ textAlign: "left", color: "#ffffff" }}>Tech Stack</th>
+                  <th style={{ textAlign: "left", color: "#ffffff" }}>Subject</th>
                   <th style={{ textAlign: "left", color: "#ffffff" }}>Topic</th>
                   <th style={{ textAlign: "left", color: "#ffffff" }}>Subtopic</th>
                   <th style={{ textAlign: "center", color: "#4caf50" }}>Easy</th>
