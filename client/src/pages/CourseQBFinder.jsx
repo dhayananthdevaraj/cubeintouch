@@ -3132,11 +3132,13 @@ useEffect(() => {
      setToken("");
       setSelectedDomain(null);  // ← add this
       setUI("domain");          
-    setTokenInput("");
-    setModuleTree([]);
-    setSelectedTests(new Set());
-    setQbResults([]);
-    showAlert("Token cleared", "danger");
+      setTokenInput("");
+      setCourseName("");        // ← ADD
+      setStatus("");    
+      setModuleTree([]);
+      setSelectedTests(new Set());
+      setQbResults([]);
+      showAlert("Token cleared", "danger");
   };
 
   const activeDeptIds = selectedDomain ? DOMAIN_CONFIG[selectedDomain].department_ids : [];
@@ -3587,6 +3589,7 @@ async function checkQBForRuleBasedTests(qbId, questions) {
       const courseId = await findCourseByName(courseName);
       if (!courseId) {
         showAlert("❌ Course not found", "danger");
+         setStatus(""); 
         setIsLoading(false);
         return;
       }
@@ -3598,6 +3601,7 @@ async function checkQBForRuleBasedTests(qbId, questions) {
 
       if (!tree.length) {
         showAlert("❌ No modules with tests found in course", "danger");
+        setStatus(""); 
         setIsLoading(false);
         return;
       }
@@ -5121,6 +5125,8 @@ showAlert(
                 setModuleTree([]);
                 setQbResults([]);
                 setSelectedTests(new Set());
+                 setCourseName("");        // ← ADD
+                setStatus(""); 
                 setUI("domain");
               }}
               style={{
