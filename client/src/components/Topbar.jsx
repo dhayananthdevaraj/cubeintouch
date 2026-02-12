@@ -21,7 +21,7 @@ export default function Topbar() {
         };
       case "/course-qb":
         return {
-          title: "Course QB Finder",
+          title: "QB Space",
           icon: "🎓",
           subtitle: "Analyze Question Banks"
         };

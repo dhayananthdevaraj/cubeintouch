@@ -29,7 +29,7 @@ export default function Dashboard() {
     {
       id: 'course-qb',
       icon: '🎓',
-      title: 'Course QB Finder',
+      title: 'QB Space',
       description: 'Find and analyze question banks linked to courses and tests.',
       path: '/course-qb',
       status: isAuthenticated ? 'active' : 'inactive',

@@ -42,7 +42,7 @@ export default function Sidebar() {
 
         <NavLink to="/course-qb" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
           <span className="nav-icon">🎓</span>
-          <span className="nav-text">QB Finder</span>
+          <span className="nav-text">QB Space</span>
           <span className="nav-indicator"></span>
         </NavLink>
 
