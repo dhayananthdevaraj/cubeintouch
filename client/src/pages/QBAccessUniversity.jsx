@@ -3602,7 +3602,6 @@
 //     </div>
 //   );
 // }
-
 import { useState, useRef } from "react";
 import { UNIVERSITY_DEPARTMENT_IDS, UNIVERSITY_B_D_ID_OPTIONS } from "../configUniversity";
 import "./QBAccessCorporate.css";
@@ -3635,8 +3634,9 @@ export default function QBAccessUniversity({ onBack }) {
 
   // Question filtering states
   const [allQuestions, setAllQuestions] = useState([]);
-  const allQuestionsRef = useRef([]); // ✅ FIX: stable ref to avoid stale closure
+  const allQuestionsRef = useRef([]);       // stable ref — avoids stale closure
   const [filteredQuestions, setFilteredQuestions] = useState([]);
+  const filteredQuestionsRef = useRef([]);  // stable ref — Select All always reads correct list
   const [selectedQuestions, setSelectedQuestions] = useState([]);
   const [availableTags, setAvailableTags] = useState([]);
   const [selectedTags, setSelectedTags] = useState(["stverified"]);
@@ -3721,6 +3721,7 @@ export default function QBAccessUniversity({ onBack }) {
     setAllQuestions([]);
     allQuestionsRef.current = [];
     setFilteredQuestions([]);
+    filteredQuestionsRef.current = [];
     setSelectedQuestions([]);
     setAvailableTags([]);
     setSelectedTags(["stverified"]);
@@ -3987,40 +3988,82 @@ export default function QBAccessUniversity({ onBack }) {
 
         console.log(`📋 QB ${qbNumber} cloned → ID: ${cloneResult.qb_id}, expecting ${expectedCount} questions`);
 
-        // ── Step B: Wait + Fetch with retries ──
-        // ✅ FIX: fixed 4s wait per attempt instead of growing 2s/4s/.../20s
-        const maxRetries = 10;
+        // ── Step B: Phase 1 — Wait until question COUNT is correct ──
+        const maxCountRetries = 10;
         let questions = [];
 
-        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        for (let attempt = 1; attempt <= maxCountRetries; attempt++) {
           showOverlay(
             `⏳ QB ${qbNumber}/${selectedSourceQBs.length}: "${sourceQB.qb_name}"\n` +
-            `Waiting for server to index clone... (attempt ${attempt}/${maxRetries})`
+            `Waiting for server... (attempt ${attempt}/${maxCountRetries})`
           );
-          await sleep(4000); // fixed 4s — enough for server indexing without ballooning
+          await sleep(4000);
 
           showOverlay(
-            `📥 QB ${qbNumber}/${selectedSourceQBs.length}: Fetching all pages...\n` +
-            `(attempt ${attempt}/${maxRetries}, expecting ${expectedCount} questions)`
+            `📥 QB ${qbNumber}/${selectedSourceQBs.length}: Fetching questions...\n` +
+            `(attempt ${attempt}/${maxCountRetries}, expecting ${expectedCount})`
           );
 
           questions = await fetchAllQuestions(cloneResult.qb_id);
 
-          console.log(`📊 QB ${qbNumber} attempt ${attempt}: ${questions.length}/${expectedCount}`);
+          const emptyTagCount = questions.filter(q => !Array.isArray(q.tags) || q.tags.length === 0).length;
+          console.log(`📊 QB ${qbNumber} attempt ${attempt}: ${questions.length}/${expectedCount} questions, ${emptyTagCount} empty tags`);
 
           if (questions.length >= expectedCount) {
-            console.log(`✅ QB ${qbNumber}: Complete! ${questions.length} questions`);
+            console.log(`✅ QB ${qbNumber}: Count correct (${questions.length}), proceeding to tag check`);
             break;
           }
 
-          // ✅ Accept within 2% on attempt 5+ (server may have genuinely fewer)
-          if (attempt >= 5 && questions.length >= Math.floor(expectedCount * 0.98)) {
-            console.warn(`⚠️ QB ${qbNumber}: Accepting ${questions.length}/${expectedCount} (within 2%)`);
+          if (attempt === maxCountRetries) {
+            console.warn(`⚠️ QB ${qbNumber}: Max retries, got ${questions.length}/${expectedCount}`);
+          }
+        }
+
+        // ── Step C: Phase 2 — Keep re-fetching until ALL tags are populated ──
+        // Tags index on server AFTER questions copy — needs separate wait
+        const maxTagRetries = 8;
+        for (let tagAttempt = 1; tagAttempt <= maxTagRetries; tagAttempt++) {
+          const emptyTagCount = questions.filter(q => !Array.isArray(q.tags) || q.tags.length === 0).length;
+
+          if (emptyTagCount === 0) {
+            console.log(`✅ QB ${qbNumber}: All tags populated!`);
             break;
           }
 
-          if (attempt === maxRetries) {
-            console.warn(`⚠️ QB ${qbNumber}: Max retries, proceeding with ${questions.length}/${expectedCount}`);
+          console.warn(`🔧 QB ${qbNumber} tag attempt ${tagAttempt}: ${emptyTagCount} questions missing tags, waiting...`);
+          showOverlay(
+            `🔧 QB ${qbNumber}/${selectedSourceQBs.length}: Waiting for tags to index...\n` +
+            `${emptyTagCount} questions still missing tags (attempt ${tagAttempt}/${maxTagRetries})`
+          );
+
+          await sleep(3000);
+
+          showOverlay(
+            `📥 QB ${qbNumber}/${selectedSourceQBs.length}: Re-fetching for tags...\n` +
+            `(attempt ${tagAttempt}/${maxTagRetries})`
+          );
+
+          const reFetched = await fetchAllQuestions(cloneResult.qb_id);
+
+          // ✅ Build a map of re-fetched questions
+          const reFetchedMap = new Map(reFetched.map(q => [q.q_id, q]));
+
+          // ✅ For each question: if it had no tags before AND re-fetch has tags now → use re-fetched
+          // If it already had tags → keep original (don't regress)
+          questions = questions.map(q => {
+            const hadNoTags = !Array.isArray(q.tags) || q.tags.length === 0;
+            if (hadNoTags && reFetchedMap.has(q.q_id)) {
+              const fresh = reFetchedMap.get(q.q_id);
+              if (Array.isArray(fresh.tags) && fresh.tags.length > 0) {
+                return fresh; // ✅ tags now populated
+              }
+            }
+            return q; // keep existing (already had tags or re-fetch still empty)
+          });
+
+          if (tagAttempt === maxTagRetries) {
+            const remaining = questions.filter(q => !Array.isArray(q.tags) || q.tags.length === 0).length;
+            console.warn(`⚠️ QB ${qbNumber}: Tag repair max retries — ${remaining} questions still untagged`);
           }
         }
 
@@ -4064,8 +4107,9 @@ export default function QBAccessUniversity({ onBack }) {
 
       console.log(`🔍 stverified filter: ${filtered.length}/${uniqueQuestions.length} questions`);
 
-      // ✅ FIX: update ref first, then state — prevents stale closure in handleApplyFilters
+      // ✅ Update BOTH refs BEFORE setting state — guarantees Select All reads correct list
       allQuestionsRef.current = uniqueQuestions;
+      filteredQuestionsRef.current = filtered;
 
       setAvailableTags(Array.from(tagsSet));
       setAvailableQuestionTypes(Array.from(typesSet));
@@ -4115,6 +4159,7 @@ export default function QBAccessUniversity({ onBack }) {
       console.log(`📝 After type filter [${selectedQuestionTypes.join(", ")}]: ${filtered.length}`);
     }
 
+    filteredQuestionsRef.current = filtered;
     setFilteredQuestions(filtered);
     setSelectedQuestions(filtered.map(q => q.q_id));
     showAlert(`Filtered: ${filtered.length}/${allQuestionsRef.current.length} questions`, "success");
@@ -4126,7 +4171,8 @@ export default function QBAccessUniversity({ onBack }) {
     );
   };
 
-  const handleSelectAll = () => setSelectedQuestions(filteredQuestions.map(q => q.q_id));
+  // ✅ Read from ref — never stale even if state hasn't committed yet
+  const handleSelectAll = () => setSelectedQuestions(filteredQuestionsRef.current.map(q => q.q_id));
   const handleDeselectAll = () => setSelectedQuestions([]);
 
   const handleSearchTargetQB = async () => {
@@ -4560,7 +4606,7 @@ export default function QBAccessUniversity({ onBack }) {
               {/* Question List */}
               <div style={{ marginBottom: "20px" }}>
                 <div style={{ display: "flex", gap: "12px", marginBottom: "12px" }}>
-                  <button onClick={handleSelectAll} className="qb-button qb-button-secondary qb-button-small">✅ Select All ({filteredQuestions.length})</button>
+                  <button onClick={handleSelectAll} className="qb-button qb-button-secondary qb-button-small">✅ Select All ({filteredQuestionsRef.current.length})</button>
                   <button onClick={handleDeselectAll} className="qb-button qb-button-secondary qb-button-small">❌ Deselect All</button>
                 </div>
 
@@ -4673,4 +4719,3 @@ export default function QBAccessUniversity({ onBack }) {
     </div>
   );
 }
-
