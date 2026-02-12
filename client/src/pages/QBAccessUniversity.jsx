@@ -2939,7 +2939,7 @@ export default function QBAccessUniversity({ onBack }) {
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
           showOverlay(
             `⏳ QB ${qbNumber}/${selectedSourceQBs.length}: "${sourceQB.qb_name}"\n` +
-            `Waiting for server to index clone... (attempt ${attempt}/${maxRetries})`
+            `Waiting for index clone... (attempt ${attempt}/${maxRetries})`
           );
           await sleep(4000); // fixed 4s — enough for server indexing without ballooning
 
