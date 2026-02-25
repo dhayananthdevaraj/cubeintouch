@@ -4,8 +4,8 @@ import { DEPARTMENT_IDS } from "../config";
 import "./MetaCorporate.css";
 
 const API = "https://api.examly.io";
-const AI_API = "http://localhost:4000";
-// const AI_API = "https://cubeintouch-backend.onrender.com";
+// const AI_API = "http://localhost:4000";
+const AI_API = "https://cubeintouch-backend.onrender.com";
 
 export default function MetaCorporate({ onBack }) {
   // Token Management
