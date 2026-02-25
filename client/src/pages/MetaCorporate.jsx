@@ -4,8 +4,8 @@ import { DEPARTMENT_IDS } from "../config";
 import "./MetaCorporate.css";
 
 const API = "https://api.examly.io";
-// const AI_API = "http://localhost:4000";
-const AI_API = "https://cubeintouch-backend.onrender.com";
+const AI_API = "http://localhost:4000";
+// const AI_API = "https://cubeintouch-backend.onrender.com";
 
 export default function MetaCorporate({ onBack }) {
   // Token Management
@@ -326,89 +326,228 @@ export default function MetaCorporate({ onBack }) {
     showAlert("✅ CSV downloaded successfully!", "success");
   }
 
-  async function analyzeWithAI(questions) {
-    const BATCH_SIZE = 5;
-    const totalBatches = Math.ceil(questions.length / BATCH_SIZE);
-    let allSuggestions = [];
+  // async function analyzeWithAI(questions) {
+  //   const BATCH_SIZE = 5;
+  //   const totalBatches = Math.ceil(questions.length / BATCH_SIZE);
+  //   let allSuggestions = [];
 
-    for (let i = 0; i < totalBatches; i++) {
-      const start = i * BATCH_SIZE;
-      const end = Math.min(start + BATCH_SIZE, questions.length);
-      const batch = questions.slice(start, end);
+  //   for (let i = 0; i < totalBatches; i++) {
+  //     const start = i * BATCH_SIZE;
+  //     const end = Math.min(start + BATCH_SIZE, questions.length);
+  //     const batch = questions.slice(start, end);
 
-      setAnalysisProgress({ current: i + 1, total: totalBatches });
-      showOverlay(`🤖 Vector AI analyzing batch ${i + 1}/${totalBatches}...`);
+  //     setAnalysisProgress({ current: i + 1, total: totalBatches });
+  //     showOverlay(`🤖 Vector AI analyzing batch ${i + 1}/${totalBatches}...`);
 
-      console.log(`📤 Sending batch ${i + 1}:`, {
-        questionsCount: batch.length
-      });
+  //     console.log(`📤 Sending batch ${i + 1}:`, {
+  //       questionsCount: batch.length
+  //     });
 
-      const res = await fetch(`${AI_API}/analyze-metadata`, {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          "Authorization": token
-        },
-        body: JSON.stringify({
-          questions: batch.map(q => q.question_data || q.question || "")
-        })
-      });
+  //     const res = await fetch(`${AI_API}/analyze-metadata`, {
+  //       method: "POST",
+  //       headers: { 
+  //         "Content-Type": "application/json",
+  //         "Authorization": token
+  //       },
+  //       body: JSON.stringify({
+  //         questions: batch.map(q => q.question_data || q.question || "")
+  //       })
+  //     });
 
-      if (res.status === 503) {
-        try {
-          const errorData = await res.json();
+  //     if (res.status === 503) {
+  //       try {
+  //         const errorData = await res.json();
           
-          if (errorData.status === 'indexing') {
+  //         if (errorData.status === 'indexing') {
+  //           hideOverlay();
+  //           showAlert(
+  //             `⏳ First-time setup: Your taxonomy is being indexed. This takes ${errorData.estimatedTime || '3-5 minutes'}. Please wait and try again.`, 
+  //             "warning"
+  //           );
+  //           setProcessStep("loaded");
+  //           return [];
+  //         }
+  //       } catch (parseErr) {
+  //         hideOverlay();
+  //         showAlert("⏳ Service temporarily unavailable. Please try again in a few minutes.", "warning");
+  //         setProcessStep("loaded");
+  //         return [];
+  //       }
+  //     }
+
+  //     if (!res.ok) {
+  //       const errorText = await res.text();
+  //       console.error('❌ AI API Error:', errorText);
+  //       throw new Error(`AI analysis failed: ${res.status} ${res.statusText}`);
+  //     }
+
+  //     const result = await res.json();
+  //     console.log(`✅ Batch ${i + 1} result:`, {
+  //       suggestions: result.suggestions?.length || 0,
+  //       metadata: result.metadata
+  //     });
+      
+  //     const batchResults = result.suggestions || result.results || result;
+      
+  //     const mappedResults = batchResults.map((suggestion, idx) => {
+  //       const originalQuestion = batch[idx];
+  //       return {
+  //         ...suggestion,
+  //         q_id: originalQuestion.q_id,
+  //         question_preview: originalQuestion.question_data || originalQuestion.question || "N/A"
+  //       };
+  //     });
+      
+  //     if (result.metadata && i === 0) {
+  //       setAnalysisMetadata(result.metadata);
+  //     }
+      
+  //     allSuggestions = [...allSuggestions, ...mappedResults];
+      
+  //     await sleep(1000);
+  //   }
+
+  //   return allSuggestions;
+  // }
+
+  
+async function analyzeWithAI(questions) {
+  const BATCH_SIZE = 5;
+  const totalBatches = Math.ceil(questions.length / BATCH_SIZE);
+  let allSuggestions = [];
+
+  for (let i = 0; i < totalBatches; i++) {
+    const start = i * BATCH_SIZE;
+    const end = Math.min(start + BATCH_SIZE, questions.length);
+    const batch = questions.slice(start, end);
+
+    setAnalysisProgress({ current: i + 1, total: totalBatches });
+    showOverlay(`🤖 Vector AI analyzing batch ${i + 1}/${totalBatches}...`);
+
+    // ✅ Each batch gets its own retry loop for 503 responses
+    const MAX_RETRIES = 6;         // retry up to 6 times
+    const BASE_RETRY_WAIT = 30;    // seconds between retries (overridden by server hint)
+
+    let batchResult = null;
+    let lastError = null;
+
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        const res = await fetch(`${AI_API}/analyze-metadata`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": token,
+          },
+          body: JSON.stringify({
+            questions: batch.map((q) => q.question_data || q.question || ""),
+          }),
+        });
+
+        // ─── 503: server is still indexing ───────────────────────
+        if (res.status === 503) {
+          let retryAfter = BASE_RETRY_WAIT;
+          let serverMsg = "Service temporarily unavailable.";
+
+          try {
+            const errorData = await res.json();
+            serverMsg = errorData.error || serverMsg;
+            if (errorData.retryAfterSeconds) {
+              retryAfter = errorData.retryAfterSeconds;
+            }
+          } catch (_) {
+            // couldn't parse body — use defaults
+          }
+
+          if (attempt === MAX_RETRIES) {
+            // Give up after all retries
             hideOverlay();
             showAlert(
-              `⏳ First-time setup: Your taxonomy is being indexed. This takes ${errorData.estimatedTime || '3-5 minutes'}. Please wait and try again.`, 
+              `⏳ Server is still indexing after ${MAX_RETRIES} attempts. Please try again in a few minutes.`,
               "warning"
             );
             setProcessStep("loaded");
             return [];
           }
-        } catch (parseErr) {
-          hideOverlay();
-          showAlert("⏳ Service temporarily unavailable. Please try again in a few minutes.", "warning");
-          setProcessStep("loaded");
-          return [];
+
+          // ✅ Show countdown in overlay so user isn't confused
+          console.log(`⏳ 503 received (attempt ${attempt}/${MAX_RETRIES}) — waiting ${retryAfter}s`);
+
+          for (let t = retryAfter; t > 0; t--) {
+            showOverlay(
+              `⏳ Server is indexing taxonomy...\nAuto-retrying in ${t}s (attempt ${attempt}/${MAX_RETRIES})\n\n${serverMsg}`
+            );
+            await sleep(1000);
+          }
+
+          showOverlay(`🔄 Retrying... (attempt ${attempt + 1}/${MAX_RETRIES})`);
+          continue; // retry this batch
+        }
+
+        // ─── Other non-OK responses ───────────────────────────────
+        if (!res.ok) {
+          const errorText = await res.text();
+          console.error("❌ AI API Error:", errorText);
+          throw new Error(`AI analysis failed: ${res.status} ${res.statusText}`);
+        }
+
+        // ─── Success ──────────────────────────────────────────────
+        batchResult = await res.json();
+        break; // exit retry loop
+
+      } catch (fetchErr) {
+        lastError = fetchErr;
+        // Network error (not an HTTP error) — retry with short wait
+        if (attempt < MAX_RETRIES) {
+          console.warn(`⚠️ Network error on attempt ${attempt}: ${fetchErr.message}`);
+          showOverlay(`⚠️ Network error — retrying (${attempt}/${MAX_RETRIES})...`);
+          await sleep(3000);
         }
       }
-
-      if (!res.ok) {
-        const errorText = await res.text();
-        console.error('❌ AI API Error:', errorText);
-        throw new Error(`AI analysis failed: ${res.status} ${res.statusText}`);
-      }
-
-      const result = await res.json();
-      console.log(`✅ Batch ${i + 1} result:`, {
-        suggestions: result.suggestions?.length || 0,
-        metadata: result.metadata
-      });
-      
-      const batchResults = result.suggestions || result.results || result;
-      
-      const mappedResults = batchResults.map((suggestion, idx) => {
-        const originalQuestion = batch[idx];
-        return {
-          ...suggestion,
-          q_id: originalQuestion.q_id,
-          question_preview: originalQuestion.question_data || originalQuestion.question || "N/A"
-        };
-      });
-      
-      if (result.metadata && i === 0) {
-        setAnalysisMetadata(result.metadata);
-      }
-      
-      allSuggestions = [...allSuggestions, ...mappedResults];
-      
-      await sleep(1000);
     }
 
-    return allSuggestions;
+    // If we exited the retry loop without a result, bail out
+    if (!batchResult) {
+      hideOverlay();
+      showAlert(
+        "AI analysis failed after multiple retries: " +
+          (lastError?.message || "Unknown error"),
+        "danger"
+      );
+      setProcessStep("loaded");
+      return [];
+    }
+
+    // ─── Process successful batch result ─────────────────────────
+    console.log(`✅ Batch ${i + 1} result:`, {
+      suggestions: batchResult.suggestions?.length || 0,
+      metadata: batchResult.metadata,
+    });
+
+    const batchResults = batchResult.suggestions || batchResult.results || batchResult;
+
+    const mappedResults = batchResults.map((suggestion, idx) => {
+      const originalQuestion = batch[idx];
+      return {
+        ...suggestion,
+        q_id: originalQuestion.q_id,
+        question_preview:
+          originalQuestion.question_data || originalQuestion.question || "N/A",
+      };
+    });
+
+    if (batchResult.metadata && i === 0) {
+      setAnalysisMetadata(batchResult.metadata);
+    }
+
+    allSuggestions = [...allSuggestions, ...mappedResults];
+
+    await sleep(1000);
   }
+
+  return allSuggestions;
+}
+
 
   async function updateQuestionMetadata(qId, metadata, originalQuestion) {
     const question = originalQuestion;
