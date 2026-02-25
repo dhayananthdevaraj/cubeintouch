@@ -1,24 +1,27 @@
+
 import { useState, useRef } from "react";
 import * as XLSX from "xlsx";
 import "./ResultX.css";
 
-const API = "https://api.examly.io";
-//const AI_API = "http://localhost:4000";
-const AI_API = "https://cubeintouch-backend.onrender.com";
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const API    = "https://api.examly.io";
+// const AI_API = "http://localhost:4000";
+ const AI_API = "https://cubeintouch-backend.onrender.com";
+const sleep  = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const TECH_STACKS = [
-  { id: "puppeteer",   label: "Puppeteer",   icon: "🎭" },
-  { id: "node-jest",   label: "Node Jest",   icon: "🟢" },
-  { id: "react-jest",  label: "React Jest",  icon: "⚛️" },
-  { id: "karma",       label: "Karma",       icon: "🔧" },
-  { id: "junit",       label: "JUnit",       icon: "☕" },
-  { id: "nunit",       label: "NUnit",       icon: "🔷" },
+  { id: "puppeteer",  label: "Puppeteer",  icon: "🎭" },
+  { id: "node-jest",  label: "Node Jest",  icon: "🟢" },
+  { id: "react-jest", label: "React Jest", icon: "⚛️" },
+  { id: "karma",      label: "Karma",      icon: "🔧" },
+  { id: "junit",      label: "JUnit",      icon: "☕" },
+  { id: "nunit",      label: "NUnit",      icon: "🔷" },
 ];
+
+// ── helpers ───────────────────────────────────────────────────────────────────
 
 function extractKeyFromAnswer(answerStr) {
   try {
-    const parsed = JSON.parse(answerStr);
+    const parsed    = JSON.parse(answerStr);
     const resultStr = parsed?.resultList?.[0]?.result;
     if (!resultStr) return null;
     const resultParsed = JSON.parse(resultStr);
@@ -36,38 +39,79 @@ function cleanName(raw) {
   return raw.replace(/\$/g, " ").replace(/\s+/g, " ").trim();
 }
 
-export default function ResultXWeekly({ onBack }) {
-  const [token, setToken] = useState(() => { try { return localStorage.getItem("examly_token") || ""; } catch { return ""; } });
-  const [tokenInput, setTokenInput] = useState("");
-  const [ui, setUi] = useState(() => { try { return localStorage.getItem("examly_token") ? "upload" : "welcome"; } catch { return "welcome"; } });
+function fileIcon(name) {
+  const ext = name.split(".").pop()?.toLowerCase();
+  const map  = {
+    js: "🟨", jsx: "⚛️", ts: "🔷", tsx: "⚛️",
+    html: "🌐", css: "🎨", java: "☕", cs: "🟣",
+  };
+  return map[ext] || "📄";
+}
 
-  const [rows, setRows]       = useState([]);
-  const [results, setResults] = useState([]);
+function folderIcon(folderName) {
+  const lower = folderName.toLowerCase();
+  if (lower.includes("controller")) return "🎮";
+  if (lower.includes("model"))      return "📦";
+  if (lower.includes("service"))    return "⚙️";
+  if (lower.includes("repository")) return "🗄️";
+  if (lower.includes("exception"))  return "⚠️";
+  if (lower.includes("data"))       return "🗃️";
+  if (lower.includes("component"))  return "🧩";
+  if (lower.includes("page"))       return "📄";
+  if (lower.includes("hook"))       return "🪝";
+  if (lower.includes("util"))       return "🔧";
+  if (lower.includes("src"))        return "📁";
+  return "📁";
+}
+
+// ── component ─────────────────────────────────────────────────────────────────
+
+export default function ResultXWeekly({ onBack }) {
+  // auth
+  const [token,      setToken]      = useState(() => { try { return localStorage.getItem("examly_token") || ""; } catch { return ""; } });
+  const [tokenInput, setTokenInput] = useState("");
+  const [ui,         setUi]         = useState(() => { try { return localStorage.getItem("examly_token") ? "upload" : "welcome"; } catch { return "welcome"; } });
+
+  // data
+  const [rows,      setRows]      = useState([]);
+  const [results,   setResults]   = useState([]);
   const [manualUrl, setManualUrl] = useState("");
   const [techStack, setTechStack] = useState("puppeteer");
 
-  const [processing, setProcessing]         = useState(false);
-  const [processedCount, setProcessedCount] = useState(0);
-  const [analysingAll, setAnalysingAll]     = useState(false);
+  // processing
+  const [processing,      setProcessing]      = useState(false);
+  const [processedCount,  setProcessedCount]  = useState(0);
+  const [analysingAll,    setAnalysingAll]    = useState(false);
   const [analyseAllCount, setAnalyseAllCount] = useState(0);
   const [analyseAllTotal, setAnalyseAllTotal] = useState(0);
-  const [analyzingIdx, setAnalyzingIdx]     = useState(null);
+  const [analyzingIdx,    setAnalyzingIdx]    = useState(null);
 
-  const [alert, setAlert]     = useState(null);
-  const [overlay, setOverlay] = useState(false);
+  // ui
+  const [alert,       setAlert]       = useState(null);
+  const [overlay,     setOverlay]     = useState(false);
   const [overlayText, setOverlayText] = useState("");
 
+  // modals
   const [questionModal, setQuestionModal] = useState(null);
   const [testcaseModal, setTestcaseModal] = useState(null);
-  const [resultModal, setResultModal]     = useState(null);
+  const [resultModal,   setResultModal]   = useState(null);
   const [analysisModal, setAnalysisModal] = useState(null);
-  const [copyOk, setCopyOk]               = useState(false);
+  const [copyOk,        setCopyOk]        = useState(false);
+
+  // code viewer
+  const [codeModal,       setCodeModal]       = useState(null);
+  const [activeFile,      setActiveFile]      = useState(null);
+  const [expandedFolders, setExpandedFolders] = useState({});
 
   const fileRef = useRef();
 
+  // ── alert / overlay ──────────────────────────────────────────────────────────
+
   const showAlert = (msg, type = "warning") => { setAlert({ msg, type }); setTimeout(() => setAlert(null), 4000); };
-  const showOv = (msg) => { setOverlayText(msg); setOverlay(true); };
-  const hideOv = () => setOverlay(false);
+  const showOv    = (msg) => { setOverlayText(msg); setOverlay(true); };
+  const hideOv    = ()    => setOverlay(false);
+
+  // ── auth ──────────────────────────────────────────────────────────────────────
 
   const saveToken = () => {
     if (!tokenInput.trim()) { showAlert("Token cannot be empty", "danger"); return; }
@@ -77,23 +121,27 @@ export default function ResultXWeekly({ onBack }) {
 
   const clearToken = () => {
     localStorage.removeItem("examly_token");
-    setToken(""); setRows([]); setResults([]); setUi("welcome"); showAlert("Logged out", "danger");
+    setToken(""); setRows([]); setResults([]); setUi("welcome");
+    showAlert("Logged out", "danger");
   };
 
   const headers = { "Content-Type": "application/json", Authorization: token };
+
+  // ── file upload ───────────────────────────────────────────────────────────────
 
   const handleFile = (e) => {
     const file = e.target.files?.[0]; if (!file) return;
     const reader = new FileReader();
     reader.onload = (evt) => {
       try {
-        const wb = XLSX.read(evt.target.result, { type: "binary" });
-        const ws = wb.Sheets[wb.SheetNames[0]];
+        const wb   = XLSX.read(evt.target.result, { type: "binary" });
+        const ws   = wb.Sheets[wb.SheetNames[0]];
         const json = XLSX.utils.sheet_to_json(ws, { defval: "" });
         if (!json.length) { showAlert("Excel is empty", "danger"); return; }
         const firstRow = json[0];
-        const urlKey = Object.keys(firstRow).find(k => String(firstRow[k]).trim().startsWith("http")) || Object.keys(firstRow)[0];
-        const parsed = json.filter(r => String(r[urlKey] || "").trim().startsWith("http"))
+        const urlKey   = Object.keys(firstRow).find(k => String(firstRow[k]).trim().startsWith("http")) || Object.keys(firstRow)[0];
+        const parsed   = json
+          .filter(r => String(r[urlKey] || "").trim().startsWith("http"))
           .map((r, i) => ({ idx: Date.now() + i, name: `Student ${rows.length + i + 1}`, url: String(r[urlKey]).trim() }));
         if (!parsed.length) { showAlert("No valid result URLs found", "danger"); return; }
         setRows(prev => [...prev, ...parsed]); setResults([]);
@@ -111,7 +159,9 @@ export default function ResultXWeekly({ onBack }) {
   };
 
   const removeRow = (idx) => setRows(prev => prev.filter(r => r.idx !== idx));
-  const clearAll  = () => { setRows([]); setResults([]); showAlert("Cleared", "info"); };
+  const clearAll  = ()    => { setRows([]); setResults([]); showAlert("Cleared", "info"); };
+
+  // ── fetch result ──────────────────────────────────────────────────────────────
 
   async function fetchResult(url) {
     let testId = null;
@@ -134,14 +184,18 @@ export default function ResultXWeekly({ onBack }) {
     const answerStr = question?.student_questions?.answer || "";
     const tcList    = extractTestcases(answerStr);
     return {
-      studentName: cleanName(apiData?.users_domain?.name || apiData?.users_domain?.email || "Unknown"),
-      email:    apiData?.users_domain?.email || "",
-      url, qId: question?.q_id || null,
-      marks:    apiData?.t_marks ?? 0, total: apiData?.t_total_marks ?? 0, status: apiData?.t_status,
-      evalType: question?.project_questions?.evaluation_type?.[0] || question?.project_questions?.config?.[0]?.evaluation_type || "—",
-      key: extractKeyFromAnswer(answerStr), tcList,
-      passCount: tcList.filter(t => t.result?.toLowerCase() === "success").length,
-      failCount: tcList.filter(t => t.result?.toLowerCase() !== "success").length,
+      studentName:  cleanName(apiData?.users_domain?.name || apiData?.users_domain?.email || "Unknown"),
+      email:        apiData?.users_domain?.email || "",
+      url,
+      qId:          question?.q_id || null,
+      marks:        apiData?.t_marks ?? 0,
+      total:        apiData?.t_total_marks ?? 0,
+      status:       apiData?.t_status,
+      evalType:     question?.project_questions?.evaluation_type?.[0] || question?.project_questions?.config?.[0]?.evaluation_type || "—",
+      key:          extractKeyFromAnswer(answerStr),
+      tcList,
+      passCount:    tcList.filter(t => t.result?.toLowerCase() === "success").length,
+      failCount:    tcList.filter(t => t.result?.toLowerCase() !== "success").length,
       questionHtml: null, analysisReport: null, filesAnalyzed: null, fetchError: null,
     };
   }
@@ -171,6 +225,8 @@ export default function ResultXWeekly({ onBack }) {
     setResults(processed); hideOv(); setProcessing(false); setUi("table");
     showAlert(`Done — ${processed.filter(r => !r.fetchError).length}/${rows.length} fetched`, "success");
   };
+
+  // ── AI analysis ───────────────────────────────────────────────────────────────
 
   const callAnalysisAPI = async (r) => {
     const failedTestcases = r.tcList?.filter(t => t.result?.toLowerCase() !== "success").map(t => t.name) || [];
@@ -219,6 +275,39 @@ export default function ResultXWeekly({ onBack }) {
     navigator.clipboard.writeText(analysisModal.paragraph).then(() => { setCopyOk(true); setTimeout(() => setCopyOk(false), 2200); });
   };
 
+  // ── code viewer ───────────────────────────────────────────────────────────────
+
+  const openCodeViewer = async (r) => {
+    if (!r.key) { showAlert("No repo key for this student", "warning"); return; }
+    setCodeModal({ studentName: r.studentName, repoKey: r.key, loading: true, files: [], folderTree: [], error: null });
+    setActiveFile(null);
+    setExpandedFolders({});
+    try {
+      const res  = await fetch(`${AI_API}/get-repo-files`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ repoKey: r.key, techStack }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json.error || "Failed to load files");
+
+      // Auto-expand all folders
+      const expanded = {};
+      (json.folderTree || []).forEach(f => { expanded[f.folder] = true; });
+
+      setCodeModal({ studentName: r.studentName, repoKey: r.key, loading: false, files: json.files, folderTree: json.folderTree || [], error: null });
+      setActiveFile(json.files[0]?.path || null);
+      setExpandedFolders(expanded);
+    } catch (err) {
+      setCodeModal(prev => ({ ...prev, loading: false, error: err.message }));
+    }
+  };
+
+  const toggleFolder = (folderKey) => {
+    setExpandedFolders(prev => ({ ...prev, [folderKey]: !prev[folderKey] }));
+  };
+
+  // ── misc ──────────────────────────────────────────────────────────────────────
+
   const scoreColor = (marks, total) => {
     if (!total) return "var(--c-muted)";
     const pct = (marks / total) * 100;
@@ -228,37 +317,34 @@ export default function ResultXWeekly({ onBack }) {
   const selectedStack       = TECH_STACKS.find(t => t.id === techStack);
   const eligibleForAnalysis = results.filter(r => !r.fetchError && r.key && r.questionHtml && !r.analysisReport);
   const alreadyAnalysed     = results.filter(r => r.analysisReport);
+  const activeFileData      = codeModal?.files?.find(f => f.path === activeFile);
 
+  // ═════════════════════════════════════════════════════════════════════════════
   return (
     <div className="rx-page">
+
       {alert && <div className={`rx-alert rx-alert-${alert.type}`}>{alert.msg}</div>}
 
-      {/* ══ DRAMATIC PROCESSING OVERLAY ══ */}
+      {/* ══ Processing Overlay ══ */}
       {overlay && (
         <div className="rx-overlay">
           <div className="rx-overlay-box">
             <div className="rx-overlay-top">
               <div className="rx-spinner-wrap">
-                <div className="rx-ring rx-ring-1" />
-                <div className="rx-ring rx-ring-2" />
-                <div className="rx-ring rx-ring-3" />
-                <div className="rx-ring-center" />
+                <div className="rx-ring rx-ring-1" /><div className="rx-ring rx-ring-2" />
+                <div className="rx-ring rx-ring-3" /><div className="rx-ring-center" />
               </div>
               <div className="rx-overlay-label">Processing Students</div>
             </div>
             <div className="rx-overlay-body">
               <div className="rx-overlay-text">{overlayText}</div>
               <div className="rx-overlay-steps">
-                {[
-                  "Connecting to Examly",
-                  "Fetching result data",
-                  "Loading question details",
-                ].map((label, i) => {
-                  const pct    = processedCount / Math.max(rows.length, 1);
-                  const done   = i < Math.floor(pct * 3);
-                  const active = !done && i === Math.floor(pct * 3);
+                {["Connecting to Examly", "Fetching result data", "Loading question details"].map((label, i) => {
+                  const pct  = processedCount / Math.max(rows.length, 1);
+                  const done = i < Math.floor(pct * 3);
+                  const act  = !done && i === Math.floor(pct * 3);
                   return (
-                    <div key={label} className={`rx-step ${done ? "rx-step-done" : active ? "rx-step-active" : "rx-step-wait"}`}>
+                    <div key={label} className={`rx-step ${done ? "rx-step-done" : act ? "rx-step-active" : "rx-step-wait"}`}>
                       <div className="rx-step-dot" />{done ? "✓ " : ""}{label}
                     </div>
                   );
@@ -280,7 +366,7 @@ export default function ResultXWeekly({ onBack }) {
         </div>
       )}
 
-      {/* ── Question Modal ── */}
+      {/* ══ Question Modal ══ */}
       {questionModal && (
         <div className="rx-modal-backdrop" onClick={() => setQuestionModal(null)}>
           <div className="rx-modal rx-modal-lg" onClick={e => e.stopPropagation()}>
@@ -295,7 +381,7 @@ export default function ResultXWeekly({ onBack }) {
         </div>
       )}
 
-      {/* ── Testcase Modal ── */}
+      {/* ══ Testcase Modal ══ */}
       {testcaseModal && (
         <div className="rx-modal-backdrop" onClick={() => setTestcaseModal(null)}>
           <div className="rx-modal rx-modal-sm" onClick={e => e.stopPropagation()}>
@@ -332,7 +418,7 @@ export default function ResultXWeekly({ onBack }) {
         </div>
       )}
 
-      {/* ── Result Modal ── */}
+      {/* ══ Result Modal ══ */}
       {resultModal && (
         <div className="rx-modal-backdrop" onClick={() => setResultModal(null)}>
           <div className="rx-modal rx-modal-sm" onClick={e => e.stopPropagation()}>
@@ -343,14 +429,14 @@ export default function ResultXWeekly({ onBack }) {
             <div className="rx-modal-body">
               <div style={{ display: "flex", flexDirection: "column", gap: "7px" }}>
                 {[
-                  { label: "Student",    value: resultModal.studentName },
-                  { label: "Email",      value: resultModal.email || "—" },
-                  { label: "Score",      value: `${Number(resultModal.marks).toFixed(1)} / ${resultModal.total}` },
-                  { label: "Status",     value: resultModal.status === 3 ? "✅ Completed" : resultModal.status === 2 ? "⏳ In Progress" : `Status ${resultModal.status}` },
-                  { label: "Eval Type",  value: resultModal.evalType || "—" },
-                  { label: "TC Pass",    value: `${resultModal.passCount} / ${resultModal.tcList?.length || 0}` },
-                  { label: "Question ID",value: resultModal.qId?.slice(0, 20) + "…" || "N/A" },
-                  { label: "Repo Key",   value: resultModal.key || "—" },
+                  { label: "Student",     value: resultModal.studentName },
+                  { label: "Email",       value: resultModal.email || "—" },
+                  { label: "Score",       value: `${Number(resultModal.marks).toFixed(1)} / ${resultModal.total}` },
+                  { label: "Status",      value: resultModal.status === 3 ? "✅ Completed" : resultModal.status === 2 ? "⏳ In Progress" : `Status ${resultModal.status}` },
+                  { label: "Eval Type",   value: resultModal.evalType || "—" },
+                  { label: "TC Pass",     value: `${resultModal.passCount} / ${resultModal.tcList?.length || 0}` },
+                  { label: "Question ID", value: resultModal.qId ? resultModal.qId.slice(0, 20) + "…" : "N/A" },
+                  { label: "Repo Key",    value: resultModal.key || "—" },
                 ].map(item => (
                   <div key={item.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "9px 12px", background: "var(--c-surface-2)", border: "1px solid var(--c-border)", borderRadius: "7px" }}>
                     <span style={{ fontSize: "10px", fontFamily: "JetBrains Mono, monospace", color: "var(--c-muted)", textTransform: "uppercase", letterSpacing: "0.8px" }}>{item.label}</span>
@@ -363,7 +449,7 @@ export default function ResultXWeekly({ onBack }) {
         </div>
       )}
 
-      {/* ── Analysis Modal ── */}
+      {/* ══ Analysis Modal ══ */}
       {analysisModal && (
         <div className="rx-modal-backdrop" onClick={() => !analysisModal.loading && setAnalysisModal(null)}>
           <div className="rx-modal rx-modal-sm" onClick={e => e.stopPropagation()}>
@@ -372,15 +458,7 @@ export default function ResultXWeekly({ onBack }) {
               <div className="rx-modal-header-right">
                 {!analysisModal.loading && !analysisModal.error && analysisModal.paragraph && (
                   <button className={`rx-modal-copy${copyOk ? " rx-modal-copy-ok" : ""}`} onClick={copyAnalysis}>
-                    {copyOk ? "✓ Copied!" : (
-                      <>
-                        <svg width="11" height="11" viewBox="0 0 20 20" fill="none">
-                          <rect x="7" y="7" width="11" height="11" rx="2" stroke="currentColor" strokeWidth="2"/>
-                          <path d="M4 13V4a1 1 0 011-1h9" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                        </svg>
-                        Copy Text
-                      </>
-                    )}
+                    {copyOk ? "✓ Copied!" : (<><svg width="11" height="11" viewBox="0 0 20 20" fill="none"><rect x="7" y="7" width="11" height="11" rx="2" stroke="currentColor" strokeWidth="2"/><path d="M4 13V4a1 1 0 011-1h9" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>Copy Text</>)}
                   </button>
                 )}
                 {!analysisModal.loading && <button className="rx-modal-close" onClick={() => setAnalysisModal(null)}>✕</button>}
@@ -395,7 +473,7 @@ export default function ResultXWeekly({ onBack }) {
                   </div>
                   <div style={{ textAlign: "center", lineHeight: "1.65" }}>
                     <div style={{ fontSize: "14px", fontWeight: "600", color: "var(--c-text)", marginBottom: "5px" }}>Running AI Analysis</div>
-                    <div style={{ fontSize: "12px", color: "var(--c-muted)", fontFamily: "JetBrains Mono, monospace" }}>Fetching code from GitHub…<br/>Sending to Groq AI…</div>
+                    <div style={{ fontSize: "12px", color: "var(--c-muted)", fontFamily: "JetBrains Mono, monospace" }}>Fetching code ...<br />Sending to AI…</div>
                   </div>
                 </div>
               )}
@@ -420,7 +498,277 @@ export default function ResultXWeekly({ onBack }) {
         </div>
       )}
 
-      {/* ── Topbar ── */}
+      {/* ══ VS Code Viewer Modal ══ */}
+      {codeModal && (
+        <div className="rx-modal-backdrop" onClick={() => !codeModal.loading && setCodeModal(null)} style={{ alignItems: "center", padding: "20px" }}>
+          <div
+            className="rx-modal"
+            onClick={e => e.stopPropagation()}
+            style={{
+              width: "min(94vw, 1160px)", height: "min(90vh, 760px)",
+              maxWidth: "unset", display: "flex", flexDirection: "column",
+              padding: 0, overflow: "hidden",
+              background: "#1e1e2e", border: "1px solid #313244",
+              borderRadius: "12px", boxShadow: "0 32px 80px rgba(0,0,0,0.6)",
+            }}
+          >
+            {/* Title bar */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 16px", background: "#181825", borderBottom: "1px solid #313244", flexShrink: 0, borderRadius: "12px 12px 0 0" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <div style={{ display: "flex", gap: "6px" }}>
+                  <div style={{ width: "12px", height: "12px", borderRadius: "50%", background: "#f38ba8" }} />
+                  <div style={{ width: "12px", height: "12px", borderRadius: "50%", background: "#f9e2af" }} />
+                  <div style={{ width: "12px", height: "12px", borderRadius: "50%", background: "#a6e3a1" }} />
+                </div>
+                <div style={{ width: "1px", height: "20px", background: "#313244" }} />
+                <span style={{ fontSize: "14px" }}>🗂️</span>
+                <div>
+                  <div style={{ fontSize: "13px", fontWeight: "700", color: "#cdd6f4", lineHeight: 1.2 }}>
+                    {codeModal.studentName}
+                    <span style={{ fontWeight: "400", color: "#6c7086" }}> — Solution Code</span>
+                  </div>
+                  <div style={{ fontSize: "10px", color: "#6c7086", fontFamily: "JetBrains Mono, monospace", marginTop: "1px" }}>{codeModal.repoKey}</div>
+                </div>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                {!codeModal.loading && codeModal.files?.length > 0 && (
+                  <span style={{ fontSize: "10px", color: "#6c7086", fontFamily: "JetBrains Mono, monospace" }}>
+                    {codeModal.files.length} file{codeModal.files.length !== 1 ? "s" : ""}
+                  </span>
+                )}
+                {!codeModal.loading && (
+                  <button
+                    onClick={() => setCodeModal(null)}
+                    style={{ background: "transparent", border: "1px solid #45475a", color: "#6c7086", width: "26px", height: "26px", borderRadius: "6px", cursor: "pointer", fontSize: "12px", fontWeight: "900", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.12s" }}
+                    onMouseEnter={e => { e.currentTarget.style.background = "#f38ba8"; e.currentTarget.style.color = "#1e1e2e"; e.currentTarget.style.borderColor = "#f38ba8"; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#6c7086"; e.currentTarget.style.borderColor = "#45475a"; }}
+                  >✕</button>
+                )}
+              </div>
+            </div>
+
+            {/* Loading */}
+            {codeModal.loading && (
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "18px", background: "#1e1e2e" }}>
+                <div style={{ position: "relative", width: "48px", height: "48px" }}>
+                  <div className="rx-ring rx-ring-1" style={{ borderTopColor: "#cba6f7", borderRightColor: "#313244" }} />
+                  <div className="rx-ring rx-ring-2" style={{ borderTopColor: "#89b4fa", borderLeftColor: "transparent", borderRightColor: "transparent" }} />
+                </div>
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: "13px", fontWeight: "600", color: "#cdd6f4", marginBottom: "4px" }}>Loading Repository</div>
+                  <div style={{ fontSize: "11px", color: "#6c7086", fontFamily: "JetBrains Mono, monospace" }}>Scanning all folders from GitHub…</div>
+                </div>
+              </div>
+            )}
+
+            {/* Error */}
+            {!codeModal.loading && codeModal.error && (
+              <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px", background: "#1e1e2e" }}>
+                <div style={{ padding: "20px 28px", background: "#2a1f2f", border: "1px solid #f38ba8", borderRadius: "10px", color: "#f38ba8", fontSize: "13px", fontFamily: "JetBrains Mono, monospace" }}>
+                  ✕ {codeModal.error}
+                </div>
+              </div>
+            )}
+
+            {/* Editor */}
+            {!codeModal.loading && !codeModal.error && codeModal.files?.length > 0 && (
+              <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+
+                {/* ── Folder Tree Sidebar ── */}
+                <div style={{ width: "240px", flexShrink: 0, background: "#181825", borderRight: "1px solid #313244", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+                  {/* Header */}
+                  <div style={{ padding: "10px 14px 6px", borderBottom: "1px solid #313244", flexShrink: 0 }}>
+                    <div style={{ fontSize: "9px", fontWeight: "800", color: "#6c7086", textTransform: "uppercase", letterSpacing: "1.4px" }}>Explorer</div>
+                  </div>
+
+                  {/* Tree */}
+                  <div style={{ flex: 1, overflowY: "auto", padding: "6px 0" }}>
+                    {codeModal.folderTree?.length > 0 ? (
+                      codeModal.folderTree.map(folder => {
+                        const isExpanded = expandedFolders[folder.folder] !== false;
+                        return (
+                          <div key={folder.folder}>
+                            {/* Folder row */}
+                            <div
+                              onClick={() => toggleFolder(folder.folder)}
+                              style={{
+                                display: "flex", alignItems: "center", gap: "6px",
+                                padding: "5px 12px", cursor: "pointer",
+                                fontSize: "11px", fontWeight: "700",
+                                fontFamily: "JetBrains Mono, monospace",
+                                color: "#a6adc8",
+                                userSelect: "none",
+                              }}
+                              onMouseEnter={e => e.currentTarget.style.background = "#232334"}
+                              onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                            >
+                              <span style={{ fontSize: "10px", color: "#585b70", flexShrink: 0 }}>
+                                {isExpanded ? "▾" : "▸"}
+                              </span>
+                              <span style={{ fontSize: "12px", flexShrink: 0 }}>{folderIcon(folder.displayName)}</span>
+                              <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "#89b4fa", textTransform: "uppercase", letterSpacing: "0.5px", fontSize: "10px" }}>
+                                {folder.displayName}
+                              </span>
+                            </div>
+
+                            {/* Files under folder */}
+                            {isExpanded && folder.files.map(f => {
+                              const isActive = activeFile === f.path;
+                              return (
+                                <div
+                                  key={f.path}
+                                  onClick={() => setActiveFile(f.path)}
+                                  title={f.path}
+                                  style={{
+                                    display: "flex", alignItems: "center", gap: "6px",
+                                    padding: "4px 12px 4px 30px",
+                                    cursor: "pointer", fontSize: "12px",
+                                    fontFamily: "JetBrains Mono, monospace",
+                                    color: isActive ? "#cdd6f4" : "#a6adc8",
+                                    background: isActive ? "#2a2a3e" : "transparent",
+                                    borderLeft: `2px solid ${isActive ? "#cba6f7" : "transparent"}`,
+                                    whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+                                    userSelect: "none",
+                                  }}
+                                  onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = "#232334"; }}
+                                  onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = "transparent"; }}
+                                >
+                                  <span style={{ flexShrink: 0, fontSize: "12px" }}>{fileIcon(f.name)}</span>
+                                  <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{f.name}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        );
+                      })
+                    ) : (
+                      // Fallback flat list if no folderTree
+                      codeModal.files.map(f => {
+                        const isActive = activeFile === f.path;
+                        return (
+                          <div
+                            key={f.path}
+                            onClick={() => setActiveFile(f.path)}
+                            title={f.path}
+                            style={{
+                              display: "flex", alignItems: "center", gap: "6px",
+                              padding: "5px 12px", cursor: "pointer", fontSize: "12px",
+                              fontFamily: "JetBrains Mono, monospace",
+                              color: isActive ? "#cdd6f4" : "#a6adc8",
+                              background: isActive ? "#2a2a3e" : "transparent",
+                              borderLeft: `2px solid ${isActive ? "#cba6f7" : "transparent"}`,
+                              whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+                              userSelect: "none",
+                            }}
+                          >
+                            <span style={{ flexShrink: 0 }}>{fileIcon(f.name)}</span>
+                            <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{f.name}</span>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+
+                  {/* Footer */}
+                  <div style={{ padding: "8px 12px", borderTop: "1px solid #313244", flexShrink: 0, fontSize: "10px", color: "#45475a", fontFamily: "JetBrains Mono, monospace" }}>
+                    {codeModal.files.length} source file{codeModal.files.length !== 1 ? "s" : ""}
+                  </div>
+                </div>
+
+                {/* ── Code Panel ── */}
+                <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", background: "#1e1e2e" }}>
+
+                  {/* Tab bar */}
+                  <div style={{ display: "flex", alignItems: "center", background: "#181825", borderBottom: "1px solid #313244", overflowX: "auto", flexShrink: 0, minHeight: "36px" }}>
+                    {codeModal.files.map(f => {
+                      const isActive = activeFile === f.path;
+                      return (
+                        <div
+                          key={f.path}
+                          onClick={() => setActiveFile(f.path)}
+                          style={{
+                            display: "flex", alignItems: "center", gap: "5px",
+                            padding: "0 16px", cursor: "pointer", flexShrink: 0,
+                            fontSize: "12px", fontFamily: "JetBrains Mono, monospace",
+                            color: isActive ? "#cdd6f4" : "#6c7086",
+                            background: isActive ? "#1e1e2e" : "transparent",
+                            borderBottom: `2px solid ${isActive ? "#cba6f7" : "transparent"}`,
+                            borderRight: "1px solid #313244",
+                            height: "36px", whiteSpace: "nowrap",
+                          }}
+                          onMouseEnter={e => { if (!isActive) e.currentTarget.style.color = "#a6adc8"; }}
+                          onMouseLeave={e => { if (!isActive) e.currentTarget.style.color = "#6c7086"; }}
+                        >
+                          <span>{fileIcon(f.name)}</span>
+                          {f.name}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Breadcrumb */}
+                  {activeFile && (
+                    <div style={{ padding: "4px 16px", fontSize: "11px", color: "#585b70", fontFamily: "JetBrains Mono, monospace", background: "#1e1e2e", borderBottom: "1px solid #2a2a3e", flexShrink: 0 }}>
+                      {activeFile.split("/").map((part, i, arr) => (
+                        <span key={i}>
+                          <span style={{ color: i === arr.length - 1 ? "#a6adc8" : "#585b70" }}>{part}</span>
+                          {i < arr.length - 1 && <span style={{ margin: "0 5px", color: "#45475a" }}>›</span>}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Code content */}
+                  <div style={{ flex: 1, overflowY: "auto", overflowX: "auto" }}>
+                    {activeFileData ? (
+                      <table style={{ borderCollapse: "collapse", width: "100%", fontFamily: "JetBrains Mono, monospace", fontSize: "12.5px", lineHeight: "1.65" }}>
+                        <tbody>
+                          {activeFileData.content.split("\n").map((line, idx) => (
+                            <tr
+                              key={idx}
+                              onMouseEnter={e => e.currentTarget.style.background = "#232334"}
+                              onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                            >
+                              <td style={{ userSelect: "none", textAlign: "right", padding: "0 14px 0 8px", color: "#45475a", fontSize: "11px", verticalAlign: "top", minWidth: "48px", width: "48px", borderRight: "1px solid #2a2a3e", background: "#1a1a2a" }}>
+                                {idx + 1}
+                              </td>
+                              <td style={{ padding: "0 20px 0 16px", color: "#cdd6f4", whiteSpace: "pre", verticalAlign: "top" }}>
+                                {line || " "}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    ) : (
+                      <div style={{ padding: "40px", color: "#45475a", fontFamily: "JetBrains Mono, monospace", fontSize: "12px" }}>Select a file to view</div>
+                    )}
+                  </div>
+
+                  {/* Status bar */}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "3px 16px", background: "#cba6f7", flexShrink: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      <span style={{ fontSize: "11px", fontWeight: "700", color: "#1e1e2e", fontFamily: "JetBrains Mono, monospace" }}>
+                        {selectedStack?.icon} {selectedStack?.label}
+                      </span>
+                      {activeFileData && <span style={{ fontSize: "10px", color: "#3d3354", fontFamily: "JetBrains Mono, monospace" }}>{activeFileData.name}</span>}
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                      {activeFileData && (
+                        <>
+                          <span style={{ fontSize: "10px", color: "#3d3354", fontFamily: "JetBrains Mono, monospace" }}>{activeFileData.content.split("\n").length} lines</span>
+                          <span style={{ fontSize: "10px", color: "#3d3354", fontFamily: "JetBrains Mono, monospace" }}>{activeFileData.name.split(".").pop()?.toUpperCase()}</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ══ Topbar ══ */}
       <div className="rx-topbar">
         <div className="rx-topbar-left">
           <button className="rx-back-btn" onClick={onBack}>← Back</button>
@@ -438,7 +786,7 @@ export default function ResultXWeekly({ onBack }) {
         </div>
       </div>
 
-      {/* ══ WELCOME ══ */}
+      {/* ══ Welcome ══ */}
       {ui === "welcome" && (
         <div className="rx-welcome">
           <div className="rx-welcome-inner">
@@ -455,7 +803,7 @@ export default function ResultXWeekly({ onBack }) {
         </div>
       )}
 
-      {/* ══ UPLOAD ══ */}
+      {/* ══ Upload ══ */}
       {ui === "upload" && (
         <div className="rx-body">
           <div className="rx-card">
@@ -503,20 +851,22 @@ export default function ResultXWeekly({ onBack }) {
           <div className="rx-card" style={{ borderColor: "#bfc2f9" }}>
             <p className="rx-card-title">ℹ️ How it works</p>
             <p style={{ margin: 0, fontSize: "13px", color: "var(--c-text-2)", lineHeight: "1.7" }}>
-              Upload an Excel file or paste result URLs manually. Scores, testcases, and repo keys are fetched from the Examly automatically. Select the appropriate tech stack, then run AI analysis per student or all at once.
+              Upload an Excel file or paste result URLs manually. Scores, testcases, and repo keys are fetched from Examly automatically.
+              Select the appropriate tech stack, then run AI analysis per student or all at once.
+              Use <strong>View Code</strong> to inspect student source files in a VS Code-style explorer with folder tree.
             </p>
           </div>
         </div>
       )}
 
-      {/* ══ TABLE ══ */}
+      {/* ══ Table ══ */}
       {ui === "table" && (
         <div className="rx-body">
           <div className="rx-stat-strip">
             {[
-              { label: "Total",      val: results.length, color: "var(--c-text)" },
-              { label: "Success",    val: results.filter(r => !r.fetchError).length, color: "var(--c-green)" },
-              { label: "Failed",     val: results.filter(r => r.fetchError).length, color: "var(--c-red)" },
+              { label: "Total",      val: results.length,                                                                                  color: "var(--c-text)"  },
+              { label: "Success",    val: results.filter(r => !r.fetchError).length,                                                       color: "var(--c-green)" },
+              { label: "Failed",     val: results.filter(r => r.fetchError).length,                                                        color: "var(--c-red)"   },
               { label: "Full Score", val: results.filter(r => !r.fetchError && Number(r.marks) === Number(r.total) && r.total > 0).length, color: "var(--c-amber)" },
             ].map(s => (
               <div key={s.label} className="rx-stat">
@@ -526,7 +876,7 @@ export default function ResultXWeekly({ onBack }) {
             ))}
           </div>
 
-          {/* controls */}
+          {/* Controls */}
           <div className="rx-card" style={{ padding: "13px 18px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "14px", flexWrap: "wrap" }}>
               <span style={{ fontSize: "10px", fontWeight: "700", color: "var(--c-muted)", textTransform: "uppercase", letterSpacing: "1px", flexShrink: 0 }}>Tech Stack</span>
@@ -565,12 +915,12 @@ export default function ResultXWeekly({ onBack }) {
             )}
           </div>
 
-          {/* table */}
+          {/* Table */}
           <div className="rx-card" style={{ padding: 0, overflow: "hidden" }}>
             <div style={{ overflowX: "auto" }}>
               <table className="rx-table">
                 <thead>
-                  <tr>{["#","Student","Score","TC Pass / Fail","Eval Type","Question","Testcases","Result","Repo Key","Analysis Report"].map(h => <th key={h} className="rx-th">{h}</th>)}</tr>
+                  <tr>{["#", "Student", "Score", "TC Pass / Fail", "Eval Type", "Question", "Testcases", "Result", "Repo Key", "View Code", "Analysis Report"].map(h => <th key={h} className="rx-th">{h}</th>)}</tr>
                 </thead>
                 <tbody>
                   {results.map((r, i) => (
@@ -582,17 +932,15 @@ export default function ResultXWeekly({ onBack }) {
                         {r.fetchError && <div style={{ fontSize: "11px", color: "var(--c-red)", fontFamily: "JetBrains Mono, monospace", marginTop: "2px" }}>✕ {r.fetchError}</div>}
                       </td>
                       <td className="rx-td">
-                        {r.fetchError ? <span style={{ color: "var(--c-muted)" }}>—</span> : (
-                          <span style={{ fontWeight: "700", fontSize: "13px", color: scoreColor(r.marks, r.total), fontFamily: "JetBrains Mono, monospace" }}>{Number(r.marks).toFixed(1)} / {r.total}</span>
-                        )}
+                        {r.fetchError ? <span style={{ color: "var(--c-muted)" }}>—</span>
+                          : <span style={{ fontWeight: "700", fontSize: "13px", color: scoreColor(r.marks, r.total), fontFamily: "JetBrains Mono, monospace" }}>{Number(r.marks).toFixed(1)} / {r.total}</span>}
                       </td>
                       <td className="rx-td">
-                        {r.fetchError ? <span style={{ color: "var(--c-muted)" }}>—</span> : (
-                          <div style={{ display: "flex", gap: "5px" }}>
-                            <span style={{ fontSize: "11px", color: "var(--c-green)", fontFamily: "JetBrains Mono, monospace", fontWeight: "700", background: "#edfaf3", padding: "2px 7px", borderRadius: "99px", border: "1px solid #7dd9b2" }}>✓{r.passCount}</span>
-                            <span style={{ fontSize: "11px", color: "var(--c-red)", fontFamily: "JetBrains Mono, monospace", fontWeight: "700", background: "#fef3f3", padding: "2px 7px", borderRadius: "99px", border: "1px solid #f9a8a8" }}>✕{r.failCount}</span>
-                          </div>
-                        )}
+                        {r.fetchError ? <span style={{ color: "var(--c-muted)" }}>—</span>
+                          : <div style={{ display: "flex", gap: "5px" }}>
+                              <span style={{ fontSize: "11px", color: "var(--c-green)", fontFamily: "JetBrains Mono, monospace", fontWeight: "700", background: "#edfaf3", padding: "2px 7px", borderRadius: "99px", border: "1px solid #7dd9b2" }}>✓{r.passCount}</span>
+                              <span style={{ fontSize: "11px", color: "var(--c-red)",   fontFamily: "JetBrains Mono, monospace", fontWeight: "700", background: "#fef3f3", padding: "2px 7px", borderRadius: "99px", border: "1px solid #f9a8a8" }}>✕{r.failCount}</span>
+                            </div>}
                       </td>
                       <td className="rx-td">
                         {r.evalType && r.evalType !== "—" ? <span className="rx-eval-badge">⚙ {r.evalType}</span> : <span style={{ color: "var(--c-muted)" }}>—</span>}
@@ -607,28 +955,37 @@ export default function ResultXWeekly({ onBack }) {
                         {!r.fetchError ? <button className="rx-table-btn rx-table-btn-amber" onClick={() => setResultModal(r)}>📊 Result</button> : <span style={{ color: "var(--c-muted)" }}>—</span>}
                       </td>
                       <td className="rx-td">
-                        {r.key ? (
-                          <div className="rx-key-box">
-                            <span className="rx-key-text" title={r.key}>{r.key.slice(0, 16)}…</span>
-                            <button className="rx-key-copy" onClick={() => { navigator.clipboard.writeText(r.key); showAlert("Key copied!", "success"); }}>copy</button>
-                          </div>
-                        ) : <span style={{ color: "var(--c-muted)" }}>—</span>}
+                        {r.key
+                          ? <div className="rx-key-box">
+                              <span className="rx-key-text" title={r.key}>{r.key.slice(0, 16)}…</span>
+                              <button className="rx-key-copy" onClick={() => { navigator.clipboard.writeText(r.key); showAlert("Key copied!", "success"); }}>copy</button>
+                            </div>
+                          : <span style={{ color: "var(--c-muted)" }}>—</span>}
                       </td>
+
+                      {/* View Code */}
                       <td className="rx-td">
-                        {r.analysisError ? (
-                          <span style={{ fontSize: "11px", color: "var(--c-red)", fontFamily: "JetBrains Mono, monospace" }}>✕ Error</span>
-                        ) : r.analysisReport ? (
-                          <button className="rx-table-btn rx-table-btn-green"
-                            onClick={() => { setCopyOk(false); setAnalysisModal({ studentName: r.studentName, paragraph: r.analysisReport, filesAnalyzed: r.filesAnalyzed, loading: false, error: null }); }}>
-                            ✅ View Report
-                          </button>
-                        ) : !r.fetchError && r.key && r.questionHtml ? (
-                          <button className="rx-table-btn rx-table-btn-groq" onClick={() => runSingleAnalysis(r, i)} disabled={analyzingIdx !== null || analysingAll}>
-                            {analyzingIdx === i ? "⟳ Analysing…" : "🤖 Analyse"}
-                          </button>
-                        ) : (
-                          <span style={{ fontSize: "11px", color: "var(--c-muted)" }}>{r.fetchError ? "—" : !r.key ? "No key" : "No question"}</span>
-                        )}
+                        {r.key
+                          ? <button
+                              onClick={() => openCodeViewer(r)}
+                              style={{ display: "inline-flex", alignItems: "center", gap: "5px", padding: "4px 11px", borderRadius: "6px", fontSize: "11px", fontWeight: "700", cursor: "pointer", fontFamily: "JetBrains Mono, monospace", background: "#1e1e2e", border: "1px solid #cba6f7", color: "#cba6f7", transition: "all 0.14s" }}
+                              onMouseEnter={e => { e.currentTarget.style.background = "#cba6f7"; e.currentTarget.style.color = "#1e1e2e"; }}
+                              onMouseLeave={e => { e.currentTarget.style.background = "#1e1e2e"; e.currentTarget.style.color = "#cba6f7"; }}
+                            >🗂️ View Code</button>
+                          : <span style={{ color: "var(--c-muted)" }}>—</span>}
+                      </td>
+
+                      {/* Analysis */}
+                      <td className="rx-td">
+                        {r.analysisError
+                          ? <span style={{ fontSize: "11px", color: "var(--c-red)", fontFamily: "JetBrains Mono, monospace" }}>✕ Error</span>
+                          : r.analysisReport
+                            ? <button className="rx-table-btn rx-table-btn-green" onClick={() => { setCopyOk(false); setAnalysisModal({ studentName: r.studentName, paragraph: r.analysisReport, filesAnalyzed: r.filesAnalyzed, loading: false, error: null }); }}>✅ View Report</button>
+                            : !r.fetchError && r.key && r.questionHtml
+                              ? <button className="rx-table-btn rx-table-btn-groq" onClick={() => runSingleAnalysis(r, i)} disabled={analyzingIdx !== null || analysingAll}>
+                                  {analyzingIdx === i ? "⟳ Analysing…" : "🤖 Analyse"}
+                                </button>
+                              : <span style={{ fontSize: "11px", color: "var(--c-muted)" }}>{r.fetchError ? "—" : !r.key ? "No key" : "No question"}</span>}
                       </td>
                     </tr>
                   ))}

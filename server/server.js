@@ -86,7 +86,8 @@ import qcRoutes from "./routes/qc.js";
 import metadataRoutes from "./routes/metadata.js";
 import metadataUniversityRoutes from "./routes/metadataUniversity.js";
 import healthRoutes from "./routes/health.js";
-import resultAnalysisRoutes from "./routes/resultanalysis.js"; // ✅ NEW
+import resultAnalysisRoutes from "./routes/resultanalysis.js"; 
+import repoViewerRoutes from "./routes/repoviewer.js";
 
 dotenv.config();
 
@@ -110,6 +111,7 @@ app.use("/", metadataRoutes);
 app.use("/", metadataUniversityRoutes);
 app.use("/", resultAnalysisRoutes); // ✅ NEW — POST /analyze-result
 app.use("/health", healthRoutes);
+app.use("/", repoViewerRoutes); 
 
 app.use((err, req, res, next) => {
   console.error("🔥 SERVER ERROR:", err.message);
