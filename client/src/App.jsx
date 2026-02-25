@@ -12,7 +12,7 @@ import QBAccess from "./pages/QBAccess";
 import "./App.css";
 import MCQUploader from "./pages/MCQUploader";
 import MetaAccess from "./pages/MetaAccess";
-import ResultX from "./pages/Result/ResultX";
+import ResultX from "./pages/result/ResultX";
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
