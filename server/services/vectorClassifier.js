@@ -433,6 +433,7 @@
 // }
 
 //fixed
+
 import { qdrant } from "./vectorDB.js";
 import { embedOne } from "./embedding.js";
 
