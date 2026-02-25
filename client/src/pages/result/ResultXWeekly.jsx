@@ -174,7 +174,7 @@ export default function ResultXWeekly({ onBack }) {
 
   const callAnalysisAPI = async (r) => {
     const failedTestcases = r.tcList?.filter(t => t.result?.toLowerCase() !== "success").map(t => t.name) || [];
-    const res = await fetch(`${AI_API}analyze-result`, {
+    const res = await fetch(`${AI_API}/analyze-result`, {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ repoKey: r.key, questionHtml: r.questionHtml, studentName: r.studentName, failedTestcases, techStack }),
     });
