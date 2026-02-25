@@ -1218,6 +1218,8 @@
 // }
 
 //23-01-2026
+
+
 import { useState } from "react";
 import { DEPARTMENT_IDS, B_D_ID_OPTIONS } from "../config";
 import "./QBAccessCorporate.css";

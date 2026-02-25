@@ -63,6 +63,15 @@ export default function Dashboard() {
       gradient: 'linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%)',
     },
     {
+      id: 'result-x',
+      icon: '⚡',
+      title: 'Result X',
+      description: 'AI-powered result analysis — weekly assessments & milestone code review.',
+      path: '/result-x',
+      status: 'active',
+      gradient: 'linear-gradient(135deg, #6366f1 0%, #f59e0b 100%)',
+    },
+    {
       id: 'reports',
       icon: '📊',
       title: 'Reports',
@@ -77,8 +86,7 @@ export default function Dashboard() {
       description: 'Automate repetitive tasks and bulk operations across content banks.',
       status: 'coming-soon',
       gradient: 'linear-gradient(135deg, #30cfd0 0%, #330867 100%)',
-    },
-    
+    }, 
   ];
 
   const handleCardClick = (tool) => {

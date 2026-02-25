@@ -12,6 +12,7 @@ import QBAccess from "./pages/QBAccess";
 import "./App.css";
 import MCQUploader from "./pages/MCQUploader";
 import MetaAccess from "./pages/MetaAccess";
+import ResultX from "./pages/Result/ResultX";
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -36,6 +37,7 @@ export default function App() {
                 <Route path="/mcq-qc" element={<MCQ_QC />} />
                 <Route path="/meta-thinkly" element={<MetaAccess />} />
                 <Route path="mcq-uploader" element={<MCQUploader />} />
+                <Route path="/result-x" element={<ResultX />} />
               </Routes>
             </div>
           </div>

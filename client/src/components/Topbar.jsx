@@ -49,6 +49,10 @@ export default function Topbar() {
           icon: "📤",
           subtitle: "Upload json MCQ Questions"
         };
+        case "/result-x":
+        return { title: "Result X",
+     icon: "⚡",
+      subtitle: "AI Result Analysis" };
       default:
         return {
           title: "Support Hub",
