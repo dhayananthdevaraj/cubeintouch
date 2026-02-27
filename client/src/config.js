@@ -2000,8 +2000,1668 @@ export const B_D_ID_OPTIONS = [
     }
 ];
 
+export const B_D_ID_OPTIONS_Hexa = [
+  {
+    "label": "Hexaware - HR",
+    "value": "66aceb1b-ba33-4b91-a21c-6e2fe2683eb4",
+    "branch_id": "939efd80-b549-4acb-a80f-f2eba3fb36b7",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "66aceb1b-ba33-4b91-a21c-6e2fe2683eb4"
+  },
+  {
+    "label": "TTT - HR",
+    "value": "1ded5e8b-7cfa-4e8e-8bd5-cf5860a2f85a",
+    "branch_id": "c8a0562a-9e18-43cd-9565-1864a71c820f",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "1ded5e8b-7cfa-4e8e-8bd5-cf5860a2f85a"
+  },
+  {
+    "label": "Bharath Institute - HR",
+    "value": "ed0c0263-dbd3-4dfd-8950-1d0bc5aafc3e",
+    "branch_id": "35973591-e42a-4118-a221-c6ac6d63d2c7",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "ed0c0263-dbd3-4dfd-8950-1d0bc5aafc3e"
+  },
+  {
+    "label": "Hindustan Institute of Technology and Science - HR",
+    "value": "925f2bd5-4fb7-43ac-bdc8-a871e1ad21e8",
+    "branch_id": "02cf9f92-6438-4cb9-9e49-d4461b4179e7",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "925f2bd5-4fb7-43ac-bdc8-a871e1ad21e8"
+  },
+  {
+    "label": "KCG College of Technology - HR",
+    "value": "2fd477ff-1b10-4fcc-be48-b7211cc5925f",
+    "branch_id": "ba0b0270-995a-416a-ace3-be6b0fe81de6",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "2fd477ff-1b10-4fcc-be48-b7211cc5925f"
+  },
+  {
+    "label": "KPR Institute of Engineering and Technology - HR",
+    "value": "957e0156-f4be-43c0-971b-ad95417a24a3",
+    "branch_id": "92e6eae8-6faa-4a6e-a1cc-cff2f4ef3a74",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "957e0156-f4be-43c0-971b-ad95417a24a3"
+  },
+  {
+    "label": "Sri Eshwar College of Engineering - HR",
+    "value": "7113a19b-c351-436a-a1a9-effb5c27e635",
+    "branch_id": "0fa7d957-88bf-4ec3-ac7a-38022029c1a1",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "7113a19b-c351-436a-a1a9-effb5c27e635"
+  },
+  {
+    "label": "Sri Krishna Group - HR",
+    "value": "80237330-119a-4ad6-ba6c-f9dbab3cff93",
+    "branch_id": "cb8abbf7-8285-420b-9f86-8f23d6cde299",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "80237330-119a-4ad6-ba6c-f9dbab3cff93"
+  },
+  {
+    "label": "Sri Ramakrishna Group of Institutions - HR",
+    "value": "48b0935a-5f77-4f40-8aa7-6a10a1b50e78",
+    "branch_id": "2f788e85-a3fc-4d0f-bc93-d4a89d4f5d05",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "48b0935a-5f77-4f40-8aa7-6a10a1b50e78"
+  },
+  {
+    "label": "Sri Vasavi Engineering College - HR",
+    "value": "4c5e3cf7-c86a-4f83-9242-afd27b611da5",
+    "branch_id": "f1a8321e-508d-4f10-a501-585f6d454145",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "4c5e3cf7-c86a-4f83-9242-afd27b611da5"
+  },
+  {
+    "label": "Technocrats Group - HR",
+    "value": "f2cdc828-a622-453f-b698-aa1cbe07b487",
+    "branch_id": "817f77b5-f9b3-449a-a66a-d6e165ecc081",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "f2cdc828-a622-453f-b698-aa1cbe07b487"
+  },
+  {
+    "label": "Ext.Trainer - HR",
+    "value": "69279e14-cb28-4351-ae29-bde6df54b314",
+    "branch_id": "3ad750b3-d92b-4a55-8de2-47068b9f7ba8",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "69279e14-cb28-4351-ae29-bde6df54b314"
+  },
+  {
+    "label": "Amrita-EIP2 - HR",
+    "value": "45c6fdc4-40b7-4eea-ab94-40f4feb95948",
+    "branch_id": "3fcffe87-cc82-48b2-937c-d48f7edfbedb",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "45c6fdc4-40b7-4eea-ab94-40f4feb95948"
+  },
+  {
+    "label": "B V Raju Institute (BVRIT)-EIP2 - HR",
+    "value": "ddd2fc83-735b-401f-a267-4ce3960f56e4",
+    "branch_id": "e1f2269a-c9a8-4dda-b430-ed7f359c3f57",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "ddd2fc83-735b-401f-a267-4ce3960f56e4"
+  },
+  {
+    "label": "B.M.S Institute-EIP2 - HR",
+    "value": "bbb0be4f-9003-4390-9615-a2d7c924e4c6",
+    "branch_id": "7e95d16a-3719-485d-a71d-696895234bc2",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "bbb0be4f-9003-4390-9615-a2d7c924e4c6"
+  },
+  {
+    "label": "Banasthali University-EIP2 - HR",
+    "value": "01486e08-ae18-4a0d-827a-22a5cca4e9cc",
+    "branch_id": "9c161ad5-bb97-4c87-a34b-d8b18cfc6296",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "01486e08-ae18-4a0d-827a-22a5cca4e9cc"
+  },
+  {
+    "label": "Basaveshwar Engineering-EIP2 - HR",
+    "value": "60fe7c2d-b0ce-472d-9fac-8c74cf4c4c2e",
+    "branch_id": "e00c5ae7-0285-437e-ad7b-b1e8c2d243ac",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "60fe7c2d-b0ce-472d-9fac-8c74cf4c4c2e"
+  },
+  {
+    "label": "C V Raman College-EIP2 - HR",
+    "value": "0920aa5c-1957-47ad-8500-fdaa00581e95",
+    "branch_id": "4d0b1d97-dba1-47d0-b8ec-36446efcfd19",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "0920aa5c-1957-47ad-8500-fdaa00581e95"
+  },
+  {
+    "label": "Dehradun Institute-EIP2 - HR",
+    "value": "57b773b1-7edb-4ceb-83b2-d6caf2ac6e4c",
+    "branch_id": "5daa054f-63e5-4aff-90c4-371cb7206b88",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "57b773b1-7edb-4ceb-83b2-d6caf2ac6e4c"
+  },
+  {
+    "label": "Dr. Ambedkar Institute-EIP2 - HR",
+    "value": "9c3fbcdb-0a26-48b3-a700-903116ef2178",
+    "branch_id": "df317180-e1f7-4f4c-aba4-59c63e25aa4b",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "9c3fbcdb-0a26-48b3-a700-903116ef2178"
+  },
+  {
+    "label": "Dr. Mahalingam College (MCET)-EIP2 - HR",
+    "value": "6eb17c11-1362-4c0b-af8a-f9459be32d69",
+    "branch_id": "24a255e1-6103-43bb-ae7d-6644eba15d05",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "6eb17c11-1362-4c0b-af8a-f9459be32d69"
+  },
+  {
+    "label": "DR.SUDHIR CHANDRA SUR DEGREE-EIP2 - HR",
+    "value": "37ba3608-9b9f-4e58-a1a4-7fd3976de98a",
+    "branch_id": "f1eb19c8-fabb-4a5c-9269-70eb85cb0a3d",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "37ba3608-9b9f-4e58-a1a4-7fd3976de98a"
+  },
+  {
+    "label": "G H Raisoni College-EIP2 - HR",
+    "value": "8814131a-667e-43a9-afcd-96fa42962acf",
+    "branch_id": "e3ec23bf-3adf-45c7-881e-66a7e33dd28b",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "8814131a-667e-43a9-afcd-96fa42962acf"
+  },
+  {
+    "label": "G. Narayanamma Institute (GNITS)-EIP2 - HR",
+    "value": "42a86ba1-f829-4ec8-8b94-188ca18c18bd",
+    "branch_id": "cb2c86d7-0fe4-4f87-9708-5371793d3eb2",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "42a86ba1-f829-4ec8-8b94-188ca18c18bd"
+  },
+  {
+    "label": "G.L Bajaj Institute-EIP2 - HR",
+    "value": "a1cb02a8-cf1b-4452-ae21-ac0799018d27",
+    "branch_id": "e441a155-cf22-4b7e-9676-d056c8a00531",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "a1cb02a8-cf1b-4452-ae21-ac0799018d27"
+  },
+  {
+    "label": "Galgotias College-EIP2 - HR",
+    "value": "c7d1f13d-9429-4acf-916b-3084effe8421",
+    "branch_id": "96a70d7b-366c-4711-bdd1-1a5e2d49b728",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "c7d1f13d-9429-4acf-916b-3084effe8421"
+  },
+  {
+    "label": "Gandhi Institue-EIP2 - HR",
+    "value": "138f110d-a1ee-4fcf-979a-040de380d8ff",
+    "branch_id": "a2160ea1-17d8-4be9-8d43-0aa803cc0a91",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "138f110d-a1ee-4fcf-979a-040de380d8ff"
+  },
+  {
+    "label": "Gaytri Vidhya Parishad College-EIP2 - HR",
+    "value": "ca74fb2f-bd5a-46e3-b3b4-f96c5623c826",
+    "branch_id": "c66145df-739b-473e-b429-31c24901a164",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "ca74fb2f-bd5a-46e3-b3b4-f96c5623c826"
+  },
+  {
+    "label": "GITAM University-EIP2 - HR",
+    "value": "e34baf4b-fc3a-482b-9522-34f5644d26d5",
+    "branch_id": "14671aec-6a30-4041-92b0-c7490cb4823b",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "e34baf4b-fc3a-482b-9522-34f5644d26d5"
+  },
+  {
+    "label": "Gokaraju Rangaraju Institute-EIP2 - HR",
+    "value": "b8ce3ddb-ff82-4173-bc9f-41f9efa39f36",
+    "branch_id": "a6aa358a-a43b-4abb-8c0b-2cad594fc7bd",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "b8ce3ddb-ff82-4173-bc9f-41f9efa39f36"
+  },
+  {
+    "label": "Graphic Era University-EIP2 - HR",
+    "value": "609b6b26-d0a8-4b25-8d9c-3b5bc65161db",
+    "branch_id": "97a2f763-3d8f-4b2f-8050-459fa17c8153",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "609b6b26-d0a8-4b25-8d9c-3b5bc65161db"
+  },
+  {
+    "label": "Gudlavalleru Engineering-EIP2 - HR",
+    "value": "e4bfc43d-e72b-40bf-a4fc-fafb15d572a5",
+    "branch_id": "a5ebacf9-0ba5-4bd7-b72d-f22aff6a899f",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "e4bfc43d-e72b-40bf-a4fc-fafb15d572a5"
+  },
+  {
+    "label": "Gyan Ganga Institute-EIP2 - HR",
+    "value": "745f92db-bbda-4562-9247-1db9933c83db",
+    "branch_id": "2d380eec-32ad-4744-a0a3-ddbae375db57",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "745f92db-bbda-4562-9247-1db9933c83db"
+  },
+  {
+    "label": "Heritage Institute-EIP2 - HR",
+    "value": "4449e828-0e7e-4162-9f52-73f3458c93b2",
+    "branch_id": "4d533ab7-b9a0-40a1-8dc2-8aeeb8036b70",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "4449e828-0e7e-4162-9f52-73f3458c93b2"
+  },
+  {
+    "label": "IES College-EIP2 - HR",
+    "value": "a4c99b72-60b6-4fe0-b568-8403ea6dff49",
+    "branch_id": "555436ce-b796-4292-862c-a87a55f0c989",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "a4c99b72-60b6-4fe0-b568-8403ea6dff49"
+  },
+  {
+    "label": "Institute of Aeronautical Engg-EIP2 - HR",
+    "value": "da5eb5c4-a02d-4f88-b6a1-ab000775ebf8",
+    "branch_id": "381675b6-180f-453f-ab40-3ce8928ad73c",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "da5eb5c4-a02d-4f88-b6a1-ab000775ebf8"
+  },
+  {
+    "label": "ITM Group-EIP2 - HR",
+    "value": "33a08749-bbf5-4c24-b4e1-b616fed568cb",
+    "branch_id": "cf101611-69b2-41b4-917a-cf2bc19d67a9",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "33a08749-bbf5-4c24-b4e1-b616fed568cb"
+  },
+  {
+    "label": "Kalasalingam Academy-EIP2 - HR",
+    "value": "6251b662-54d2-4540-ac85-a276bd66279f",
+    "branch_id": "b64edccc-efff-4f1e-9c04-648d9b55a626",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "6251b662-54d2-4540-ac85-a276bd66279f"
+  },
+  {
+    "label": "Karunya Institute-EIP2 - HR",
+    "value": "d1865b88-0d49-4763-a0c9-897a250cbffd",
+    "branch_id": "5c5ff456-1acc-4060-ae29-8f0f18adda2b",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "d1865b88-0d49-4763-a0c9-897a250cbffd"
+  },
+  {
+    "label": "KLE Institute-EIP2 - HR",
+    "value": "be21f3eb-80a1-416f-bcab-34d16acd8b90",
+    "branch_id": "cc636167-9ee6-401a-9b41-3348c184fa41",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "be21f3eb-80a1-416f-bcab-34d16acd8b90"
+  },
+  {
+    "label": "Lakshmi Narain College-EIP2 - HR",
+    "value": "f68421f6-0299-476d-9bbc-560863210676",
+    "branch_id": "649093f9-f814-464e-b3b4-e86e57962b3c",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "f68421f6-0299-476d-9bbc-560863210676"
+  },
+  {
+    "label": "Lendi Institute-EIP2 - HR",
+    "value": "0a767fd4-c89e-4464-b1c2-a89deaed2950",
+    "branch_id": "3697c047-12d4-425e-ad54-f40022f07128",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "0a767fd4-c89e-4464-b1c2-a89deaed2950"
+  },
+  {
+    "label": "Mahatma Gandhi Institute-EIP2 - HR",
+    "value": "5fc4a2be-3fc2-48c3-970b-5e086f3e9649",
+    "branch_id": "8fa465c6-71d2-4bc1-84a0-f40b89adb043",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "5fc4a2be-3fc2-48c3-970b-5e086f3e9649"
+  },
+  {
+    "label": "Malla Reddy College-EIP2 - HR",
+    "value": "0bfab067-0b80-4523-8a30-76c672870878",
+    "branch_id": "13baa673-8e29-4806-964c-202d2d89595b",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "0bfab067-0b80-4523-8a30-76c672870878"
+  },
+  {
+    "label": "Malla Reddy Engineering College for Women-EIP2 - HR",
+    "value": "96920dc1-ad1b-41f5-93f2-be5208de4c0f",
+    "branch_id": "27144f8d-e9b1-49b4-9f3f-f09df97fe4d3",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "96920dc1-ad1b-41f5-93f2-be5208de4c0f"
+  },
+  {
+    "label": "Malnad College-EIP2 - HR",
+    "value": "c5337fbb-1604-4905-a329-ae4bccdf8530",
+    "branch_id": "7365973d-7d72-4aa6-8beb-b3dfddfbfe5b",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "c5337fbb-1604-4905-a329-ae4bccdf8530"
+  },
+  {
+    "label": "Matrusri Engineering-EIP2 - HR",
+    "value": "6c4fd76d-42dc-49fd-b72d-21237e90f3c1",
+    "branch_id": "5a40eec0-5f01-47f8-8172-5e42991f766a",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "6c4fd76d-42dc-49fd-b72d-21237e90f3c1"
+  },
+  {
+    "label": "MLR Institute-EIP2 - HR",
+    "value": "0e36fdd2-b4e6-4655-aa34-4d7dc08576bf",
+    "branch_id": "d4b5c865-f371-4c41-a706-55a547ce2ac1",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "0e36fdd2-b4e6-4655-aa34-4d7dc08576bf"
+  },
+  {
+    "label": "Narasaraopeta Engineering-EIP2 - HR",
+    "value": "bd67c2b4-c692-4c65-8468-38992adbb3dc",
+    "branch_id": "d5b83ab1-8765-417f-9a98-6cfd056c63a5",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "bd67c2b4-c692-4c65-8468-38992adbb3dc"
+  },
+  {
+    "label": "New Horizon-EIP2 - HR",
+    "value": "f838b2fa-3032-4684-b97f-0c60d5861345",
+    "branch_id": "7ca79509-7ee8-408e-9a29-d4a50d965226",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "f838b2fa-3032-4684-b97f-0c60d5861345"
+  },
+  {
+    "label": "P.A. College-EIP2 - HR",
+    "value": "e26380d5-adbf-4672-9e5f-74b665b510bd",
+    "branch_id": "3348ea72-2784-480c-aa82-88d057ee1bb9",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "e26380d5-adbf-4672-9e5f-74b665b510bd"
+  },
+  {
+    "label": "PES college-EIP2 - HR",
+    "value": "1ef49f93-20ac-4b03-ab9b-9aab3598e983",
+    "branch_id": "4f3a3b69-d95d-4f91-bf9c-c690d373426f",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "1ef49f93-20ac-4b03-ab9b-9aab3598e983"
+  },
+  {
+    "label": "PSNA-EIP2 - HR",
+    "value": "cf0ba938-3a4d-44ef-8f81-20f135fa295b",
+    "branch_id": "f1e8c6dd-8fd2-475e-a1cc-6ac0cd2a4df9",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "cf0ba938-3a4d-44ef-8f81-20f135fa295b"
+  },
+  {
+    "label": "PVP Siddhartha Institute-EIP2 - HR",
+    "value": "f6bf6164-9690-4e5f-85cb-96c7690efb38",
+    "branch_id": "1f4a23f0-342e-4d8e-97e5-09da1d9aabf3",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "f6bf6164-9690-4e5f-85cb-96c7690efb38"
+  },
+  {
+    "label": "Rajalakshmi Engineering-EIP2 - HR",
+    "value": "82047cf0-c220-4dbc-adeb-1eaa614cb9d4",
+    "branch_id": "ad26188c-54dc-4158-9b47-ca918d11fa4b",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "82047cf0-c220-4dbc-adeb-1eaa614cb9d4"
+  },
+  {
+    "label": "Rajeev Gandhi Memorial College-EIP2 - HR",
+    "value": "85ba5d47-1b39-40f6-8674-8509e0899b8c",
+    "branch_id": "9009956c-77ee-40c0-aa19-70d8c2b325f2",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "85ba5d47-1b39-40f6-8674-8509e0899b8c"
+  },
+  {
+    "label": "Ramrao Adik Institute-EIP2 - HR",
+    "value": "54813f47-ad12-425c-9887-f200e0dab878",
+    "branch_id": "f4b6510f-2969-4f5b-bdf7-24773189cf0a",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "54813f47-ad12-425c-9887-f200e0dab878"
+  },
+  {
+    "label": "RUNGTA COLLEGE OF ENGINEERING-EIP2 - HR",
+    "value": "57ac3327-5aa9-436e-a100-8846b2e892dd",
+    "branch_id": "3149d724-348d-4f9f-a7b5-a1354e5154a4",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "57ac3327-5aa9-436e-a100-8846b2e892dd"
+  },
+  {
+    "label": "RVR&JC-EIP2 - HR",
+    "value": "3f9d590e-9932-44fd-bdb8-be74166d2c3b",
+    "branch_id": "84a67e52-aba1-46f2-bf96-623baa7df19a",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "3f9d590e-9932-44fd-bdb8-be74166d2c3b"
+  },
+  {
+    "label": "S. A. Engineering-EIP2 - HR",
+    "value": "47d81712-1634-47e3-960e-211b036f9828",
+    "branch_id": "eea59a9d-0f32-48e8-b33a-efac3e7a25fe",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "47d81712-1634-47e3-960e-211b036f9828"
+  },
+  {
+    "label": "Sagar Institute-EIP2 - HR",
+    "value": "3bbb6211-b218-46c1-81c0-4399f16b8494",
+    "branch_id": "8f8399d5-4eca-4522-8532-0712028d394e",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "3bbb6211-b218-46c1-81c0-4399f16b8494"
+  },
+  {
+    "label": "SASI INSTITUTE-EIP2 - HR",
+    "value": "27c82602-0757-47c5-86f0-7afcfb2ef002",
+    "branch_id": "1fb545f5-5907-4c40-9e72-8c8de78b7fe3",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "27c82602-0757-47c5-86f0-7afcfb2ef002"
+  },
+  {
+    "label": "Saveetha Engineering College-EIP2 - HR",
+    "value": "95d3c4f9-14a4-4ae5-9fdd-d4f7c3c208e7",
+    "branch_id": "4b67e166-5c9e-4ba2-914d-67e0f535981b",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "95d3c4f9-14a4-4ae5-9fdd-d4f7c3c208e7"
+  },
+  {
+    "label": "Saveetha School of Engineering-EIP2 - HR",
+    "value": "1bce10a7-8abd-4c95-998e-02ec2e76efbd",
+    "branch_id": "0e16b1ea-502d-41bd-9bc2-e9653a14d6bd",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "1bce10a7-8abd-4c95-998e-02ec2e76efbd"
+  },
+  {
+    "label": "SDM-EIP2 - HR",
+    "value": "4fb81105-1fb8-4b0f-8f4a-63dad5e48b99",
+    "branch_id": "ea278e02-b4b0-4b97-89da-86be73a3e914",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "4fb81105-1fb8-4b0f-8f4a-63dad5e48b99"
+  },
+  {
+    "label": "Shri Ram Institute-EIP2 - HR",
+    "value": "5b76e5eb-c3e6-4c23-bcf8-979d14fff224",
+    "branch_id": "93cda286-53a5-4be7-8b0a-04bccf4e5c0c",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "5b76e5eb-c3e6-4c23-bcf8-979d14fff224"
+  },
+  {
+    "label": "Shri Ramdeobaba College-EIP2 - HR",
+    "value": "d2cc923b-705e-4625-b8a0-47e7bb327e78",
+    "branch_id": "a7c0a494-bc1a-4949-a76d-bf730f0604cd",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "d2cc923b-705e-4625-b8a0-47e7bb327e78"
+  },
+  {
+    "label": "Shri Vishnu-EIP2 - HR",
+    "value": "332dc109-5b87-494a-aa66-e947915040b5",
+    "branch_id": "4a74a66d-0af7-46f7-a661-6f3eff9be19c",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "332dc109-5b87-494a-aa66-e947915040b5"
+  },
+  {
+    "label": "Sri Venkateswara College of Engineering-EIP2 - HR",
+    "value": "bfb4e187-ef48-4db3-911d-2fb37eaa869c",
+    "branch_id": "d7528a72-4074-4c80-9ef1-169e403287d5",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "bfb4e187-ef48-4db3-911d-2fb37eaa869c"
+  },
+  {
+    "label": "Sri Venkateswara College of Engineering & Technology-EIP2 - HR",
+    "value": "1958cece-477e-43c2-b343-ab6ff03f68d7",
+    "branch_id": "be49fe20-f826-428c-be4f-2c236a57413c",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "1958cece-477e-43c2-b343-ab6ff03f68d7"
+  },
+  {
+    "label": "Technoindia University-EIP2 - HR",
+    "value": "74c7b18c-4f7a-42aa-bd75-b5f81bd0d815",
+    "branch_id": "61de39d3-5a2f-4afb-a4c4-d41723436614",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "74c7b18c-4f7a-42aa-bd75-b5f81bd0d815"
+  },
+  {
+    "label": "University Institute-EIP2 - HR",
+    "value": "0b081cac-c0c5-459e-9422-9467509b3d36",
+    "branch_id": "e3cef92b-5b26-445b-be7a-b23a89c658af",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "0b081cac-c0c5-459e-9422-9467509b3d36"
+  },
+  {
+    "label": "Uttaranchal Institute-EIP2 - HR",
+    "value": "ec398ec8-f120-45c9-8479-b5019cd2a108",
+    "branch_id": "ddabc6b6-6a2c-4551-8e35-a3b8c8eca6c2",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "ec398ec8-f120-45c9-8479-b5019cd2a108"
+  },
+  {
+    "label": "Vellore Institute (VIT)-EIP2 - HR",
+    "value": "4b2a9b31-9874-43ca-8bd7-7871f28f498a",
+    "branch_id": "54d9d98d-5da2-4393-ba2c-75e8ae58c657",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "4b2a9b31-9874-43ca-8bd7-7871f28f498a"
+  },
+  {
+    "label": "College of Engineering Trivandrum-EIP2 - HR",
+    "value": "bf1e0b18-2d1d-40f2-a807-065b3eed1919",
+    "branch_id": "27d3d58f-01b9-420c-b859-2cfede41ae16",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "bf1e0b18-2d1d-40f2-a807-065b3eed1919"
+  },
+  {
+    "label": "Sri Ramakrisnna Institute Of Technology-EIP2 - HR",
+    "value": "f45a8b64-07c5-4a4c-bf65-613da3bde63e",
+    "branch_id": "8db5b2ba-9ddb-478a-a5cf-18211709f6c0",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "f45a8b64-07c5-4a4c-bf65-613da3bde63e"
+  },
+  {
+    "label": "Amity University-EIP2 - HR",
+    "value": "96ce4d1c-e9d9-4ee3-a052-3066a3239487",
+    "branch_id": "fb670ba9-cec4-4fb3-ba8e-c4d45fb54323",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "96ce4d1c-e9d9-4ee3-a052-3066a3239487"
+  },
+  {
+    "label": "Pondicherry Engineering College-EIP2 - HR",
+    "value": "739e2a17-ac75-499f-bb9a-f01a18939978",
+    "branch_id": "3bf82f72-4d1e-496c-aec1-293316389cc9",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "739e2a17-ac75-499f-bb9a-f01a18939978"
+  },
+  {
+    "label": "yeshwantrao chavan college-EIP2 - HR",
+    "value": "8dece297-ea03-426a-a377-33e3d4e45fb7",
+    "branch_id": "3d647322-d094-4c53-a04c-e73897a01817",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "8dece297-ea03-426a-a377-33e3d4e45fb7"
+  },
+  {
+    "label": "HITS-EIP2 - HR",
+    "value": "45863b26-7739-40eb-abe9-79c46f88ae4b",
+    "branch_id": "5c640fb7-3cb0-45a2-9aff-ca7dc6c50650",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "45863b26-7739-40eb-abe9-79c46f88ae4b"
+  },
+  {
+    "label": "Sri Vasavi Engg College-EIP2 - HR",
+    "value": "ed8da747-8e53-4955-b558-b6256d393ec7",
+    "branch_id": "15d5daf3-b843-445e-a15a-07b94072d452",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "ed8da747-8e53-4955-b558-b6256d393ec7"
+  },
+  {
+    "label": "Sathyabama University-EIP2 - HR",
+    "value": "7354c6e6-bb79-4269-8ec9-4c3cdbae9f80",
+    "branch_id": "4d25a9e2-530b-445c-bc28-efd1acc1ec7d",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "7354c6e6-bb79-4269-8ec9-4c3cdbae9f80"
+  },
+  {
+    "label": "St.Joseph College-EIP2 - HR",
+    "value": "a1fa0ea3-a6aa-4cf5-8c47-74f6c907f6cd",
+    "branch_id": "c59ce67a-0c1b-4ab7-bd1c-73af0d4b7936",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "a1fa0ea3-a6aa-4cf5-8c47-74f6c907f6cd"
+  },
+  {
+    "label": "Velalar College-EIP2 - HR",
+    "value": "7c02bed0-0c79-4552-a4fa-c8485857475a",
+    "branch_id": "9c31fc6e-0dcb-417b-beda-39ad46063e11",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "7c02bed0-0c79-4552-a4fa-c8485857475a"
+  },
+  {
+    "label": "ICTACT - HR",
+    "value": "3bedd498-fdc1-4d90-935f-912d93fd74e8",
+    "branch_id": "8d73f1d8-ddec-4bdf-b5e2-b91104629ca0",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "3bedd498-fdc1-4d90-935f-912d93fd74e8"
+  },
+  {
+    "label": "Aditya Group of Institution-Segue 2 - HR",
+    "value": "9db8493e-1dc6-48d0-adab-97508de0a444",
+    "branch_id": "b96ba45c-1124-4ab5-a91b-3b090a9f1d98",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "9db8493e-1dc6-48d0-adab-97508de0a444"
+  },
+  {
+    "label": "Hindustan Institute of Technology and Science-Segue 2 - HR",
+    "value": "856d7b72-9bae-4d01-8303-1115264d1d8a",
+    "branch_id": "00fa3d14-c170-413f-ab60-28ecedb8677f",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "856d7b72-9bae-4d01-8303-1115264d1d8a"
+  },
+  {
+    "label": "K L University-Segue 2 - HR",
+    "value": "5feaf05c-06a7-405d-9b42-1c7b080ad75c",
+    "branch_id": "ae5005a5-5d93-48e9-b539-4588c3cb1d2d",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "5feaf05c-06a7-405d-9b42-1c7b080ad75c"
+  },
+  {
+    "label": "KPR Institute of Engineering and Technology-Segue 2 - HR",
+    "value": "7e07fed8-6b97-492a-b58e-b310338a8128",
+    "branch_id": "3302d647-06ee-46e2-8800-6bfb24e66d2c",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "7e07fed8-6b97-492a-b58e-b310338a8128"
+  },
+  {
+    "label": "NRI Institute of Technology-Segue 2 - HR",
+    "value": "8bda75c5-616d-408a-93d8-e8d6f470de89",
+    "branch_id": "7851b7c1-67ce-4f9f-986a-cad781d025fd",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "8bda75c5-616d-408a-93d8-e8d6f470de89"
+  },
+  {
+    "label": "PVP SIDDHARTHA INSTITUTE OF TECHNOLOGY-Segue 2 - HR",
+    "value": "0bf233c7-9df4-4dd2-a73b-c51f07334ab5",
+    "branch_id": "93e182d5-006d-4633-85c7-a8d130649ac5",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "0bf233c7-9df4-4dd2-a73b-c51f07334ab5"
+  },
+  {
+    "label": "Sri Eshwar College of Engineering-Segue 2 - HR",
+    "value": "de547b58-1bb3-421b-886c-d931a35b7768",
+    "branch_id": "8b40b8d7-cc3e-421d-b32c-1260a6894778",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "de547b58-1bb3-421b-886c-d931a35b7768"
+  },
+  {
+    "label": "Sri Krishna Group-Segue 2 - HR",
+    "value": "8a31c482-c23e-47ab-9ee4-81c91ff7e4f6",
+    "branch_id": "41f74849-fb7b-49b6-bf2d-e42f42346ab5",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "8a31c482-c23e-47ab-9ee4-81c91ff7e4f6"
+  },
+  {
+    "label": "Sri Ramakrishna Group Of Institutions-Segue 2 - HR",
+    "value": "8052f4d1-8982-49f9-ae6d-0a233b1010b6",
+    "branch_id": "c0ad599b-00ba-4de9-9159-922d4bcadb04",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "8052f4d1-8982-49f9-ae6d-0a233b1010b6"
+  },
+  {
+    "label": "SRI VASAVI ENGINEERING COLLEGE-Segue 2 - HR",
+    "value": "293ab170-5b3c-4294-985e-2df30fc4feec",
+    "branch_id": "081b02e1-6534-4fa7-acae-f661839b4408",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "293ab170-5b3c-4294-985e-2df30fc4feec"
+  },
+  {
+    "label": "Technocrats Group-Segue 2 - HR",
+    "value": "dcd02d9a-ca01-414e-a267-79dea9bf2c02",
+    "branch_id": "b1506f3b-18fe-48c4-87b1-591c132de014",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "dcd02d9a-ca01-414e-a267-79dea9bf2c02"
+  },
+  {
+    "label": "KCG College - Segue 2 - HR",
+    "value": "2e819ac5-a48d-47e2-a931-78c6b6bbb1e2",
+    "branch_id": "dadbeea8-696c-4067-84b3-e7d180954495",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "2e819ac5-a48d-47e2-a931-78c6b6bbb1e2"
+  },
+  {
+    "label": "Bapatla Engineering College - HR",
+    "value": "cb13d618-bdf9-47bc-a477-18aa2da76245",
+    "branch_id": "20670e25-61f0-42cf-bdc4-64f0634450ff",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "cb13d618-bdf9-47bc-a477-18aa2da76245"
+  },
+  {
+    "label": "CSMSS Chh Shahu College of Engineering - HR",
+    "value": "49c88513-4759-4e02-8170-ba6eea5f3fdc",
+    "branch_id": "f4040cb4-1ac2-4d68-bfb5-24d070bb1cde",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "49c88513-4759-4e02-8170-ba6eea5f3fdc"
+  },
+  {
+    "label": "Dr.N.G.P.Institute of Technology - HR",
+    "value": "56104ca1-d6f1-4ff7-9b8e-1fe4223897c8",
+    "branch_id": "ce346895-52d5-40dc-b3bc-c89403232e4b",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "56104ca1-d6f1-4ff7-9b8e-1fe4223897c8"
+  },
+  {
+    "label": "Dr. Mahalingam College of Engineering and Technology, Pollac - HR",
+    "value": "e418ca96-ec75-4338-a161-50d8443285cc",
+    "branch_id": "0b5cec1b-d81c-41cd-bdfe-92b364e06bbe",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "e418ca96-ec75-4338-a161-50d8443285cc"
+  },
+  {
+    "label": "Graphic Era Deemed to be University - HR",
+    "value": "8bda03c3-85e4-4cad-bdba-c1a5aee815b8",
+    "branch_id": "27d4ec9e-5d60-4c4c-b7eb-65bf89315bec",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "8bda03c3-85e4-4cad-bdba-c1a5aee815b8"
+  },
+  {
+    "label": "Gudlavalleru Engineering College - HR",
+    "value": "5007c74b-598b-463f-811a-b5ce3a5c4c49",
+    "branch_id": "d87d2d9a-a963-4f1f-af4b-8a30a4346f1b",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "5007c74b-598b-463f-811a-b5ce3a5c4c49"
+  },
+  {
+    "label": "JSPM Rajarshi shahu college of engineering - HR",
+    "value": "617a6287-6120-4c64-b6b3-dc4a33077cd6",
+    "branch_id": "59db96e9-66a6-419b-b682-a1aa36d77a75",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "617a6287-6120-4c64-b6b3-dc4a33077cd6"
+  },
+  {
+    "label": "Karunya Institute of Technology and Sciences, Coimbatore - HR",
+    "value": "2fe39444-9ba8-46b7-9294-334b890d52c7",
+    "branch_id": "20832345-a153-4920-8fcd-db95ed95da28",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "2fe39444-9ba8-46b7-9294-334b890d52c7"
+  },
+  {
+    "label": "KSR College of Engineering - HR",
+    "value": "47872951-e50c-4d92-8a22-a5b73e6423f3",
+    "branch_id": "7aebc587-d292-4a02-acfd-c6b0666b3b22",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "47872951-e50c-4d92-8a22-a5b73e6423f3"
+  },
+  {
+    "label": "Manav Rachna University - HR",
+    "value": "9381480f-242a-4493-a661-14f83ca5a8e9",
+    "branch_id": "6a94cf21-17f0-4cff-b830-d66c18a0c38d",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "9381480f-242a-4493-a661-14f83ca5a8e9"
+  },
+  {
+    "label": "Meerut Institute of Engineering and Technology - HR",
+    "value": "cf16a01d-8d15-407e-b819-866d42f5ca4b",
+    "branch_id": "3b1bd766-48fb-4733-81ad-089991c89e57",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "cf16a01d-8d15-407e-b819-866d42f5ca4b"
+  },
+  {
+    "label": "Nandha Engineering College,Erode - HR",
+    "value": "8df57392-b440-44a9-85d5-5cab449edb28",
+    "branch_id": "05124bcc-e33e-4b7f-ad5d-e71b0da82ff7",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "8df57392-b440-44a9-85d5-5cab449edb28"
+  },
+  {
+    "label": "National Engineering College - HR",
+    "value": "2f554548-f4b0-4bdf-a037-0b9df8d73227",
+    "branch_id": "7fc1b358-cf10-4479-a885-902e01b26a8e",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "2f554548-f4b0-4bdf-a037-0b9df8d73227"
+  },
+  {
+    "label": "Noida Institute of Engineering and Technology, Greater Noida - HR",
+    "value": "9f18f598-123b-4a28-a540-3cc43b53deb9",
+    "branch_id": "1b9235a1-8fd2-49be-ad70-e15a37c257d7",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "9f18f598-123b-4a28-a540-3cc43b53deb9"
+  },
+  {
+    "label": "PACE INSTITUTE OF TECHNOLOGY & SCIENCES - HR",
+    "value": "6714eda6-8f65-41d8-a92d-41330ba900a8",
+    "branch_id": "ab53fe94-a123-4c35-85a0-bb8c39132a10",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "6714eda6-8f65-41d8-a92d-41330ba900a8"
+  },
+  {
+    "label": "PSNACET - HR",
+    "value": "e1f4bf46-1f30-4394-a70e-5e31bdc44322",
+    "branch_id": "c15ffe71-cf33-40b5-9128-de820afab0a7",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "e1f4bf46-1f30-4394-a70e-5e31bdc44322"
+  },
+  {
+    "label": "Saveetha Engineering College, Sriperumbudur - HR",
+    "value": "62a6ef8c-6c7c-4afd-9c64-5882482ca25c",
+    "branch_id": "4176561c-50ab-4981-86d0-907bab61b8e0",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "62a6ef8c-6c7c-4afd-9c64-5882482ca25c"
+  },
+  {
+    "label": "St. Xavier's Catholic College of Engineering - HR",
+    "value": "25639a03-f048-430c-abbf-ded546b5cab1",
+    "branch_id": "ed4bd8b7-600d-49fe-87fa-cfd8ec7df861",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "25639a03-f048-430c-abbf-ded546b5cab1"
+  },
+  {
+    "label": "Tirumala Engineering College - HR",
+    "value": "2cae8ef8-349e-4901-a856-5dbdc6ec3cec",
+    "branch_id": "88bddcad-5dfe-4af1-bdc2-c3add18a9762",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "2cae8ef8-349e-4901-a856-5dbdc6ec3cec"
+  },
+  {
+    "label": "Universal College of Engineering - HR",
+    "value": "db5b815f-5971-45d2-93b6-34d7bc59e22d",
+    "branch_id": "c90723d3-ae56-4c67-8ccb-1a90accbbf69",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "db5b815f-5971-45d2-93b6-34d7bc59e22d"
+  },
+  {
+    "label": "Vasireddy Venkatadri Institute of Technology - HR",
+    "value": "c9ac155f-ce0e-4fb6-8732-5cd839036d5f",
+    "branch_id": "67b63fe8-0bf6-4652-8f0a-46ec47498bd4",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "c9ac155f-ce0e-4fb6-8732-5cd839036d5f"
+  },
+  {
+    "label": "Velagapudi Ramakrishna Siddhartha Engineering College - HR",
+    "value": "b5013f13-daaa-417d-bf62-b646e412f9ca",
+    "branch_id": "e9cfe4ee-5b2f-45f6-b9b6-dac53f2112e7",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "b5013f13-daaa-417d-bf62-b646e412f9ca"
+  },
+  {
+    "label": "Velammal Engineering College                                 - HR",
+    "value": "a7e8080f-a70a-4a52-8c41-84eac6b223bd",
+    "branch_id": "85c80f74-5e19-4920-982c-587dd2ad4e17",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "a7e8080f-a70a-4a52-8c41-84eac6b223bd"
+  },
+  {
+    "label": "Vidya Pratishthan's Kamalnayan Bajaj Institute of Engineerin - HR",
+    "value": "be6c38a4-5d82-4add-b313-4810f0037d05",
+    "branch_id": "5d5ccd8c-d942-4f44-8a36-4912c125c5ed",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "be6c38a4-5d82-4add-b313-4810f0037d05"
+  },
+  {
+    "label": "NBKR Institute of Science & Technology - HR",
+    "value": "bff4bd09-b9bb-4053-a957-f1dfb6afbe22",
+    "branch_id": "e5ebfa46-b541-4da0-8747-7f8cab9db78e",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "bff4bd09-b9bb-4053-a957-f1dfb6afbe22"
+  },
+  {
+    "label": "Softskill_2022_Trainers - HR",
+    "value": "7f7d2110-11cc-49b6-b945-d7f14a59d57a",
+    "branch_id": "2a363fd6-614f-4265-a134-1eb30257b04e",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "7f7d2110-11cc-49b6-b945-d7f14a59d57a"
+  },
+  {
+    "label": "Segue_Annamacharya Institute of Technology and Sciences, Raj - HR",
+    "value": "12a912bd-1c49-4c6a-afe7-6f0722719575",
+    "branch_id": "66eb59da-cd4b-43cf-a722-9b27c6842a30",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "12a912bd-1c49-4c6a-afe7-6f0722719575"
+  },
+  {
+    "label": "Segue_Sri Krishna College of Technology, Coimbatore - HR",
+    "value": "bf4ae654-546a-4856-ac3f-d691f89b5440",
+    "branch_id": "47971433-d274-47fe-bc78-39808f724583",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "bf4ae654-546a-4856-ac3f-d691f89b5440"
+  },
+  {
+    "label": "Segue_KPR Institute of Engineering and Technology, Coimbator - HR",
+    "value": "53cdd048-ed43-4a08-a184-d32d565fb8f7",
+    "branch_id": "01ff9521-6e8d-459b-bc26-87c12885ff04",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "53cdd048-ed43-4a08-a184-d32d565fb8f7"
+  },
+  {
+    "label": "Segue_Technocrats Institute of Technology (TIT) & Science - HR",
+    "value": "e8060564-cee9-4888-8282-7f7ff8e2fbc3",
+    "branch_id": "6bbfc07f-076b-410c-9173-e79cefc93786",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "e8060564-cee9-4888-8282-7f7ff8e2fbc3"
+  },
+  {
+    "label": "Segue_Technocrats Institute of Technology (TIT), Bhopal - HR",
+    "value": "6e4da930-0ca9-4f72-a574-219e726e4746",
+    "branch_id": "646de6df-5a68-4ada-8444-9f4adda1038b",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "6e4da930-0ca9-4f72-a574-219e726e4746"
+  },
+  {
+    "label": "Segue_Technocrats Institute of Technology (TIT) Advance - HR",
+    "value": "6b50678e-e8e1-4f4b-80e0-6c3178846b6c",
+    "branch_id": "12d8ff46-875d-4150-92b2-b4610ee58022",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "6b50678e-e8e1-4f4b-80e0-6c3178846b6c"
+  },
+  {
+    "label": "Segue_Sri Ramakrishna Engineering College, Coimbatore - HR",
+    "value": "f41195bc-3013-4309-aa9c-4e17e11502ec",
+    "branch_id": "844b4d4a-8257-4997-abad-d1583d7e588d",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "f41195bc-3013-4309-aa9c-4e17e11502ec"
+  },
+  {
+    "label": "Segue_Technocrats Institute of Technology (TIT) Excellence - HR",
+    "value": "9bf36598-fefe-463b-a386-8f67caadf134",
+    "branch_id": "c7da8006-3390-4d51-8f5d-e140aafac106",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "9bf36598-fefe-463b-a386-8f67caadf134"
+  },
+  {
+    "label": "Segue_Annamacharya Institute of Technology and Sciences,Tir - HR",
+    "value": "3c9a9820-f6a2-41dd-9d7d-30ef068c6772",
+    "branch_id": "d33d2664-f715-4cac-af8e-e85e53a3e53b",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "3c9a9820-f6a2-41dd-9d7d-30ef068c6772"
+  },
+  {
+    "label": "Segue_Prasad V Potluri Siddhartha Institute of Technology, V - HR",
+    "value": "4b58a894-17c1-4534-97ef-90f1c2969a43",
+    "branch_id": "96cfdcdc-9d42-4fcc-a44e-f78a22ee990d",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "4b58a894-17c1-4534-97ef-90f1c2969a43"
+  },
+  {
+    "label": "Segue_Hindustan Institute of Technology and Science, Chennai - HR",
+    "value": "e0728652-743b-462a-a300-2089a5cd8fee",
+    "branch_id": "26ceecc1-cd95-4491-8cfd-5f0b0093a000",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "e0728652-743b-462a-a300-2089a5cd8fee"
+  },
+  {
+    "label": "Segue_Velalar College of Engineering and Technology, Erode - HR",
+    "value": "e363e19b-a60a-4920-ad7b-4a7623b4f804",
+    "branch_id": "1b6dbfbe-375a-4013-9e93-0d421614ed23",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "e363e19b-a60a-4920-ad7b-4a7623b4f804"
+  },
+  {
+    "label": "Segue_IES College of Technology, Bhopal - HR",
+    "value": "0f2db790-e0e8-4bb6-9a2e-ad4e14731706",
+    "branch_id": "820967c0-6db9-4f73-8271-f91477bbda2a",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "0f2db790-e0e8-4bb6-9a2e-ad4e14731706"
+  },
+  {
+    "label": "Segue_Sri Ramakrishna Institute of Technology, Coimbatore - HR",
+    "value": "dd5939c6-0077-4562-aee7-14090b765185",
+    "branch_id": "2a5975ee-af0d-4522-8b23-a70710967302",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "dd5939c6-0077-4562-aee7-14090b765185"
+  },
+  {
+    "label": "Segue_Institute of Engineering and Science, IPS Academy, Ind - HR",
+    "value": "55aea33e-f5f2-47f1-b417-a9de407bd538",
+    "branch_id": "c19f326b-4143-48ce-b14c-74a5a77f5bd8",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "55aea33e-f5f2-47f1-b417-a9de407bd538"
+  },
+  {
+    "label": "Segue_Aditya Engineering College, Surampalem - HR",
+    "value": "b0a27ed1-738f-4ed6-b159-14204e88911e",
+    "branch_id": "5219e31a-99ee-47f2-991f-f401a8487cad",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "b0a27ed1-738f-4ed6-b159-14204e88911e"
+  },
+  {
+    "label": "Segue_Aditya College of Engineering and Technology, Surampal - HR",
+    "value": "e75cc4a5-e54b-469b-b149-e7d9bc4ab300",
+    "branch_id": "ef4d8062-9dfe-476c-acd6-f674c08e125e",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "e75cc4a5-e54b-469b-b149-e7d9bc4ab300"
+  },
+  {
+    "label": "Segue_Sri Vasavi Engineering College, Tadepalligudem-Batch1 - HR",
+    "value": "8dc451d3-444b-48da-81ee-c00449398eaa",
+    "branch_id": "d1b3e1b8-f727-4a6f-926c-6139d3eb4c5e",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "8dc451d3-444b-48da-81ee-c00449398eaa"
+  },
+  {
+    "label": "Segue_Priyadarshini College of Engineering, Nagpur - HR",
+    "value": "06758af8-3fbe-4161-a963-efcb15592765",
+    "branch_id": "dbc0d87c-a561-4467-ad11-401742f80316",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "06758af8-3fbe-4161-a963-efcb15592765"
+  },
+  {
+    "label": "Segue_Centurion University of Technology and Management, Bhu - HR",
+    "value": "d1190817-8810-47f3-bbd8-23c37364d016",
+    "branch_id": "2359d559-85b8-4b9c-98a1-47a1808f3722",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "d1190817-8810-47f3-bbd8-23c37364d016"
+  },
+  {
+    "label": "Segue_Aditya College of Engineering, Surampalem - HR",
+    "value": "e912b415-d44c-4bab-aec5-8da89d7b07e8",
+    "branch_id": "da87b905-69ef-4245-aa94-01b6619b207d",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "e912b415-d44c-4bab-aec5-8da89d7b07e8"
+  },
+  {
+    "label": "Segue_Centurion Institute of Technology, Bhubaneswar - HR",
+    "value": "174fbaa9-8f0b-49c9-9f86-c75889ec0496",
+    "branch_id": "f1150427-ce56-4a91-94b1-434a8509ab61",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "174fbaa9-8f0b-49c9-9f86-c75889ec0496"
+  },
+  {
+    "label": "Segue_NRI Institute of Technology, Agiripalli - HR",
+    "value": "141d3295-484e-4e9f-b6dc-b27bf6de22da",
+    "branch_id": "fc4d1614-04d4-4367-a32b-f9d414ce12ce",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "141d3295-484e-4e9f-b6dc-b27bf6de22da"
+  },
+  {
+    "label": "Segue_KCG College of Technology, Chennai - HR",
+    "value": "f7867d69-f418-4a56-b0ad-e6cfbdd0780e",
+    "branch_id": "8492a267-7314-443f-a855-c91a72b9776f",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "f7867d69-f418-4a56-b0ad-e6cfbdd0780e"
+  },
+  {
+    "label": "Segue_Lendi Institute of Engineering and Technology - Batch2 - HR",
+    "value": "29d0f7af-0a2d-4db8-8a71-90912e023664",
+    "branch_id": "44568fc7-2b1b-4dbc-ba59-a71c6f5a980d",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "29d0f7af-0a2d-4db8-8a71-90912e023664"
+  },
+  {
+    "label": "Segue_VSB Engineering College, Karur - HR",
+    "value": "137eb1a9-dcd6-4b33-bacf-f4b5b72b4e6b",
+    "branch_id": "17a3f8ad-c172-42a9-ba0f-26ec76bf2250",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "137eb1a9-dcd6-4b33-bacf-f4b5b72b4e6b"
+  },
+  {
+    "label": "Segue_Excel Engineering College, Namakkal - HR",
+    "value": "23622cea-2d82-4886-8c64-271fc34d0d8c",
+    "branch_id": "974cd3a8-b384-4323-b677-7c8322073058",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "23622cea-2d82-4886-8c64-271fc34d0d8c"
+  },
+  {
+    "label": "Segue_VSB College of Engineering Technical Campus, Coimbator - HR",
+    "value": "916e9a53-9d16-4652-894c-e60f009db6c4",
+    "branch_id": "37f22e41-c7ac-46fd-b061-5d1bf9ec0698",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "916e9a53-9d16-4652-894c-e60f009db6c4"
+  },
+  {
+    "label": "Segue_PACE Institute of Technology and Sciences, Ongole - HR",
+    "value": "e3e7cd95-c186-4d53-96d1-4df171b81dd2",
+    "branch_id": "c155fc35-2bc2-4f70-92f0-19f177ee7ddc",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "e3e7cd95-c186-4d53-96d1-4df171b81dd2"
+  },
+  {
+    "label": "Segue_Sri Eshwar College of Engineering, Coimbatore - HR",
+    "value": "b382cf46-fb9a-4ccf-9883-a55e2a1a039d",
+    "branch_id": "195a69ca-0c19-4b9d-ba3a-670bda695223",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "b382cf46-fb9a-4ccf-9883-a55e2a1a039d"
+  },
+  {
+    "label": "Segue_Priyadarshini Bhagwati College of Engineering, Nagpur - HR",
+    "value": "e4a0fe7f-b2b0-4ecc-a8b4-ec87cc22d5cd",
+    "branch_id": "35331139-838f-4910-8633-ecdb0d220088",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "e4a0fe7f-b2b0-4ecc-a8b4-ec87cc22d5cd"
+  },
+  {
+    "label": "Segue_Aditya Institute of Technology and Management, Tekkali - HR",
+    "value": "d75a282b-bcfd-46e4-85e0-31cb6b537f3c",
+    "branch_id": "b866ba44-50c7-401d-b82d-4fa378872d3c",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "d75a282b-bcfd-46e4-85e0-31cb6b537f3c"
+  },
+  {
+    "label": "Segue_Bahra University, Shimla - HR",
+    "value": "bc155890-79fb-4bea-9baf-41cd924a6c5a",
+    "branch_id": "757c75b7-22fc-4bb8-acb4-cc323a560d4f",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "bc155890-79fb-4bea-9baf-41cd924a6c5a"
+  },
+  {
+    "label": "Segue_Priyadarshini J. L. College of Engineering, Nagpur - HR",
+    "value": "30fc979b-82b1-4d4c-99e2-99b1f644cd8a",
+    "branch_id": "52491db7-8dce-4cd2-af7b-a85dd15c12d0",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "30fc979b-82b1-4d4c-99e2-99b1f644cd8a"
+  },
+  {
+    "label": "Segue_Rayat Bahra University, Mohali - HR",
+    "value": "6504ed42-74fa-41d4-8beb-53cca5c779e1",
+    "branch_id": "8f327f91-4878-4488-947d-6de8ed273818",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "6504ed42-74fa-41d4-8beb-53cca5c779e1"
+  },
+  {
+    "label": "Segue_JL Chaturvedi College of Engineering, Nagpur - HR",
+    "value": "0f3a1a11-0ea3-47ab-9143-92616f4f4556",
+    "branch_id": "7bfd743c-20cd-46dd-be17-c7985c15f8f1",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "0f3a1a11-0ea3-47ab-9143-92616f4f4556"
+  },
+  {
+    "label": "Segue_Rayat and Bahra Institute of Engineering and Nano Tech - HR",
+    "value": "c2f4f4f4-7b4f-406e-ae0b-d902df9ac9ac",
+    "branch_id": "8e32c62f-fdb2-46bb-9663-0912a0917dbb",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "c2f4f4f4-7b4f-406e-ae0b-d902df9ac9ac"
+  },
+  {
+    "label": "2023 July'23 - HR",
+    "value": "cab106ce-268c-4490-a752-e0901052b56c",
+    "branch_id": "333923c1-c249-4d76-896a-494f5519d291",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "cab106ce-268c-4490-a752-e0901052b56c"
+  },
+  {
+    "label": "2023 - July'23 - HR",
+    "value": "999a9f17-5c0f-4e1a-b363-8be40b519ced",
+    "branch_id": "4f3554a9-746c-469b-9a6b-bcaafc006e66",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "999a9f17-5c0f-4e1a-b363-8be40b519ced"
+  },
+  {
+    "label": "2023 - Oct'23 - HR",
+    "value": "fbe6d93b-065e-4a90-a201-70df7e162d3a",
+    "branch_id": "834312c1-1045-4e90-a5fa-0b4e75762edf",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "fbe6d93b-065e-4a90-a201-70df7e162d3a"
+  },
+  {
+    "label": "Segue_Sri Manakula Vinayagar Engineering College, Puducherry - HR",
+    "value": "527666a8-71a2-4e43-a4f0-96a709c66963",
+    "branch_id": "073553d8-72a8-4836-ace8-bdc9a17d9631",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "527666a8-71a2-4e43-a4f0-96a709c66963"
+  },
+  {
+    "label": "SA Engineering College, Chennai - HR",
+    "value": "5792e109-c9e4-4104-88ce-01b0a148999c",
+    "branch_id": "d31f0eb0-a003-4e69-a1f3-19d041046ad1",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "5792e109-c9e4-4104-88ce-01b0a148999c"
+  },
+  {
+    "label": "Segue_SA Engineering College, Chennai - HR",
+    "value": "32b203b2-c5a9-4eae-9eee-09bf45eb513b",
+    "branch_id": "f0358461-9582-419b-9907-fb4151e29e6b",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "32b203b2-c5a9-4eae-9eee-09bf45eb513b"
+  },
+  {
+    "label": "Segue_K Ramakrishnan College of Technology, Tiruchirappalli - HR",
+    "value": "b1ec51cc-4ee2-4120-adbb-2681e7744c93",
+    "branch_id": "47011a45-5983-4388-a594-a4b42dcbe65d",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "b1ec51cc-4ee2-4120-adbb-2681e7744c93"
+  },
+  {
+    "label": "Segue_K Ramakrishnan College of Engineering, Tiruchirappal - HR",
+    "value": "b0819ca2-9bcb-4e09-af5c-a7eaf1d1a561",
+    "branch_id": "de741d6e-9399-4e23-b8d1-3856cb8199e1",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "b0819ca2-9bcb-4e09-af5c-a7eaf1d1a561"
+  },
+  {
+    "label": "Segue_K Ramakrishnan College of Engineering, Tiruchirappalli - HR",
+    "value": "4521ad1b-9882-44f4-a55c-7d35b34f0509",
+    "branch_id": "3f9b3e3c-99cc-47dd-9fcf-d71b802a1e50",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "4521ad1b-9882-44f4-a55c-7d35b34f0509"
+  },
+  {
+    "label": "Segue_MGR Educational and Research Institute, Chennai - HR",
+    "value": "dab40427-eba6-4e06-987b-162a8e57d550",
+    "branch_id": "0f684ee8-70cb-47cf-a430-565e7e6c6006",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "dab40427-eba6-4e06-987b-162a8e57d550"
+  },
+  {
+    "label": "Digital Foundation Courses - HR",
+    "value": "a02b91d6-94ae-498a-b719-d4e11ce9b695",
+    "branch_id": "97200e22-fa60-4222-a659-57878fc840ae",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "a02b91d6-94ae-498a-b719-d4e11ce9b695"
+  },
+  {
+    "label": "SA Engineering College,Chennai - HR",
+    "value": "b4ab6433-4aee-4c30-8271-fe415976060c",
+    "branch_id": "bc5d24d8-dbd6-4e20-a01c-08ee216bc445",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "b4ab6433-4aee-4c30-8271-fe415976060c"
+  },
+  {
+    "label": "National Engineering College, Kovilpatti - HR",
+    "value": "3742a449-4373-46fc-a540-dfdd74d13607",
+    "branch_id": "f6e84b1a-1e94-40f3-b607-00d2b324446e",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "3742a449-4373-46fc-a540-dfdd74d13607"
+  },
+  {
+    "label": "St Joseph's College of Engineering, Chennai - HR",
+    "value": "b388e488-80d9-4467-b22d-83459b74f298",
+    "branch_id": "f502f67e-650e-45ee-97c2-c69fb45c3899",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "b388e488-80d9-4467-b22d-83459b74f298"
+  },
+  {
+    "label": "Segue_Rathinam Technical Campus - HR",
+    "value": "eff07a19-9c33-413e-a317-2feb9953eed2",
+    "branch_id": "14a9aa63-ac4d-4757-9a41-2a1764709012",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "eff07a19-9c33-413e-a317-2feb9953eed2"
+  },
+  {
+    "label": "Vivekanandha College of Engineering for Women, Tiruchengode - HR",
+    "value": "87f42418-61a8-4513-8486-78d3340f0bb9",
+    "branch_id": "8d5cea91-8e31-4112-94d5-137f6d629d58",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "87f42418-61a8-4513-8486-78d3340f0bb9"
+  },
+  {
+    "label": "Segue_Mahendra Engineering College, Namakkal - HR",
+    "value": "44c8cb0f-a9aa-4623-828b-2101f3afd5b1",
+    "branch_id": "dd71580b-230f-40c4-8453-3d72bdcaf070",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "44c8cb0f-a9aa-4623-828b-2101f3afd5b1"
+  },
+  {
+    "label": "Segue_Mahendra Institute of Technology, Tiruchengode - HR",
+    "value": "bc281061-1f07-4655-92a1-9e0e6cd8caa0",
+    "branch_id": "89ab879e-d92a-47f4-88ae-cbff46101849",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "bc281061-1f07-4655-92a1-9e0e6cd8caa0"
+  },
+  {
+    "label": "Segue_PSR Engineering College, Sivakasi - HR",
+    "value": "9aba4ec5-6f45-4116-a21a-bb5221fc95d4",
+    "branch_id": "78879ecf-eb9f-4bae-840f-6464bcd1ffd8",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "9aba4ec5-6f45-4116-a21a-bb5221fc95d4"
+  },
+  {
+    "label": "Segue_Karpagam College of Engineering, Coimbatore - HR",
+    "value": "c0f82e17-9322-48f5-babc-02c741e9adb2",
+    "branch_id": "e29b7309-16cd-4d8a-80df-0b7383fb5e81",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "c0f82e17-9322-48f5-babc-02c741e9adb2"
+  },
+  {
+    "label": "Segue_Sri Krishna College of Engineering and Technology - HR",
+    "value": "c562031c-77b5-41a8-b840-13e0bbec6999",
+    "branch_id": "bb3da9a4-4806-4cf1-b728-412d05c77610",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "c562031c-77b5-41a8-b840-13e0bbec6999"
+  },
+  {
+    "label": "Segue_Chennai Institute of Technology, Chennai - HR",
+    "value": "a24b0c3a-6524-4bcc-9b1d-0f383b2cdd1f",
+    "branch_id": "2360bcf7-8fd2-40dd-95a6-588ace739b65",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "a24b0c3a-6524-4bcc-9b1d-0f383b2cdd1f"
+  },
+  {
+    "label": "Segue_Lendi Institute of Engineering and Technology - Batch4 - HR",
+    "value": "af5ba7d0-58d4-45c0-9b42-4146fbe34493",
+    "branch_id": "4681d519-c0d6-45bf-b286-a788d561af69",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "af5ba7d0-58d4-45c0-9b42-4146fbe34493"
+  },
+  {
+    "label": "Segue_Sri Vasavi Engineering College, Tadepalligudem-Batch4 - HR",
+    "value": "94c02abb-3332-459a-98d8-a6794a6b3989",
+    "branch_id": "db8f8294-c9a9-43ef-be0c-f139a4ca7e4d",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "94c02abb-3332-459a-98d8-a6794a6b3989"
+  },
+  {
+    "label": "Segue_Sri Vasavi Engineering College, Tadepalligudem-Batch2 - HR",
+    "value": "b73baf2f-7a3c-412b-a001-23b470d6a9c3",
+    "branch_id": "cb33b4a0-ac9a-479d-ac9d-75fa5188293d",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "b73baf2f-7a3c-412b-a001-23b470d6a9c3"
+  },
+  {
+    "label": "SRM Valliammai Engineering College, Kanchipuram - Batch10 - HR",
+    "value": "c0440df6-9161-430b-bb47-8f1588e6f5f0",
+    "branch_id": "f789fc75-9de0-468c-a1ec-94b44d09e7d3",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "c0440df6-9161-430b-bb47-8f1588e6f5f0"
+  },
+  {
+    "label": "Dr. Mahalingam College of Engineering - Batch11 - HR",
+    "value": "80f32f88-a0a9-47ee-bc50-999ac6b0445f",
+    "branch_id": "a2f402eb-bb86-46de-a785-1e363650b4a1",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "80f32f88-a0a9-47ee-bc50-999ac6b0445f"
+  },
+  {
+    "label": "Karunya Institute of Technology and Sciences - Batch11 - HR",
+    "value": "0a0071fb-18f5-4bb8-b1b9-c038f29f0bd9",
+    "branch_id": "fedafb8f-4ab2-4eba-9592-11d75dfbc103",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "0a0071fb-18f5-4bb8-b1b9-c038f29f0bd9"
+  },
+  {
+    "label": "Nandha Engineering College,Erode - Batch11 - HR",
+    "value": "c911e2dc-24f3-49df-86f4-aaac8dea1e3a",
+    "branch_id": "270dccd3-1a88-4c2f-8c04-b2d8725514b1",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "c911e2dc-24f3-49df-86f4-aaac8dea1e3a"
+  },
+  {
+    "label": "Ramco Institute of Technology, Rajapalayam - Batch11 - HR",
+    "value": "70a7145a-a5b8-4bca-9ab3-965554bf18db",
+    "branch_id": "1623dc35-5beb-4a69-a323-c2976d4cf785",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "70a7145a-a5b8-4bca-9ab3-965554bf18db"
+  },
+  {
+    "label": "SRM Valliammai Engineering College, Kanchipuram - Batch11 - HR",
+    "value": "00629065-2350-458c-ba5e-c6098862af2e",
+    "branch_id": "4843d3f9-0449-447c-a38f-6dc381467d8b",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "00629065-2350-458c-ba5e-c6098862af2e"
+  },
+  {
+    "label": "Chennai Institute of Technology, Chennai - Batch12 - HR",
+    "value": "60883922-64f9-4770-a503-93190878f4f3",
+    "branch_id": "fd6a9114-50f7-4860-8329-7cca3de77e53",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "60883922-64f9-4770-a503-93190878f4f3"
+  },
+  {
+    "label": "Chennai Institute of Technology, Chennai - Batch13 - HR",
+    "value": "2df49aa3-49f2-4b4c-8652-aadb7f295825",
+    "branch_id": "fe625994-77c2-475e-a1da-02d7e372fc79",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "2df49aa3-49f2-4b4c-8652-aadb7f295825"
+  },
+  {
+    "label": "IES College of Technology, Bhopal - Batch13 - HR",
+    "value": "a384ad72-e57a-46fc-8f73-e738c3a17282",
+    "branch_id": "8b203d68-4759-41d2-afdb-4b63c774526a",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "a384ad72-e57a-46fc-8f73-e738c3a17282"
+  },
+  {
+    "label": "Kalaignar Karunanidhi Institute of Technology - Batch13  - HR",
+    "value": "aecdf0ea-bb23-47f2-9e2a-beae68b6fd26",
+    "branch_id": "0b684223-a3c5-4d6d-adc9-f38927eb1fec",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "aecdf0ea-bb23-47f2-9e2a-beae68b6fd26"
+  },
+  {
+    "label": "Knowledge Institute of Technology, Salem - Batch13 - HR",
+    "value": "314e3139-3ad2-4632-88af-6a161259b6f5",
+    "branch_id": "d10e854f-3f82-4abe-a4bf-4eb08eb02cf0",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "314e3139-3ad2-4632-88af-6a161259b6f5"
+  },
+  {
+    "label": "Sri Ramakrishna Engineering College, Coimbatore - Batch13 - HR",
+    "value": "dfa6b1dd-96c5-4886-ba22-2e49ecce9165",
+    "branch_id": "d912bb7b-dec4-4e5d-997e-49046dd4c617",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "dfa6b1dd-96c5-4886-ba22-2e49ecce9165"
+  },
+  {
+    "label": "Sri Ramakrishna Engineering College, Coimbatore - Batch14 - HR",
+    "value": "23bf8ffc-40f4-4750-94f4-bde0586b4f65",
+    "branch_id": "5eb456c8-5e30-43d5-ab62-71c754ce7b6e",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "23bf8ffc-40f4-4750-94f4-bde0586b4f65"
+  },
+  {
+    "label": "MIT Art Design and Technology University, Pune - Batch15 - HR",
+    "value": "ae64a807-f9b7-427b-a17d-de42f1a3ebca",
+    "branch_id": "124f62a6-fae8-47f2-b41c-9799e50582fe",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "ae64a807-f9b7-427b-a17d-de42f1a3ebca"
+  },
+  {
+    "label": "MIT Art Design and Technology University, Pune - Batch16 - HR",
+    "value": "2ec2de94-32fa-43af-8d49-6a75be929bd7",
+    "branch_id": "d5b8eb52-1053-4b50-821d-e43965bd59d0",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "2ec2de94-32fa-43af-8d49-6a75be929bd7"
+  },
+  {
+    "label": "DKTE Society's Textile and Engineering Institute - Batch16 - HR",
+    "value": "bb7cbfd5-f734-4665-b662-841b11807f78",
+    "branch_id": "379aead4-e6d1-4187-a548-a8ba401a654d",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "bb7cbfd5-f734-4665-b662-841b11807f78"
+  },
+  {
+    "label": "Imperial College of Engineering and Research, Pune - Batch16 - HR",
+    "value": "330d7552-7211-461d-9bad-838edc43bc3f",
+    "branch_id": "3ec305a4-d7c4-44a2-a419-f82f4a645178",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "330d7552-7211-461d-9bad-838edc43bc3f"
+  },
+  {
+    "label": "Jerusalem College of Engineering, Chennai - Batch16 - HR",
+    "value": "de26afa7-2d8c-4c6d-97a5-6a45568454f8",
+    "branch_id": "6680844f-b140-434c-b0e8-d0ed272bdfdf",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "de26afa7-2d8c-4c6d-97a5-6a45568454f8"
+  },
+  {
+    "label": "Priyadarshini College of Engineering, Nagpur - Batch16 - HR",
+    "value": "b6e98c75-907b-4a3a-8498-d3bc17ad9c8f",
+    "branch_id": "f2d3e3b9-fd5a-4ad5-8bcd-285c5c483738",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "b6e98c75-907b-4a3a-8498-d3bc17ad9c8f"
+  },
+  {
+    "label": "M Kumarasamy College of Engineering, Karur - Batch2 - HR",
+    "value": "592c2381-0c82-4b40-856d-e0eeb125eb58",
+    "branch_id": "54a61a66-59bf-4d59-915b-2c36a6b98a2b",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "592c2381-0c82-4b40-856d-e0eeb125eb58"
+  },
+  {
+    "label": "VSB College of Engineering Technical Campus - Batch3 - HR",
+    "value": "a416320a-6042-49e8-bb8e-0f4265038699",
+    "branch_id": "224b1192-18f4-40eb-8f32-60265e83506f",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "a416320a-6042-49e8-bb8e-0f4265038699"
+  },
+  {
+    "label": "Segue_VSB Engineering College, Karur - Batch3 - HR",
+    "value": "dd3aed8b-8e1c-4c43-9128-582910e57bc0",
+    "branch_id": "1836f15d-0076-42cf-b25b-cd55679f3c93",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "dd3aed8b-8e1c-4c43-9128-582910e57bc0"
+  },
+  {
+    "label": "K.S. Rangasamy College of Technology - Batch4 - HR",
+    "value": "bc26a504-ad84-4e84-a357-d00f63dda44f",
+    "branch_id": "77cfea7b-14ff-4264-bc94-94ad6a72a86e",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "bc26a504-ad84-4e84-a357-d00f63dda44f"
+  },
+  {
+    "label": "Technocrats Institute of Technology Excellence - Batch4 - HR",
+    "value": "5e3e0c0b-dda9-4cf2-84ef-1bd05b6dcc16",
+    "branch_id": "4d97e214-65c5-48ec-b16f-cc4fb2bf800e",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "5e3e0c0b-dda9-4cf2-84ef-1bd05b6dcc16"
+  },
+  {
+    "label": "Technocrats Institute of Technology, Bhopal - Batch4 - HR",
+    "value": "786eb4be-fb17-458f-9b0f-d92b737ae449",
+    "branch_id": "5b4fda1c-bca2-43eb-b407-0ea8f48d2ed2",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "786eb4be-fb17-458f-9b0f-d92b737ae449"
+  },
+  {
+    "label": "DY Patil College of Engineering and Technology - Batch5 - HR",
+    "value": "3521932c-d8f4-425d-af3f-3795a3d9875f",
+    "branch_id": "deb919e6-6af3-4f5c-9993-5280b99ec73a",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "3521932c-d8f4-425d-af3f-3795a3d9875f"
+  },
+  {
+    "label": "Agni College of Technology, Thalambur - Batch5 - HR",
+    "value": "7e4c5435-ed7d-4b7e-9a28-395bd00aad2d",
+    "branch_id": "065c785a-ea81-4226-b561-76c344f195a4",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "7e4c5435-ed7d-4b7e-9a28-395bd00aad2d"
+  },
+  {
+    "label": "Institute of Engineering and Science, IPS Academy - Batch6 - HR",
+    "value": "578d38ff-7aba-46c1-a806-a661ccf8612b",
+    "branch_id": "3364078d-847e-4d90-91ae-4b036aa0c0bd",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "578d38ff-7aba-46c1-a806-a661ccf8612b"
+  },
+  {
+    "label": "Institute of Engineering and Science, IPS Academy - Batch7 - HR",
+    "value": "0266fcc8-3412-4e8e-bb51-f2d6951032c5",
+    "branch_id": "10077e81-39c9-43e3-a528-2d4607c9b4ca",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "0266fcc8-3412-4e8e-bb51-f2d6951032c5"
+  },
+  {
+    "label": "Kamaraj College of Engineering and Technology - Batch7 - HR",
+    "value": "3ab0b555-0c5c-4201-be62-05fff911c664",
+    "branch_id": "0d11b25c-a829-477a-b4e4-eba999fa1d44",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "3ab0b555-0c5c-4201-be62-05fff911c664"
+  },
+  {
+    "label": "KCG College of Technology - Batch7 - HR",
+    "value": "4da1bc07-bf40-44d2-9e9f-2b19a2785bea",
+    "branch_id": "f9c2309a-c498-462c-b41e-01ded33aeb12",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "4da1bc07-bf40-44d2-9e9f-2b19a2785bea"
+  },
+  {
+    "label": "Bannari Amman Institute of Technology, Erode - Batch8 - HR",
+    "value": "538eac75-38c7-4fe1-923d-1acd3873f915",
+    "branch_id": "619073a1-ae38-4b83-83b7-c1ccd42c0a97",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "538eac75-38c7-4fe1-923d-1acd3873f915"
+  },
+  {
+    "label": "Bannari Amman Institute of Technology, Erode - Batch9 - HR",
+    "value": "799f89db-7756-4a91-8b40-a7ecad2aa401",
+    "branch_id": "bfe422c2-07a6-43d7-95e2-b829d2cb63ad",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "799f89db-7756-4a91-8b40-a7ecad2aa401"
+  },
+  {
+    "label": "Erode Sengunthar Engineering College, Thudupathi - Batch9 - HR",
+    "value": "c20567c5-a4bc-4d76-bca2-a6c8c74397b5",
+    "branch_id": "40ff973e-7946-4711-a9ab-068de59a2a47",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "c20567c5-a4bc-4d76-bca2-a6c8c74397b5"
+  },
+  {
+    "label": "KSR College of Engineering - Batch9 - HR",
+    "value": "3ce52b12-76d5-4104-9f00-53d5517278c9",
+    "branch_id": "78bfe023-9494-44a4-acd3-7cd3f79c3a44",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "3ce52b12-76d5-4104-9f00-53d5517278c9"
+  },
+  {
+    "label": "KPR Institute of Engineering and Technology - Batch9 - HR",
+    "value": "e2748511-d41f-4a92-ae4c-ea8ddbae50f6",
+    "branch_id": "5a6015aa-c324-4a6a-845d-27226ec386f5",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "e2748511-d41f-4a92-ae4c-ea8ddbae50f6"
+  },
+  {
+    "label": "Sethu Institute of Technology, Kariapatti - Batch9 - HR",
+    "value": "7b66ef71-37e2-4ea0-90e2-d0155d0cfbcd",
+    "branch_id": "6b042fe3-e2a1-4713-b55b-a540a5854f3a",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "7b66ef71-37e2-4ea0-90e2-d0155d0cfbcd"
+  },
+  {
+    "label": "Annamacharya Institute of Technology and Science_Feb_Batch1 - HR",
+    "value": "b8f21f13-e911-49f6-a05a-81b99f387f08",
+    "branch_id": "50f2d6d4-3c64-45a6-829d-afbc086a91d0",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "b8f21f13-e911-49f6-a05a-81b99f387f08"
+  },
+  {
+    "label": "Annamacharya Institute of Technology and Science_Feb_Batch2 - HR",
+    "value": "70620791-cf48-4e40-8f88-185bf2d3fb4a",
+    "branch_id": "61d7359d-c212-4c8b-abcf-bcf06b5bb601",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "70620791-cf48-4e40-8f88-185bf2d3fb4a"
+  },
+  {
+    "label": "Excel Engineering College, Namakkal_Feb_Batch2 - HR",
+    "value": "7c8bd09b-53fc-465e-8dd4-af43c8c0c4f1",
+    "branch_id": "62587e6e-5992-4479-b91f-58501a46a5cb",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "7c8bd09b-53fc-465e-8dd4-af43c8c0c4f1"
+  },
+  {
+    "label": "Pimpri Chinchwad College of Engineering, Pune_Feb_Batch2 - HR",
+    "value": "a474474d-e9bf-47a4-b02c-6518be00b586",
+    "branch_id": "179c6879-41b6-414b-b6c6-e808370358c9",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "a474474d-e9bf-47a4-b02c-6518be00b586"
+  },
+  {
+    "label": "Madanapalle Institute of Technology & Science_Feb_Batch2 - HR",
+    "value": "1fb60853-ef43-476d-b20a-ec1eca87ef30",
+    "branch_id": "1c477f9a-ee84-4112-b710-69e206bc08eb",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "1fb60853-ef43-476d-b20a-ec1eca87ef30"
+  },
+  {
+    "label": "Sri Vasavi Engineering College, Tadepalligudem_Feb_Batch3 - HR",
+    "value": "9803ffb2-6c26-4fed-83a4-bd5d4bd5b813",
+    "branch_id": "dbf28bda-ecd5-480c-a164-526a5433f5f0",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "9803ffb2-6c26-4fed-83a4-bd5d4bd5b813"
+  },
+  {
+    "label": "PSNA College of Engineering and Technology_Feb_Batch3 - HR",
+    "value": "6415267e-c4aa-4494-9d0c-629f6ca98284",
+    "branch_id": "dd05d968-1a08-407b-b8f8-607475dbf946",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "6415267e-c4aa-4494-9d0c-629f6ca98284"
+  },
+  {
+    "label": "Sri Krishna College of Engineering and Technology_Feb_Batch3 - HR",
+    "value": "2904f661-ccb7-4219-ac3a-42ce2216ccab",
+    "branch_id": "37accef2-2325-4055-8e1e-eb5668fd9c7c",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "2904f661-ccb7-4219-ac3a-42ce2216ccab"
+  },
+  {
+    "label": "RVR and JC College of Engineering_Feb_Batch3 - HR",
+    "value": "cc42a368-71b5-4a26-a505-401c47a6557b",
+    "branch_id": "cd72ed80-17eb-4094-93a7-06a0794700cd",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "cc42a368-71b5-4a26-a505-401c47a6557b"
+  },
+  {
+    "label": "PVP Siddhartha Institute of Technology_Feb_Batch2 - HR",
+    "value": "9e98097e-5a01-4842-8c1b-b1f02e431392",
+    "branch_id": "21002365-3588-4936-b93d-348a5bdfe7a9",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "9e98097e-5a01-4842-8c1b-b1f02e431392"
+  },
+  {
+    "label": "Demo - HR",
+    "value": "701ebd2d-c5fc-401c-807b-c5469b533804",
+    "branch_id": "12571ca5-18a0-46a0-b9b9-9da50b84a7a0",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "701ebd2d-c5fc-401c-807b-c5469b533804"
+  },
+  {
+    "label": "Blended Learning - HR",
+    "value": "8623b7df-f917-4e87-8598-cd68e69d40c1",
+    "branch_id": "12720f3e-c0df-477d-a276-c88c4979418f",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "8623b7df-f917-4e87-8598-cd68e69d40c1"
+  },
+  {
+    "label": "Hexaware Hiring - HR",
+    "value": "7c2438b9-c479-45fa-8b4e-5e103d1c6d45",
+    "branch_id": "06b9f104-d188-4b60-ae12-21ab69436637",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "7c2438b9-c479-45fa-8b4e-5e103d1c6d45"
+  },
+  {
+    "label": "Blended Learning Platform - HR",
+    "value": "9d130b96-2e0f-4d38-a964-51ada2d9b2cc",
+    "branch_id": "d4f054b7-0bbb-4001-9991-a4244169685e",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "9d130b96-2e0f-4d38-a964-51ada2d9b2cc"
+  },
+  {
+    "label": "Demo Test - HR",
+    "value": "9fa98ed1-49fe-4442-81e0-3369e08ef99e",
+    "branch_id": "145c72fc-5ced-444b-b81f-f2ee50792c8d",
+    "school_id": "d12733e5-2c1f-4b3b-b777-c1e70d74dfce",
+    "department_id": "9fa98ed1-49fe-4442-81e0-3369e08ef99e"
+  }
+];
 
-// After line 700 ]  (end of DEPARTMENT_IDS)
 
 export const DEPARTMENT_IDS_Hexa = [
     "66aceb1b-ba33-4b91-a21c-6e2fe2683eb4",
@@ -2259,5 +3919,26 @@ export const DOMAIN_CONFIG = {
     description: "Hexaware Corporate Training",
     color: "#6f42c1",
     department_ids: DEPARTMENT_IDS_Hexa
+  }
+};
+
+export const QB_ACCESS_CONFIG = {
+  LTI: {
+    key: "LTI",
+    label: "LTI",
+    icon: "🎓",
+    description: "LTI Corporate Training",
+    color: "#0d6efd",
+    department_ids: DEPARTMENT_IDS,
+    b_d_id_options: B_D_ID_OPTIONS
+  },
+  HEXAWARE: {
+    key: "HEXAWARE",
+    label: "Hexaware",
+    icon: "🏢",
+    description: "Hexaware Corporate Training",
+    color: "#6f42c1",
+    department_ids: DEPARTMENT_IDS_Hexa,
+    b_d_id_options: B_D_ID_OPTIONS_Hexa
   }
 };
