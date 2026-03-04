@@ -3,7 +3,7 @@ import * as XLSX from "xlsx";
 import "./ResultX.css";
 
 const API    = "https://api.examly.io";
-// const AI_API = "http://localhost:4000";
+//  const AI_API = "http://localhost:4000";
 const AI_API = "https://cubeintouch-backend.onrender.com";
 const sleep  = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -164,10 +164,13 @@ export default function ResultX() {
 
   const handleFile = (e) => {
     const file = e.target.files?.[0]; if (!file) return;
+    const isCsv = file.name.endsWith(".csv");
     const reader = new FileReader();
     reader.onload = (evt) => {
       try {
-        const wb   = XLSX.read(evt.target.result, { type: "binary" });
+          const wb = isCsv
+        ? XLSX.read(evt.target.result, { type: "string" })   // ← CSV
+        : XLSX.read(evt.target.result, { type: "binary" });
         const ws   = wb.Sheets[wb.SheetNames[0]];
         const json = XLSX.utils.sheet_to_json(ws, { defval: "" });
         if (!json.length) { showAlert("Excel is empty", "danger"); return; }
@@ -732,9 +735,9 @@ export default function ResultX() {
             <div className="rx-upload-zone" onClick={() => fileRef.current?.click()}>
               <span className="rx-upload-icon">📊</span>
               <div className="rx-upload-title">Click to upload Excel file</div>
-              <div className="rx-upload-hint">.xlsx / .xls — URL column auto-detected</div>
+              <div className="rx-upload-hint">.xlsx / .xls / .csv — URL column auto-detected</div>
             </div>
-            <input ref={fileRef} type="file" accept=".xlsx,.xls" style={{ display: "none" }} onChange={handleFile} />
+            <input ref={fileRef} type="file" accept=".xlsx,.xls,.csv" style={{ display: "none" }} onChange={handleFile} />
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
               <div style={{ flex: 1, height: "1px", background: "var(--c-border)" }} />
               <span style={{ fontSize: "11px", color: "var(--c-muted)", fontFamily: "JetBrains Mono, monospace" }}>or paste URL manually</span>

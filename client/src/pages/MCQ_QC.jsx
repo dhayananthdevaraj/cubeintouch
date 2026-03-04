@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { DEPARTMENT_IDS } from "../config";
 import "./MCQ_QC.css";
@@ -8,9 +7,13 @@ const API_BASE = "https://api.examly.io/api";
 const QC_API = "https://cubeintouch-backend.onrender.com/qc";
 
 export default function MCQ_QC() {
-  const [token, setToken] = useState("");
+  const [token, setToken] = useState(() => {
+    try { return localStorage.getItem("mcq_qc_token") || ""; } catch { return ""; }
+  });
   const [tokenInput, setTokenInput] = useState("");
-  const [showTokenInput, setShowTokenInput] = useState(true);
+  const [showTokenInput, setShowTokenInput] = useState(() => {
+    try { return !localStorage.getItem("mcq_qc_token"); } catch { return true; }
+  });
 
   const [testName, setTestName] = useState("");
   const [alert, setAlert] = useState(null);
@@ -28,14 +31,18 @@ export default function MCQ_QC() {
   const showOverlay = (msg) => { setOverlayText(msg); setOverlay(true); };
   const hideOverlay = () => setOverlay(false);
 
+  // ── Token ──────────────────────────────────────────────────────────────────
+
   const saveToken = () => {
     if (!tokenInput.trim()) { showAlert("Token cannot be empty", "danger"); return; }
+    localStorage.setItem("mcq_qc_token", tokenInput.trim());
     setToken(tokenInput.trim());
     setShowTokenInput(false);
-    showAlert("✅ Token saved for this session", "success");
+    showAlert("✅ Token saved!", "success");
   };
 
   const clearToken = () => {
+    localStorage.removeItem("mcq_qc_token");
     setToken("");
     setTokenInput("");
     setShowTokenInput(true);
@@ -44,6 +51,8 @@ export default function MCQ_QC() {
     setStats(null);
     showAlert("Token cleared", "info");
   };
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
 
   const stripHTML = (html) => html.replace(/<[^>]*>/g, "").trim();
 
@@ -63,11 +72,18 @@ export default function MCQ_QC() {
     catch { return ""; }
   };
 
+  // ── Reset — only clears form, NOT token ───────────────────────────────────
+
   const handleReset = () => {
-    setTestName(""); setResults([]); setParsedMcqs([]);
-    setStats(null); setAlert(null);
+    setTestName("");
+    setResults([]);
+    setParsedMcqs([]);
+    setStats(null);
+    setAlert(null);
     showAlert("Form reset", "info");
   };
+
+  // ── QC batch runner ────────────────────────────────────────────────────────
 
   const runQcInBatches = async (mcqs, batchSize = 4) => {
     const allResults = [];
@@ -78,7 +94,7 @@ export default function MCQ_QC() {
         const response = await fetch(QC_API, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ mcqs: batch })
+          body: JSON.stringify({ mcqs: batch }),
         });
         if (!response.ok) throw new Error(`Backend returned ${response.status}: ${await response.text()}`);
         const batchData = await response.json();
@@ -93,6 +109,8 @@ export default function MCQ_QC() {
     }
     return allResults;
   };
+
+  // ── Main QC handler ────────────────────────────────────────────────────────
 
   const handleQC = async () => {
     if (!testName.trim()) { showAlert("Please enter a test name", "warning"); return; }
@@ -122,8 +140,8 @@ export default function MCQ_QC() {
         headers: { "Content-Type": "application/json", Authorization: token },
         body: JSON.stringify({
           search: testName, page: 1, limit: 10,
-          branch_id: "All", department_id: DEPARTMENT_IDS, mainDepartmentUser: true
-        })
+          branch_id: "All", department_id: DEPARTMENT_IDS, mainDepartmentUser: true,
+        }),
       });
 
       if (!searchRes.ok) {
@@ -144,7 +162,7 @@ export default function MCQ_QC() {
       showOverlay(`📋 Fetching MCQs from: ${test.testName || testName}...`);
 
       const questionsRes = await fetch(API_BASE + "/questions/test/" + test.testId, {
-        headers: { Authorization: token }
+        headers: { Authorization: token },
       });
       if (!questionsRes.ok) {
         hideOverlay();
@@ -169,7 +187,7 @@ export default function MCQ_QC() {
         return {
           question, code, options, existingAnswer,
           difficulty: q.manual_difficulty || "NA",
-          topic: q.topic?.name || "Unknown"
+          topic: q.topic?.name || "Unknown",
         };
       }).filter(Boolean);
 
@@ -213,6 +231,8 @@ export default function MCQ_QC() {
     }
   };
 
+  // ── Download ───────────────────────────────────────────────────────────────
+
   const downloadReport = () => {
     if (!results.length) { showAlert("No results to download", "warning"); return; }
     const csv =
@@ -230,6 +250,8 @@ export default function MCQ_QC() {
     showAlert("✅ Report downloaded", "success");
   };
 
+  // ── Style helpers ──────────────────────────────────────────────────────────
+
   const getResultItemClass = (q) => {
     if (!q.isCorrect) return "mcq-result-item mcq-result-item--error";
     if (q.issues && q.issues.length > 0) return "mcq-result-item mcq-result-item--warning";
@@ -242,8 +264,11 @@ export default function MCQ_QC() {
     return qcResult?.isCorrect ? "mcq-option mcq-option--correct" : "mcq-option mcq-option--wrong";
   };
 
+  // ── Render ─────────────────────────────────────────────────────────────────
+
   return (
     <div className="mcq-qc-container">
+
       {overlay && (
         <div className="mcq-overlay">
           <div className="mcq-overlay-content">
@@ -261,15 +286,12 @@ export default function MCQ_QC() {
       <div className="mcq-card">
         <h2 className="mcq-title">🔍 MCQ AI Quality Check</h2>
 
-        {/* Token active — top right corner of card */}
+        {/* Token active indicator */}
         {!showTokenInput && (
           <div className="mcq-token-corner">
             <span className="mcq-token-dot"></span>
             <span className="mcq-session-label">Session Active</span>
-            <button
-              onClick={clearToken}
-              className="mcq-button mcq-button-danger mcq-button-sm"
-            >
+            <button onClick={clearToken} className="mcq-button mcq-button-danger mcq-button-sm">
               Clear
             </button>
           </div>
@@ -286,11 +308,7 @@ export default function MCQ_QC() {
               className="mcq-token-textarea"
               rows={3}
             />
-            <button
-              onClick={saveToken}
-              className="mcq-button mcq-button-primary"
-              style={{ marginTop: "12px" }}
-            >
+            <button onClick={saveToken} className="mcq-button mcq-button-primary" style={{ marginTop: "12px" }}>
               🔑 Save Token
             </button>
           </div>
@@ -437,6 +455,7 @@ export default function MCQ_QC() {
           </p>
         </div>
       )}
+
     </div>
   );
 }
