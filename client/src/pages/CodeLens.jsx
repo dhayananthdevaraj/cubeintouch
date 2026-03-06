@@ -1383,7 +1383,7 @@ export default function CodeLens() {
               <div className="cl-search-row">
                 <div className="cl-search-wrap">
                   <span className="cl-search-icon">🔍</span>
-                  <input className="cl-search-input" value={qbSearch} onChange={e=>setQbSearch(e.target.value)} onKeyDown={e=>e.key==="Enter"&&searchQBs()} placeholder="e.g. Cloud_Java_COD"/>
+                  <input className="cl-search-input" value={qbSearch} onChange={e=>setQbSearch(e.target.value)} onKeyDown={e=>e.key==="Enter"&&searchQBs()} placeholder="Search QuestionBank ..."/>
                 </div>
                 <button className="cl-btn-primary" onClick={searchQBs}>Search</button>
               </div>
