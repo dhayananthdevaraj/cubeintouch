@@ -1245,6 +1245,7 @@
 //     </div>
 //   );
 // }
+
 import { useState, useEffect } from "react";
 import { QB_ACCESS_CONFIG } from "../config";
 import "./QBAccessCorporate.css";

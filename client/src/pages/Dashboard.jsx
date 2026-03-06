@@ -72,6 +72,15 @@ export default function Dashboard() {
       gradient: 'linear-gradient(135deg, #6366f1 0%, #f59e0b 100%)',
     },
     {
+    id: 'codelens',
+    icon: '🔭',
+    title: 'CodeLens',
+    description: 'Compiler mode code QC automation — AI-powered code quality analysis & test case validation.',
+    path: '/codelens',
+    status: 'active',
+    gradient: 'linear-gradient(135deg, #0080ff 0%, #7c3aed 100%)',
+  },
+    {
       id: 'reports',
       icon: '📊',
       title: 'Reports',

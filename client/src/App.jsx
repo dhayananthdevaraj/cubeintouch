@@ -13,6 +13,7 @@ import "./App.css";
 import MCQUploader from "./pages/MCQUploader";
 import MetaAccess from "./pages/MetaAccess";
 import ResultX from "./pages/result/ResultX";
+import CodeLens from "./pages/CodeLens";
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -38,6 +39,7 @@ export default function App() {
                 <Route path="/meta-thinkly" element={<MetaAccess />} />
                 <Route path="mcq-uploader" element={<MCQUploader />} />
                 <Route path="/result-x" element={<ResultX />} />
+                <Route path="/codelens" element={<CodeLens />} />
               </Routes>
             </div>
           </div>

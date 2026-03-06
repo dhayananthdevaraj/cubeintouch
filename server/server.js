@@ -88,6 +88,8 @@ import metadataUniversityRoutes from "./routes/metadataUniversity.js";
 import healthRoutes from "./routes/health.js";
 import resultAnalysisRoutes from "./routes/resultanalysis.js"; 
 import repoViewerRoutes from "./routes/repoviewer.js";
+import codQcRoutes from "./routes/codqc.js";       
+import codCompileRoutes from "./routes/codcompile.js";
 
 dotenv.config();
 
@@ -112,6 +114,8 @@ app.use("/", metadataUniversityRoutes);
 app.use("/", resultAnalysisRoutes); // ✅ NEW — POST /analyze-result
 app.use("/health", healthRoutes);
 app.use("/", repoViewerRoutes); 
+app.use("/cod-qc", codQcRoutes);       // ✅ NEW — POST /cod-qc
+app.use("/cod-compile", codCompileRoutes);
 
 app.use((err, req, res, next) => {
   console.error("🔥 SERVER ERROR:", err.message);
@@ -133,6 +137,8 @@ app.listen(PORT, () => {
 ✅ Running on port: ${PORT}
 ✅ Health:        /health
 ✅ QC:            /qc
+✅ COD QC:        /cod-qc
+✅ COD Compile:   /cod-compile
 ✅ Corporate:     /analyze-metadata
 ✅ University:    /analyze-metadata-university
 ✅ Result X:      /analyze-result

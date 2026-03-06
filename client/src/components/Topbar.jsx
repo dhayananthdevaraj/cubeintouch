@@ -51,8 +51,14 @@ export default function Topbar() {
         };
         case "/result-x":
         return { title: "Result X",
-     icon: "⚡",
+          icon: "⚡",
       subtitle: "AI Result Analysis" };
+      case "/codelens":
+      return {
+        title: "CodeLens",
+        icon: "🔭",
+        subtitle: "Compiler Mode · Code QC"
+      };
       default:
         return {
           title: "Support Hub",
