@@ -3,7 +3,7 @@ import * as XLSX from "xlsx";
 import "./ResultX.css";
 
 const API    = "https://api.examly.io";
-//  const AI_API = "http://localhost:4000";
+// const AI_API = "http://localhost:4000";
 const AI_API = "https://cubeintouch-backend.onrender.com";
 const sleep  = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -14,6 +14,7 @@ const TECH_STACKS = [
   { id: "karma",      label: "Karma",      icon: "🔧" },
   { id: "junit",      label: "JUnit",      icon: "☕" },
   { id: "nunit",      label: "NUnit",      icon: "🔷" },
+  { id: "pytest",     label: "Pytest",     icon: "🐍" },
 ];
 
 // ── helpers ───────────────────────────────────────────────────────────────────
