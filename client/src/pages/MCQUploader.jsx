@@ -729,7 +729,7 @@ export default function MCQUploader() {
       {ui === "welcome" && (
         <div className="mcq-welcome">
           <div className="mcq-welcome-icon">📤</div>
-          <h2 className="mcq-welcome-title">MCQ Bulk Uploader</h2>
+          <h2 className="mcq-welcome-title">MCQ Sync</h2>
           <p className="mcq-welcome-subtitle">Upload JSON files with MCQ questions</p>
 
           <textarea

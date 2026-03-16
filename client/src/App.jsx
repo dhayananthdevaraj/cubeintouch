@@ -14,6 +14,7 @@ import MCQUploader from "./pages/MCQUploader";
 import MetaAccess from "./pages/MetaAccess";
 import ResultX from "./pages/result/ResultX";
 import CodeLens from "./pages/CodeLens";
+import CODSync from "./pages/CODSync";
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -40,6 +41,7 @@ export default function App() {
                 <Route path="mcq-uploader" element={<MCQUploader />} />
                 <Route path="/result-x" element={<ResultX />} />
                 <Route path="/codelens" element={<CodeLens />} />
+                <Route path="/cod-sync" element={<CODSync />} />
               </Routes>
             </div>
           </div>

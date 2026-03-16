@@ -49,6 +49,12 @@ export default function Topbar() {
           icon: "📤",
           subtitle: "Upload json MCQ Questions"
         };
+        case "/cod-sync":
+        return {
+          title: "COD Sync",
+          icon: "📤",
+          subtitle: "Upload COD Questions"
+        };
         case "/result-x":
         return { title: "Result X",
           icon: "⚡",

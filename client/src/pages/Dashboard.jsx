@@ -63,6 +63,15 @@ export default function Dashboard() {
       gradient: 'linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%)',
     },
     {
+      id: 'cod-sync',
+      icon: '📤',
+      title: 'COD Sync',
+      description: 'Bulk upload Compiler / Coding questions from JSON files to question banks.',
+      path: '/cod-sync',
+      status: 'active',
+      gradient: 'linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)',
+    },
+    {
       id: 'result-x',
       icon: '⚡',
       title: 'Result X',
