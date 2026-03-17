@@ -6,7 +6,7 @@
 // const API = "https://api.examly.io";
 
 // // ─── PARSER ──────────────────────────────────────────────────────────────────
-// // Parses Claude's structured paste format into question objects.
+// // Parses AI's structured paste format into question objects.
 // //
 // // FORMAT (one block):
 // //   ---QUESTION---
@@ -1037,7 +1037,7 @@
 //           <div className="cod-welcome-icon">⚡</div>
 //           <h2 className="cod-welcome-title">COD Sync</h2>
 //           <p className="cod-welcome-subtitle">
-//             Paste Claude-generated coding questions — bulk upload to question banks
+//             Paste AI-generated coding questions — bulk upload to question banks
 //           </p>
 //           <textarea
 //             value={tokenInput}
@@ -1666,7 +1666,7 @@
 //           <div className="cod-paste-area">
 //             <div className="cod-paste-header">
 //               <label className="cod-label">
-//                 Paste Claude output here
+//                 Paste AI output here
 //                 {pasteInput && (
 //                   <span className="cod-label-count">
 //                     &nbsp;·&nbsp;
@@ -1687,7 +1687,7 @@
 //               value={pasteInput}
 //               onChange={e => setPasteInput(e.target.value)}
 //               placeholder={
-//                 "Paste the ---QUESTION--- ... ---END--- block(s) from Claude here.\n" +
+//                 "Paste the ---QUESTION--- ... ---END--- block(s) from AI here.\n" +
 //                 "Multiple questions supported — paste them all at once."
 //               }
 //               className="cod-paste-textarea"
@@ -1855,7 +1855,7 @@ import { DEPARTMENT_IDS } from "../config";
 const API = "https://api.examly.io";
 
 // ─── PARSER ──────────────────────────────────────────────────────────────────
-// Parses Claude's structured paste format into question objects.
+// Parses AI's structured paste format into question objects.
 //
 // FORMAT (one block):
 //   ---QUESTION---
@@ -2885,7 +2885,7 @@ SAMPLE_IO: 3 3\n10 20 30\n5 5 5\n100 200 300 | Row 1: 60\nRow 2: 15\nRow 3: 600\
           <div className="cod-welcome-icon">⚡</div>
           <h2 className="cod-welcome-title">COD Sync</h2>
           <p className="cod-welcome-subtitle">
-            Paste Claude-generated coding questions — bulk upload to question banks
+            Paste AI-generated coding questions — bulk upload to question banks
           </p>
           <textarea
             value={tokenInput}
@@ -3514,7 +3514,7 @@ SAMPLE_IO: ABC1234X | Invalid Product Code
           <div className="cod-paste-area">
             <div className="cod-paste-header">
               <label className="cod-label">
-                Paste Claude output here
+                Paste AI output here
                 {pasteInput && (
                   <span className="cod-label-count">
                     &nbsp;·&nbsp;
@@ -3535,7 +3535,7 @@ SAMPLE_IO: ABC1234X | Invalid Product Code
               value={pasteInput}
               onChange={e => setPasteInput(e.target.value)}
               placeholder={
-                "Paste the ---QUESTION--- ... ---END--- block(s) from Claude here.\n" +
+                "Paste the ---QUESTION--- ... ---END--- block(s) from AI here.\n" +
                 "Multiple questions supported — paste them all at once."
               }
               className="cod-paste-textarea"
