@@ -2101,12 +2101,98 @@ function parseQuestions(raw) {
 
 // ─── PAYLOAD BUILDER ─────────────────────────────────────────────────────────
 
+// function buildPayload(q, batchConfig, qbId, userId) {
+//   const wrapHtml = (text) => {
+//     if (!text) return "";
+//     // If already proper HTML (starts with a real tag like <p>, <ul>, <div> etc.) pass through.
+//     // Otherwise treat as plain text — escape < and > so placeholders like
+//     // <i>, <sum>, <row_number> are not stripped by the browser as unknown tags.
+//     if (/^<(p|ul|ol|div|h[1-6]|br|b|strong|em|span|table)\b/i.test(text.trim())) {
+//       return text;
+//     }
+//     const escAngle = (s) => s.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+//     return text
+//       .split(/\n\n+/)
+//       .map(para => `<p>${escAngle(para).replace(/\n/g, "<br>")}</p>`)
+//       .join("");
+//   };
+
+//   const solutionArray = q.languages.map(lang => {
+//     const header    = q.headers?.[lang]    || null;
+//     const footer    = q.footers?.[lang]    || null;
+//     const hasSnippet = !!(header || footer);
+
+//     // Parse whitelist/blacklist: "java, util" → [{list:["java"]},{list:["util"]}]
+//     const parseList = (raw) => {
+//       if (!raw || !raw.trim()) return [];
+//       return raw.split(",").map(v => v.trim()).filter(Boolean).map(v => ({ list: [v] }));
+//     };
+//     const whitelist = parseList(q.whitelists?.[lang]);
+//     const blacklist = parseList(q.blacklists?.[lang]);
+
+//     return {
+//       language:   lang,
+//       codeStub:   q.codeStubs[lang] || "",
+//       hasSnippet,
+//       ...(header     ? { header }     : {}),
+//       ...(footer     ? { footer }     : {}),
+//       ...(whitelist.length ? { whitelist } : {}),
+//       ...(blacklist.length ? { blacklist } : {}),
+//       solutiondata: q.solutions[lang]
+//         ? [{
+//             solution:      q.solutions[lang],
+//             solutionbest:  true,
+//             isSolutionExp: false,
+//             solutionExp:   null,
+//             solutionDebug: null,
+//           }]
+//         : [],
+//       hideHeader: false,
+//       hideFooter: false,
+//     };
+//   });
+
+//   return {
+//     question_type: "programming",
+//     question_data: wrapHtml(q.description),
+//     question_editor_type: 1,
+//     multilanguage: q.languages,
+//     inputformat: wrapHtml(q.inputFmt),
+//     outputformat: wrapHtml(q.outputFmt),
+//     enablecustominput: true,
+//     line_token_evaluation: false,
+//     codeconstraints: wrapHtml(q.constraints),
+//     timelimit: null,
+//     memorylimit: null,
+//     codesize: null,
+//     setLimit: false,
+//     enable_api: false,
+//     outputLimit: null,
+//     subject_id: batchConfig.subject_id || null,
+//     blooms_taxonomy: null,
+//     course_outcome: null,
+//     program_outcome: null,
+//     hint: [],
+//     manual_difficulty: batchConfig.manual_difficulty || q.difficulty,
+//     solution: solutionArray,
+//     testcases: q.testcases,
+//     topic_id: batchConfig.topic_id || null,
+//     sub_topic_id: batchConfig.sub_topic_id || null,
+//     linked_concepts: "",
+//     tags: q.tags,
+//     sample_io: JSON.stringify(q.sampleIO),
+//     question_media: [],
+//     pcm_combination_ids: batchConfig.pcm_combination_id
+//       ? [batchConfig.pcm_combination_id]
+//       : [],  // should always have value — validated as required in batch config
+//     qb_id: qbId,
+//     createdBy: userId,
+//   };
+// }
+
 function buildPayload(q, batchConfig, qbId, userId) {
   const wrapHtml = (text) => {
     if (!text) return "";
-    // If already proper HTML (starts with a real tag like <p>, <ul>, <div> etc.) pass through.
-    // Otherwise treat as plain text — escape < and > so placeholders like
-    // <i>, <sum>, <row_number> are not stripped by the browser as unknown tags.
     if (/^<(p|ul|ol|div|h[1-6]|br|b|strong|em|span|table)\b/i.test(text.trim())) {
       return text;
     }
@@ -2117,12 +2203,14 @@ function buildPayload(q, batchConfig, qbId, userId) {
       .join("");
   };
 
+  // If ANY language has header/footer, all languages get hasSnippet: true
+  const anySnippet = q.languages.some(lang => !!(q.headers?.[lang] || q.footers?.[lang]));
+
   const solutionArray = q.languages.map(lang => {
     const header    = q.headers?.[lang]    || null;
     const footer    = q.footers?.[lang]    || null;
-    const hasSnippet = !!(header || footer);
+    const hasSnippet = anySnippet; // ← fixed: was !!(header || footer)
 
-    // Parse whitelist/blacklist: "java, util" → [{list:["java"]},{list:["util"]}]
     const parseList = (raw) => {
       if (!raw || !raw.trim()) return [];
       return raw.split(",").map(v => v.trim()).filter(Boolean).map(v => ({ list: [v] }));
@@ -2184,12 +2272,11 @@ function buildPayload(q, batchConfig, qbId, userId) {
     question_media: [],
     pcm_combination_ids: batchConfig.pcm_combination_id
       ? [batchConfig.pcm_combination_id]
-      : [],  // should always have value — validated as required in batch config
+      : [],
     qb_id: qbId,
     createdBy: userId,
   };
 }
-
 // ─── COMPONENT ───────────────────────────────────────────────────────────────
 
 export default function CODSync() {
