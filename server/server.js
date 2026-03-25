@@ -90,6 +90,7 @@ import resultAnalysisRoutes from "./routes/resultanalysis.js";
 import repoViewerRoutes from "./routes/repoviewer.js";
 import codQcRoutes from "./routes/codqc.js";       
 import codCompileRoutes from "./routes/codcompile.js";
+import scaffaRoutes from "./routes/scaffa.js";  
 
 dotenv.config();
 
@@ -116,6 +117,7 @@ app.use("/health", healthRoutes);
 app.use("/", repoViewerRoutes); 
 app.use("/cod-qc", codQcRoutes);       // ✅ NEW — POST /cod-qc
 app.use("/cod-compile", codCompileRoutes);
+app.use("/scaffa", scaffaRoutes);  
 
 app.use((err, req, res, next) => {
   console.error("🔥 SERVER ERROR:", err.message);
@@ -142,6 +144,7 @@ app.listen(PORT, () => {
 ✅ Corporate:     /analyze-metadata
 ✅ University:    /analyze-metadata-university
 ✅ Result X:      /analyze-result
+✅ Scaffa:        /scaffa/*
 
 =================================
   `);

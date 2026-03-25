@@ -89,6 +89,15 @@ export default function Dashboard() {
     status: 'active',
     gradient: 'linear-gradient(135deg, #0080ff 0%, #7c3aed 100%)',
   },
+  {
+  id: 'scaffa',
+  icon: '🏗️',
+  title: 'Scaffa',
+  description: 'Scaffold & structure manager — organise components, routes, and services in one place.',
+  path: '/scaffa',
+  status: 'active',
+  gradient: 'linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)',
+},
     {
       id: 'reports',
       icon: '📊',

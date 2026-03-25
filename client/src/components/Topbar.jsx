@@ -65,6 +65,13 @@ export default function Topbar() {
         icon: "🔭",
         subtitle: "Compiler Mode · Code QC"
       };
+      case "/scaffa":
+      return {
+        title: "Scaffa",
+        icon: "🏗️",
+        subtitle: "Scaffold & Structure Manager"
+      };
+ 
       default:
         return {
           title: "Support Hub",
