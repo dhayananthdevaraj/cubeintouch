@@ -1,3 +1,4 @@
+
 import { useState, useRef } from "react";
 import * as XLSX from "xlsx";
 import "./ResultX.css";
@@ -6,6 +7,9 @@ const API    = "https://api.examly.io";
 // const AI_API = "http://localhost:4000";
 const AI_API = "https://cubeintouch-backend.onrender.com";
 const sleep  = (ms) => new Promise((r) => setTimeout(r, ms));
+
+const BATCH_SIZE     = 3;
+const BATCH_DELAY_MS = 65_000;
 
 const TECH_STACKS = [
   { id: "puppeteer",  label: "Puppeteer",  icon: "🎭" },
@@ -122,6 +126,7 @@ export default function ResultX() {
   const [analyseAllCount, setAnalyseAllCount] = useState(0);
   const [analyseAllTotal, setAnalyseAllTotal] = useState(0);
   const [analyzingIdx,    setAnalyzingIdx]    = useState(null);
+  const [batchCooldown,   setBatchCooldown]   = useState(null); // seconds remaining
 
   const [alert,       setAlert]       = useState(null);
   const [overlay,     setOverlay]     = useState(false);
@@ -169,9 +174,9 @@ export default function ResultX() {
     const reader = new FileReader();
     reader.onload = (evt) => {
       try {
-          const wb = isCsv
-        ? XLSX.read(evt.target.result, { type: "string" })   // ← CSV
-        : XLSX.read(evt.target.result, { type: "binary" });
+        const wb = isCsv
+          ? XLSX.read(evt.target.result, { type: "string" })
+          : XLSX.read(evt.target.result, { type: "binary" });
         const ws   = wb.Sheets[wb.SheetNames[0]];
         const json = XLSX.utils.sheet_to_json(ws, { defval: "" });
         if (!json.length) { showAlert("Excel is empty", "danger"); return; }
@@ -181,7 +186,8 @@ export default function ResultX() {
           .filter(r => String(r[urlKey] || "").trim().startsWith("http"))
           .map((r, i) => ({ idx: Date.now() + i, name: `Student ${rows.length + i + 1}`, url: String(r[urlKey]).trim() }));
         if (!parsed.length) { showAlert("No valid result URLs found", "danger"); return; }
-        setRows(prev => [...prev, ...parsed]); setResults([]);
+        // PATCH C: append without wiping existing results
+        setRows(prev => [...prev, ...parsed]);
         showAlert(`Added ${parsed.length} URLs from Excel`, "success");
       } catch (err) { showAlert("Failed to parse Excel: " + err.message, "danger"); }
     };
@@ -275,6 +281,7 @@ export default function ResultX() {
     } finally { setAnalyzingIdx(null); }
   };
 
+  // PATCH A: batched analyse-all with RPM cooldown
   const runAnalyseAll = async () => {
     const eligible = [];
     results.forEach((r, ri) => {
@@ -284,30 +291,97 @@ export default function ResultX() {
       });
     });
     if (!eligible.length) { showAlert("All eligible students already analysed", "info"); return; }
-    setAnalysingAll(true); setAnalyseAllCount(0); setAnalyseAllTotal(eligible.length);
-    for (let ei = 0; ei < eligible.length; ei++) {
-      const { r, ri, qi } = eligible[ei];
-      setAnalyseAllCount(ei + 1); setAnalyzingIdx(`${ri}-${qi}`);
-      try {
-        const json = await callAnalysisAPI(r.questions[qi], r.studentName);
-        setResults(prev => prev.map((item, i) => i !== ri ? item : {
-          ...item,
-          questions: item.questions.map((iq, j) => j !== qi ? iq : { ...iq, analysisReport: json.analysis, filesAnalyzed: json.filesAnalyzed })
-        }));
-      } catch (err) {
-        setResults(prev => prev.map((item, i) => i !== ri ? item : {
-          ...item,
-          questions: item.questions.map((iq, j) => j !== qi ? iq : { ...iq, analysisError: err.message })
-        }));
+
+    setAnalysingAll(true);
+    setAnalyseAllCount(0);
+    setAnalyseAllTotal(eligible.length);
+
+    for (let batchStart = 0; batchStart < eligible.length; batchStart += BATCH_SIZE) {
+      const batch      = eligible.slice(batchStart, batchStart + BATCH_SIZE);
+      const batchNum   = Math.floor(batchStart / BATCH_SIZE) + 1;
+      const totalBatches = Math.ceil(eligible.length / BATCH_SIZE);
+
+      for (let bi = 0; bi < batch.length; bi++) {
+        const { r, ri, qi } = batch[bi];
+        const globalIdx = batchStart + bi;
+        setAnalyseAllCount(globalIdx + 1);
+        setAnalyzingIdx(`${ri}-${qi}`);
+        try {
+          const json = await callAnalysisAPI(r.questions[qi], r.studentName);
+          setResults(prev => prev.map((item, i) => i !== ri ? item : {
+            ...item,
+            questions: item.questions.map((iq, j) =>
+              j !== qi ? iq : { ...iq, analysisReport: json.analysis, filesAnalyzed: json.filesAnalyzed }
+            ),
+          }));
+        } catch (err) {
+          setResults(prev => prev.map((item, i) => i !== ri ? item : {
+            ...item,
+            questions: item.questions.map((iq, j) =>
+              j !== qi ? iq : { ...iq, analysisError: err.message }
+            ),
+          }));
+        }
+        setAnalyzingIdx(null);
+        await sleep(1500);
       }
-      setAnalyzingIdx(null); await sleep(1500);
+
+      const isLastBatch = batchStart + BATCH_SIZE >= eligible.length;
+      if (!isLastBatch) {
+        const cooldownSecs = Math.ceil(BATCH_DELAY_MS / 1000);
+        showAlert(`Batch ${batchNum}/${totalBatches} done — cooldown ${cooldownSecs}s…`, "info");
+        let secs = cooldownSecs;
+        while (secs > 0) {
+          setBatchCooldown(secs);
+          await sleep(1000);
+          secs--;
+        }
+        setBatchCooldown(null);
+      }
     }
-    setAnalysingAll(false); showAlert(`Analysis complete for ${eligible.length} questions`, "success");
+
+    setAnalysingAll(false);
+    showAlert(`Analysis complete for ${eligible.length} questions`, "success");
   };
 
   const copyAnalysis = () => {
     if (!analysisModal?.paragraph) return;
     navigator.clipboard.writeText(analysisModal.paragraph).then(() => { setCopyOk(true); setTimeout(() => setCopyOk(false), 2200); });
+  };
+
+  // PATCH B: CSV download — one row per student, all CODs merged into Report cell
+  const downloadAnalysisCSV = () => {
+    const lines = ["Student\tReport"];
+    results.forEach(r => {
+      if (r.fetchError) return;
+      const questions = r.questions || [];
+      if (!questions.length) return;
+
+      let reportCell;
+      if (questions.length === 1) {
+        // Single COD — just the report text
+        const report = questions[0].analysisReport
+          ? questions[0].analysisReport.replace(/\t/g, " ").replace(/\n/g, " ")
+          : "(not analysed)";
+        reportCell = report;
+      } else {
+        // Multiple CODs — label each one, separated by " | "
+        reportCell = questions.map((q, qi) => {
+          const label  = q.label || `COD ${qi + 1}`;
+          const report = q.analysisReport
+            ? q.analysisReport.replace(/\t/g, " ").replace(/\n/g, " ")
+            : "(not analysed)";
+          return `${label}: ${report}`;
+        }).join(" | ");
+      }
+
+      lines.push(`${r.studentName}\t${reportCell}`);
+    });
+    const blob = new Blob([lines.join("\n")], { type: "text/tab-separated-values" });
+    const url  = URL.createObjectURL(blob);
+    const a    = Object.assign(document.createElement("a"), { href: url, download: "analysis_report.csv" });
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(url);
   };
 
   // ── code viewer ───────────────────────────────────────────────────────────────
@@ -347,6 +421,9 @@ export default function ResultX() {
   const eligibleForAnalysis = results.flatMap(r => (r.questions || []).filter(q => !r.fetchError && q.key && q.questionHtml && !q.analysisReport));
   const alreadyAnalysed     = results.flatMap(r => (r.questions || []).filter(q => q.analysisReport));
   const activeFileData      = codeModal?.files?.find(f => f.path === activeFile);
+  const totalBatches        = Math.ceil(eligibleForAnalysis.length / BATCH_SIZE);
+  const currentBatch        = Math.ceil(analyseAllCount / BATCH_SIZE);
+  const hasAnyReport        = results.some(r => !r.fetchError && r.questions.some(q => q.analysisReport));
 
   // ═════════════════════════════════════════════════════════════════════════════
   return (
@@ -818,22 +895,47 @@ export default function ResultX() {
                 ))}
               </div>
               <div style={{ width: "1px", height: "26px", background: "var(--c-border)", flexShrink: 0 }} />
+
+              {/* Analyse All button */}
               <button className="rx-btn rx-btn-primary" style={{ padding: "7px 16px", fontSize: "12px", flexShrink: 0 }}
-                onClick={runAnalyseAll} disabled={analysingAll || analyzingIdx !== null || eligibleForAnalysis.length === 0}>
-                {analysingAll ? `⟳ ${analyseAllCount} / ${analyseAllTotal}…` : `⚡ Analyse All${eligibleForAnalysis.length > 0 ? ` (${eligibleForAnalysis.length})` : ""}`}
+                onClick={runAnalyseAll} disabled={analysingAll || analyzingIdx !== null || eligibleForAnalysis.length === 0 || batchCooldown !== null}>
+                {batchCooldown !== null
+                  ? `⏳ Cooldown ${batchCooldown}s…`
+                  : analysingAll
+                    ? `⟳ ${analyseAllCount}/${analyseAllTotal} (batch ${currentBatch}/${totalBatches})…`
+                    : `⚡ Analyse All${eligibleForAnalysis.length > 0 ? ` (${eligibleForAnalysis.length})` : ""}`
+                }
               </button>
+
+              {/* Download CSV button — PATCH B */}
+              <button
+                className="rx-btn rx-btn-ghost"
+                style={{ padding: "7px 16px", fontSize: "12px", flexShrink: 0 }}
+                onClick={downloadAnalysisCSV}
+                disabled={!hasAnyReport}
+                title={hasAnyReport ? "Download analysis as CSV" : "Run analysis first"}
+              >
+                ⬇ Download CSV
+              </button>
+
               {alreadyAnalysed.length > 0 && (
                 <span style={{ fontSize: "11px", fontWeight: "700", color: "var(--c-green)", background: "var(--c-green-soft)", border: "1px solid #7dd9b2", padding: "3px 9px", borderRadius: "99px", fontFamily: "JetBrains Mono, monospace" }}>
                   ✅ {alreadyAnalysed.length} done
                 </span>
               )}
             </div>
-            {analysingAll && (
+
+            {/* Analyse All progress bar */}
+            {(analysingAll || batchCooldown !== null) && (
               <div style={{ marginTop: "11px" }}>
-                <div className="rx-progress-wrap"><div className="rx-progress-bar" style={{ width: `${(analyseAllCount / analyseAllTotal) * 100}%` }} /></div>
+                <div className="rx-progress-wrap">
+                  <div className="rx-progress-bar" style={{ width: `${(analyseAllCount / Math.max(analyseAllTotal, 1)) * 100}%`, background: batchCooldown !== null ? "var(--c-amber)" : undefined }} />
+                </div>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: "var(--c-muted)", marginTop: "5px", fontFamily: "JetBrains Mono, monospace" }}>
-                  <span>{analyseAllCount} of {analyseAllTotal} · {selectedStack?.label}</span>
-                  <span>{Math.round((analyseAllCount / analyseAllTotal) * 100)}%</span>
+                  {batchCooldown !== null
+                    ? <><span>⏳ Rate-limit cooldown — next batch in {batchCooldown}s</span><span>{Math.round((analyseAllCount / Math.max(analyseAllTotal, 1)) * 100)}%</span></>
+                    : <><span>{analyseAllCount} of {analyseAllTotal} · batch {currentBatch}/{totalBatches} · {selectedStack?.label}</span><span>{Math.round((analyseAllCount / Math.max(analyseAllTotal, 1)) * 100)}%</span></>
+                  }
                 </div>
               </div>
             )}
@@ -870,14 +972,12 @@ export default function ResultX() {
                       return (
                         <tr key={aidx} className={rowClass}>
 
-                          {/* # — spans all question rows for this student */}
                           {isFirst && (
                             <td className="rx-td rx-td-mono" rowSpan={qCount} style={{ verticalAlign: "top", paddingTop: "14px" }}>
                               {ri + 1}
                             </td>
                           )}
 
-                          {/* Student — spans all question rows */}
                           {isFirst && (
                             <td className="rx-td" rowSpan={qCount} style={{ verticalAlign: "top", paddingTop: "14px" }}>
                               <div style={{ fontWeight: "700", color: "var(--c-text)", fontSize: "13px" }}>{r.studentName}</div>
@@ -885,7 +985,6 @@ export default function ResultX() {
                             </td>
                           )}
 
-                          {/* Score — spans all question rows (total) */}
                           {isFirst && (
                             <td className="rx-td" rowSpan={qCount} style={{ verticalAlign: "top", paddingTop: "14px" }}>
                               <span style={{ fontWeight: "700", fontSize: "13px", color: scoreColor(r.marks, r.total), fontFamily: "JetBrains Mono, monospace" }}>
@@ -894,7 +993,6 @@ export default function ResultX() {
                             </td>
                           )}
 
-                          {/* TC Pass/Fail — per question */}
                           <td className="rx-td">
                             {q.label && (
                               <div style={{ fontSize: "10px", fontWeight: "700", color: "var(--c-muted)", fontFamily: "JetBrains Mono, monospace", marginBottom: "4px", textTransform: "uppercase", letterSpacing: "0.6px" }}>
@@ -907,7 +1005,6 @@ export default function ResultX() {
                             </div>
                           </td>
 
-                          {/* Eval Type — per question */}
                           <td className="rx-td">
                             {q.evalType && q.evalType !== "—"
                               ? <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
@@ -916,26 +1013,22 @@ export default function ResultX() {
                               : <span style={{ color: "var(--c-muted)" }}>—</span>}
                           </td>
 
-                          {/* Question — per question */}
                           <td className="rx-td">
                             {q.qId && q.questionHtml
                               ? <button className="rx-table-btn rx-table-btn-indigo" onClick={() => setQuestionModal({ html: q.questionHtml, qId: q.qId })}>📋 Question</button>
                               : <span style={{ color: "var(--c-muted)" }}>—</span>}
                           </td>
 
-                          {/* Testcases — per question */}
                           <td className="rx-td">
                             {q.tcList?.length > 0
                               ? <button className="rx-table-btn rx-table-btn-teal" onClick={() => setTestcaseModal({ tcList: q.tcList, studentName: r.studentName })}>🧪 Testcases</button>
                               : <span style={{ color: "var(--c-muted)" }}>—</span>}
                           </td>
 
-                          {/* Result — per question */}
                           <td className="rx-td">
                             <button className="rx-table-btn rx-table-btn-amber" onClick={() => setResultModal({ ...q, studentName: r.studentName, email: r.email, status: r.status })}>📊 Result</button>
                           </td>
 
-                          {/* Repo Key — per question */}
                           <td className="rx-td">
                             {q.key
                               ? <div className="rx-key-box">
@@ -945,7 +1038,6 @@ export default function ResultX() {
                               : <span style={{ color: "var(--c-muted)" }}>—</span>}
                           </td>
 
-                          {/* View Code — per question */}
                           <td className="rx-td">
                             {q.key
                               ? <button
@@ -957,7 +1049,6 @@ export default function ResultX() {
                               : <span style={{ color: "var(--c-muted)" }}>—</span>}
                           </td>
 
-                          {/* Analysis — per question */}
                           <td className="rx-td">
                             {q.analysisError
                               ? <span style={{ fontSize: "11px", color: "var(--c-red)", fontFamily: "JetBrains Mono, monospace" }}>✕ Error</span>

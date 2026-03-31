@@ -1,4 +1,3 @@
-
 // services/resultAnalysisService.js
 import { llmCall } from "./llmQueue.js";
 import dotenv from "dotenv";
@@ -212,7 +211,6 @@ async function discoverAppRoot(repoKey, stack) {
   return "";
 }
 
-
 async function collectSourceFiles(repoKey, folderPath, allowedExts, depth = 0) {
   if (depth > 4) return [];
   const items = await listGitHubFolder(repoKey, folderPath);
@@ -271,7 +269,7 @@ export async function analyzeStudentResult({
   } else if (techStack === "nunit") {
     scanPath = appRoot;
   } else if (techStack === "pytest") {
-  scanPath = appRoot; 
+    scanPath = appRoot;
   } else {
     const tryWithSrc = [appRoot, "src"].filter(Boolean).join("/");
     const srcItems   = await listGitHubFolder(repoKey, tryWithSrc);
@@ -310,6 +308,7 @@ export async function analyzeStudentResult({
     .map(f => `// ===== ${f.path} =====\n${f.content}`)
     .join("\n\n");
 
+  // ── Prompt — fixed sentence count to prevent Gemini truncation ──────────────
   const prompt = `
 You are a senior code reviewer analyzing a student's project submission for an educational platform.
 
@@ -324,23 +323,24 @@ STUDENT'S SUBMITTED CODE:
 ${codeBlock}
 
 YOUR JOB:
-Write a detailed analysis paragraph (5 to 6 sentences) reviewing the student's code against the question requirements.
+Write exactly 5 sentences reviewing the student's code against the question requirements.
 - Mention specific class names, method names, or function names from their actual code.
 - Identify what is missing, incorrect, or poorly implemented based on the tech stack above.
 - Be direct and educational — this feedback will help the student improve.
 - Do NOT praise. Focus only on issues and gaps.
 - Write in plain paragraph form — no bullet points, no numbered lists, no headers.
+- All 5 sentences must be complete — do not cut off mid-sentence.
 - Start the paragraph with: "Student code has"
 
 Return ONLY the paragraph text. No JSON. No markdown. No extra formatting.
 `;
 
-  // ── replaces direct groq.chat.completions.create() + retry loop ──────────
+  // ── LLM call — max_tokens 800 to prevent Gemini truncation ─────────────────
   const { text, provider, model } = await llmCall({
     task:        "analysis",
     messages:    [{ role: "user", content: prompt }],
     temperature: 0.4,
-    max_tokens:  500,
+    max_tokens:  2000,   // ✅ bumped from 500 → 800 to fix Gemini truncation
   });
 
   console.log(`  ✅ Analysis done via [${provider}] model: ${model}`);
@@ -360,7 +360,7 @@ Return ONLY the paragraph text. No JSON. No markdown. No extra formatting.
     repoKey,
     techStack,
     filesAnalyzed: fileContents.map(f => f.path),
-    provider,       // ← which provider handled this request
+    provider,
     analysis,
   };
 }
