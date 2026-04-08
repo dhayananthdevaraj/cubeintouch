@@ -1,0 +1,78 @@
+---QUESTION---
+TITLE: Electricity Bill Calculator
+DIFFICULTY: Medium
+LANGUAGE: C
+TAGS: functions, user-defined, debugging, logical error, syntax error
+
+DESCRIPTION:
+<p><strong><u>Problem Statement</u></strong></p>
+<p>A state electricity board has developed a billing system to compute the monthly electricity bill for domestic consumers. The system reads the number of units consumed and applies a slab-based tariff to determine the total bill amount.</p>
+<p>The tariff structure is as follows:</p>
+<ul>
+<li>First <b>100 units</b> — ₹2.00 per unit</li>
+<li>Next <b>100 units</b> (101–200) — ₹3.50 per unit</li>
+<li>Above <b>200 units</b> — ₹5.00 per unit</li>
+</ul>
+<p><br></p>
+<p>A fixed <b>service charge of ₹75</b> is added to every bill. The system uses a user-defined function <b>calcBill()</b> that takes the number of units consumed, computes the bill using the slab structure, adds the service charge, and returns the total as an integer (floor value). The main function reads the input, calls the function, and prints the final bill.</p>
+<p><br></p>
+<p>However, the provided code contains certain issues and may not execute correctly. Your task is to identify and fix the bugs so that the program runs successfully.</p>
+
+INPUT_FORMAT:
+<p>The first line contains a single integer representing the number of units consumed.</p>
+
+OUTPUT_FORMAT:
+<p>Print the following single line:</p>
+<p>Electricity Bill: Rs.<b>amount</b></p>
+
+CONSTRAINTS:
+The given testcases fall under the following constraints:
+1 ≤ units ≤ 1000
+
+HEADER[C]:
+#include <stdio.h>
+
+FOOTER[C]:
+int main() {
+    int units;
+    scanf("%d", &units);
+    printf("Electricity Bill: Rs.%d\n", calcBill(units));
+    return 0;
+}
+
+SOLUTION[C]:
+int calcBill(int units) {
+    float bill = 0;
+    if (units <= 100)
+        bill = units * 2.00;
+    else if (units <= 200)
+        bill = 100 * 2.00 + (units - 100) * 3.50;
+    else
+        bill = 100 * 2.00 + 100 * 3.50 + (units - 200) * 5.00;
+
+    bill = bill + 75;
+    return (int)bill;
+}
+
+CODE_STUB[C]:
+int calcBill(int units) {
+    float bill = 0;
+    if (units <= 100)
+        bill = units * 2.00;
+    else if (units <= 100)
+        bill = 100 * 2.00 + (units - 100) * 3.50;
+    else
+        bill = 100 * 2.00 + 100 * 3.50 + (units - 200) * 5.00
+
+    bill = bill - 75;
+    return (int)bill;
+}
+
+TESTCASE: 80 | Electricity Bill: Rs.235 | Hard | 25
+TESTCASE: 150 | Electricity Bill: Rs.450 | Hard | 25
+TESTCASE: 250 | Electricity Bill: Rs.725 | Hard | 25
+TESTCASE: 10 | Electricity Bill: Rs.95 | Hard | 25
+
+SAMPLE_IO: 100 | Electricity Bill: Rs.275
+SAMPLE_IO: 200 | Electricity Bill: Rs.625
+---END---

@@ -1,0 +1,93 @@
+---QUESTION---
+TITLE: Railway Ticket Fare Estimator
+DIFFICULTY: Medium
+LANGUAGE: C
+TAGS: functions, user-defined, debugging, logical error, syntax error
+ 
+DESCRIPTION:
+<p><strong><u>Problem Statement</u></strong></p>
+<p><br></p>
+<p>A railway reservation system is being developed to automate ticket fare calculation for passengers. When a passenger approaches the booking counter, the staff enters the <b>travel class</b>, the <b>distance in kilometres</b>, and whether the passenger is a <b>senior citizen</b> to determine the final ticket fare.</p>
+ 
+<p>The railway board has fixed the following base fare rates per kilometre for each travel class:</p>
+<ul>
+<li>Class <b>1</b> (Sleeper) — ₹0.50 per km</li>
+<li>Class <b>2</b> (AC 3-Tier) — ₹1.20 per km</li>
+<li>Class <b>3</b> (AC 1-Tier) — ₹2.50 per km</li>
+</ul>
+ 
+<p>Senior citizens (age 60 and above) are entitled to a <b>40% concession</b> on the base fare as per government policy. Additionally, a <b>minimum fare of ₹50</b> is applicable for all tickets regardless of distance or concession. The system uses a user-defined function <b>trainFare()</b> that takes the class, distance, and senior citizen flag (1 for yes, 0 for no), computes the fare, and returns it as an integer (floor value).</p>
+ 
+<p>The program reads the inputs, calls the function, and displays the final ticket fare. However, the provided code contains certain issues and may not execute correctly. Your task is to identify and fix the bugs so that the program runs successfully.</p>
+ 
+INPUT_FORMAT:
+The first line contains three space-separated integers — Class (1, 2, or 3), Distance (in km), and Senior Citizen flag (1 or 0).
+ 
+OUTPUT_FORMAT:
+Print the following single line:
+Ticket Fare: Rs.<amount>
+ 
+CONSTRAINTS:
+The given testcases falls under the following constraints:
+1 ≤ Distance ≤ 2000
+Class is 1, 2, or 3
+Senior Citizen flag is 0 or 1
+ 
+CODE_STUB[C]:
+#include <stdio.h>
+ 
+int trainFare(int cls, int distance, int senior) {
+    float rate = 0;
+    if (cls == 1) rate = 0.50;
+    else if (cls == 2) rate = 1.20;
+    else if (cls == 3) rate = 2.50;
+ 
+    int fare = (int)(rate * distance);
+    if (senior == 1)
+        fare = fare - (fare * 40 / 100);
+ 
+    if (fare + 50)
+        fare = 50;
+    return fare;
+}
+ 
+int main() {
+    int c, distance, senior;
+    scanf("%d %d %d", &c, &distance, &senior)
+    printf("Ticket Fare: Rs.%d\n", trainFare(c, distance, senior));
+    return 0;
+}
+ 
+SOLUTION[C]:
+#include <stdio.h>
+ 
+int trainFare(int cls, int distance, int senior) {
+    float rate = 0;
+    if (cls == 1) rate = 0.50;
+    else if (cls == 2) rate = 1.20;
+    else if (cls == 3) rate = 2.50;
+ 
+    int fare = (int)(rate * distance);
+    if (senior == 1)
+        fare = fare - (fare * 40 / 100);
+ 
+    if (fare < 50)
+        fare = 50;
+    return fare;
+}
+ 
+int main() {
+    int c, distance, senior;
+    scanf("%d %d %d", &c, &distance, &senior);
+    printf("Ticket Fare: Rs.%d\n", trainFare(c, distance, senior));
+    return 0;
+}
+ 
+TESTCASE: 1 200 0 | Ticket Fare: Rs.100 | Hard | 25
+TESTCASE: 2 300 1 | Ticket Fare: Rs.216 | Hard | 25
+TESTCASE: 3 100 0 | Ticket Fare: Rs.250 | Hard | 25
+TESTCASE: 1 50 1 | Ticket Fare: Rs.50 | Hard | 25
+ 
+SAMPLE_IO: 2 150 0 | Ticket Fare: Rs.180
+SAMPLE_IO: 3 200 1 | Ticket Fare: Rs.300
+---END---

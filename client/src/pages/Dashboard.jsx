@@ -147,9 +147,8 @@ export default function Dashboard() {
           
           <h1 className="hero-title">
             <span className="hero-emoji">👋</span>
-            <span className="title-text">
-              Welcome to
-              <span className="title-highlight"> Support Hub</span>
+            <span className="title-text">Start With
+              <span className="title-highlight"> Cube - Power</span>
             </span>
           </h1>
           

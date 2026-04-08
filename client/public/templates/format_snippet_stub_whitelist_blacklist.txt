@@ -1,0 +1,107 @@
+---QUESTION---
+TITLE: Student Grade Classifier
+DIFFICULTY: Medium
+LANGUAGE: C
+TAGS: functions, user-defined, debugging, logical error, syntax error
+
+DESCRIPTION:
+<p><strong><u>Problem Statement</u></strong></p>
+<p><br></p>
+<p>A university examination system has been developed to classify students based on their total marks obtained out of 100. The system reads the marks and uses a user-defined function <b>classifyGrade()</b> to determine and print the grade category.</p>
+<p><br></p>
+<p>The grading policy is as follows:</p>
+<ul>
+<li>Marks <b>≥ 90</b> — Grade: <b>O (Outstanding)</b></li>
+<li>Marks <b>≥ 75</b> — Grade: <b>A (Excellent)</b></li>
+<li>Marks <b>≥ 60</b> — Grade: <b>B (Good)</b></li>
+<li>Marks <b>≥ 40</b> — Grade: <b>C (Average)</b></li>
+<li>Marks <b>&lt; 40</b> — Grade: <b>F (Fail)</b></li>
+</ul>
+<p><br></p>
+<p>The function also returns the total number of grade points associated with the grade (O=10, A=8, B=6, C=4, F=0). The main function reads the marks, calls <b>classifyGrade()</b>, and prints both the grade label and the grade points.</p>
+<p><br></p>
+<p>However, the provided code contains certain issues and may not execute correctly. Your task is to identify and fix the bugs so that the program runs successfully.</p>
+
+INPUT_FORMAT:
+<p>The first line contains a single integer representing the marks obtained (0 to 100).</p>
+
+OUTPUT_FORMAT:
+<p>Print the following two lines:</p>
+<p>Grade: <b>X (Label)</b></p>
+<p>Grade Points: <b>value</b></p>
+
+CONSTRAINTS:
+The given testcases fall under the following constraints:
+0 ≤ marks ≤ 100
+
+HEADER[C]:
+#include <stdio.h>
+
+FOOTER[C]:
+int main() {
+    int marks;
+    scanf("%d", &marks);
+    int points = classifyGrade(marks);
+    printf("Grade Points: %d\n", points);
+    return 0;
+}
+
+SOLUTION[C]:
+int classifyGrade(int marks) {
+    int points = 0;
+    if (marks >= 90) {
+        printf("Grade: O (Outstanding)\n");
+        points = 10;
+    } else if (marks >= 75) {
+        printf("Grade: A (Excellent)\n");
+        points = 8;
+    } else if (marks >= 60) {
+        printf("Grade: B (Good)\n");
+        points = 6;
+    } else if (marks >= 40) {
+        printf("Grade: C (Average)\n");
+        points = 4;
+    } else {
+        printf("Grade: F (Fail)\n");
+        points = 0;
+    }
+    return points;
+}
+
+CODE_STUB[C]:
+int classifyGrade(int marks) {
+    int points = 0;
+    if (marks >= 90) {
+        printf("Grade: O (Outstanding)\n");
+        points = 10;
+    } else if (marks >= 75) {
+        printf("Grade: A (Excellent)\n");
+        points = 8;
+    } else if (marks >= 60) {
+        printf("Grade: B (Good)\n")
+        points = 6;
+    } else if (marks >= 50) {
+        printf("Grade: C (Average)\n");
+        points = 4;
+    } else {
+        printf("Grade: F (Fail)\n");
+        points = 0;
+    }
+    return points
+}
+
+WHITELIST[C]:
+classifyGrade,printf
+
+BLACKLIST[C]:
+Sample1,Sample2
+
+
+TESTCASE: 95 | Grade: O (Outstanding)\nGrade Points: 10 | Hard | 25
+TESTCASE: 80 | Grade: A (Excellent)\nGrade Points: 8 | Hard | 25
+TESTCASE: 65 | Grade: B (Good)\nGrade Points: 6 | Hard | 25
+TESTCASE: 30 | Grade: F (Fail)\nGrade Points: 0 | Hard | 25
+
+SAMPLE_IO: 85 | Grade: A (Excellent)\nGrade Points: 8
+SAMPLE_IO: 35 | Grade: F (Fail)\nGrade Points: 0
+---END---

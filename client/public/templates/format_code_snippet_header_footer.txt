@@ -1,0 +1,174 @@
+---QUESTION---
+TITLE: Inventory Stock Reorder Analyzer
+DIFFICULTY: Hard
+LANGUAGE: C, Java
+TAGS: arrays, functions, loops, conditional operators, arithmetic operators, relational operators
+
+DESCRIPTION:
+<p><strong><u>Problem Statement</u></strong></p>
+<p><br></p>
+<p>Priya is a warehouse operations engineer at a retail logistics company responsible for monitoring stock levels across multiple product lines. At the end of each week, her team runs an automated stock audit that compares the current available quantity of each product against its predefined reorder threshold. If the stock of a product falls strictly below its threshold, a reorder request must be raised immediately to prevent supply disruptions.</p>
+<p><br></p>
+<p>The audit system is built using two user-defined functions. The first function, <b>analyzeStock()</b>, accepts the current stock array, the threshold array, and the total number of products N. For each product, it uses a <b>conditional operator</b> to compute the <b>shortage</b> — defined as (threshold - stock) when stock is below the threshold, and 0 otherwise. It then prints each product's status as either <b>Reorder</b> with its shortage value or <b>Sufficient</b>, and at the end prints the total number of products flagged for reorder.</p>
+<p><br></p>
+<p>The second function, <b>totalShortage()</b>, independently iterates over the arrays and returns the sum of all shortage values across flagged products. The main function reads all inputs, calls <b>analyzeStock()</b> first, and then calls <b>totalShortage()</b> to print the cumulative shortage on the final line.</p>
+
+INPUT_FORMAT:
+<p>The first line contains an integer N representing the number of products.</p>
+<p>The second line contains N space-separated integers representing the current stock of each product.</p>
+<p>The third line contains N space-separated integers representing the reorder threshold of each product.</p>
+
+OUTPUT_FORMAT:
+<p>For each product, print one of the following:</p>
+<p>Product <b>i</b>: Reorder (Shortage: <b>value</b>)</p>
+<p>Product <b>i</b>: Sufficient</p>
+<p>Then print:</p>
+<p>Reorder Count: <b>count</b></p>
+<p>Total Shortage: <b>value</b></p>
+<p>Refer to the sample output for formatting specifications.</p>
+
+CONSTRAINTS:
+In this scenario, the test cases fall under the following constraints:
+1 ≤ N ≤ 10
+0 ≤ stock[i], threshold[i] ≤ 500
+
+HEADER[C]:
+#include <stdio.h>
+
+FOOTER[C]:
+int main() {
+    int n;
+    scanf("%d", &n);
+    int stock[10], threshold[10];
+    for (int i = 0; i < n; i++) scanf("%d", &stock[i]);
+    for (int i = 0; i < n; i++) scanf("%d", &threshold[i]);
+    analyzeStock(stock, threshold, n);
+    printf("Total Shortage: %d\n", totalShortage(stock, threshold, n));
+    return 0;
+}
+
+SOLUTION[C]:
+void analyzeStock(int stock[], int threshold[], int n) {
+    int reorderCount = 0;
+    for (int i = 0; i < n; i++) {
+        int shortage = (stock[i] < threshold[i]) ? (threshold[i] - stock[i]) : 0;
+        if (shortage > 0) {
+            printf("Product %d: Reorder (Shortage: %d)\n", i + 1, shortage);
+            reorderCount++;
+        } else {
+            printf("Product %d: Sufficient\n", i + 1);
+        }
+    }
+    printf("Reorder Count: %d\n", reorderCount);
+}
+
+int totalShortage(int stock[], int threshold[], int n) {
+    int total = 0;
+    for (int i = 0; i < n; i++) {
+        if (stock[i] < threshold[i]) {
+            total += threshold[i] - stock[i];
+        }
+    }
+    return total;
+}
+
+TESTCASE: 4\n120 300 80 450\n150 250 200 400 | Product 1: Reorder (Shortage: 30)\nProduct 2: Sufficient\nProduct 3: Reorder (Shortage: 120)\nProduct 4: Sufficient\nReorder Count: 2\nTotal Shortage: 150 | Easy | 10
+TESTCASE: 3\n50 60 70\n100 100 100 | Product 1: Reorder (Shortage: 50)\nProduct 2: Reorder (Shortage: 40)\nProduct 3: Reorder (Shortage: 30)\nReorder Count: 3\nTotal Shortage: 120 | Easy | 10
+TESTCASE: 5\n200 100 350 80 500\n200 150 300 200 450 | Product 1: Sufficient\nProduct 2: Reorder (Shortage: 50)\nProduct 3: Sufficient\nProduct 4: Reorder (Shortage: 120)\nProduct 5: Sufficient\nReorder Count: 2\nTotal Shortage: 170 | Medium | 15
+TESTCASE: 5\n10 20 30 40 50\n50 40 30 20 10 | Product 1: Reorder (Shortage: 40)\nProduct 2: Reorder (Shortage: 20)\nProduct 3: Sufficient\nProduct 4: Sufficient\nProduct 5: Sufficient\nReorder Count: 2\nTotal Shortage: 60 | Medium | 15
+TESTCASE: 6\n45 90 30 120 15 200\n100 80 100 100 100 150 | Product 1: Reorder (Shortage: 55)\nProduct 2: Sufficient\nProduct 3: Reorder (Shortage: 70)\nProduct 4: Sufficient\nProduct 5: Reorder (Shortage: 85)\nProduct 6: Sufficient\nReorder Count: 3\nTotal Shortage: 210 | Hard | 25
+TESTCASE: 6\n0 100 200 300 400 500\n100 200 100 400 300 450 | Product 1: Reorder (Shortage: 100)\nProduct 2: Reorder (Shortage: 100)\nProduct 3: Sufficient\nProduct 4: Reorder (Shortage: 100)\nProduct 5: Sufficient\nProduct 6: Sufficient\nReorder Count: 3\nTotal Shortage: 300 | Hard | 25
+
+SAMPLE_IO: 4\n120 300 80 450\n150 250 200 400 | Product 1: Reorder (Shortage: 30)\nProduct 2: Sufficient\nProduct 3: Reorder (Shortage: 120)\nProduct 4: Sufficient\nReorder Count: 2\nTotal Shortage: 150
+SAMPLE_IO: 3\n50 60 70\n100 100 100 | Product 1: Reorder (Shortage: 50)\nProduct 2: Reorder (Shortage: 40)\nProduct 3: Reorder (Shortage: 30)\nReorder Count: 3\nTotal Shortage: 120
+---END---
+---QUESTION---
+TITLE: Salary Slab Tax Calculator
+DIFFICULTY: Hard
+LANGUAGE: C, Java
+TAGS: switch case, if else, arithmetic operators, functions, type conversion, data types
+
+DESCRIPTION:
+<p><strong><u>Problem Statement</u></strong></p>
+<p><br></p>
+<p>Karthik is a financial software developer at a payroll management company building an automated tax computation module for salaried employees. Every year, the finance team processes hundreds of employee records manually, which is time-consuming and error-prone. Karthik's module is designed to accept an employee's annual gross salary and compute the exact <b>income tax liability</b> using predefined salary slabs, then generate a clean pay slip showing gross salary, tax deducted, and net salary.</p>
+<p><br></p>
+<p>The tax slabs used by the system are as follows:</p>
+<ul>
+  <li>Annual Salary ≤ <b>250000</b> — No tax (0%)</li>
+  <li>Annual Salary ≤ <b>500000</b> — 5% on the amount exceeding 250000</li>
+  <li>Annual Salary ≤ <b>1000000</b> — Fixed 12500 + 20% on the amount exceeding 500000</li>
+  <li>Annual Salary &gt; <b>1000000</b> — Fixed 112500 + 30% on the amount exceeding 1000000</li>
+</ul>
+<p><br></p>
+<p>A user-defined function <b>computeTax()</b> accepts the salary as a <b>long int</b> and returns the computed tax as a <b>double</b>. Inside this function, the appropriate slab is first determined using a series of <b>if-else</b> conditions that map the salary to an integer slab code (1 through 4). A <b>switch-case</b> then uses this code to compute the exact tax amount. A second function <b>printPaySlip()</b> accepts the salary, calls <b>computeTax()</b> internally, and prints the gross salary, tax, and net salary formatted to two decimal places. The <b>net salary</b> is computed using explicit <b>type conversion</b> since salary is a long int and tax is a double.</p>
+
+INPUT_FORMAT:
+<p>The first line contains a single long integer representing the employee's annual gross salary in rupees.</p>
+
+OUTPUT_FORMAT:
+<p>Print the pay slip in the following format:</p>
+<p>Gross Salary: <b>value</b></p>
+<p>Tax: <b>value</b></p>
+<p>Net Salary: <b>value</b></p>
+<p>Refer to the sample output for formatting specifications.</p>
+
+CONSTRAINTS:
+In this scenario, the test cases fall under the following constraints:
+0 ≤ Salary ≤ 5000000
+
+HEADER[C]:
+#include <stdio.h>
+
+FOOTER[C]:
+int main() {
+    long int salary;
+    scanf("%ld", &salary);
+    printPaySlip(salary);
+    return 0;
+}
+
+SOLUTION[C]:
+double computeTax(long int salary) {
+    int slab;
+    if (salary <= 250000) slab = 1;
+    else if (salary <= 500000) slab = 2;
+    else if (salary <= 1000000) slab = 3;
+    else slab = 4;
+
+    double tax = 0.0;
+    switch (slab) {
+        case 1:
+            tax = 0.0;
+            break;
+        case 2:
+            tax = (salary - 250000) * 0.05;
+            break;
+        case 3:
+            tax = 12500 + (salary - 500000) * 0.20;
+            break;
+        case 4:
+            tax = 112500 + (salary - 1000000) * 0.30;
+            break;
+    }
+    return tax;
+}
+
+void printPaySlip(long int salary) {
+    double tax = computeTax(salary);
+    double netSalary = (double)salary - tax;
+    printf("Gross Salary: %ld\n", salary);
+    printf("Tax: %.2f\n", tax);
+    printf("Net Salary: %.2f\n", netSalary);
+}
+
+TESTCASE: 200000 | Gross Salary: 200000\nTax: 0.00\nNet Salary: 200000.00 | Easy | 10
+TESTCASE: 400000 | Gross Salary: 400000\nTax: 7500.00\nNet Salary: 392500.00 | Easy | 10
+TESTCASE: 750000 | Gross Salary: 750000\nTax: 62500.00\nNet Salary: 687500.00 | Medium | 15
+TESTCASE: 1000000 | Gross Salary: 1000000\nTax: 112500.00\nNet Salary: 887500.00 | Medium | 15
+TESTCASE: 1500000 | Gross Salary: 1500000\nTax: 262500.00\nNet Salary: 1237500.00 | Hard | 25
+TESTCASE: 2500000 | Gross Salary: 2500000\nTax: 562500.00\nNet Salary: 1937500.00 | Hard | 25
+
+SAMPLE_IO: 400000 | Gross Salary: 400000\nTax: 7500.00\nNet Salary: 392500.00
+SAMPLE_IO: 1500000 | Gross Salary: 1500000\nTax: 262500.00\nNet Salary: 1237500.00
+---END---

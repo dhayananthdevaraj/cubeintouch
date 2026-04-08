@@ -3602,6 +3602,7 @@
 //     </div>
 //   );
 // }
+
 import { useState, useRef } from "react";
 import { UNIVERSITY_DEPARTMENT_IDS, UNIVERSITY_B_D_ID_OPTIONS } from "../configUniversity";
 import "./QBAccessCorporate.css";
