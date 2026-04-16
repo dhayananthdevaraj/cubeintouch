@@ -54,7 +54,7 @@ const DEFAULT_FILENAME = {
   "Mongodb Standalone":      "query.js",
   "Oracledb Standalone":     "query.sql",
   ".NET with MsSql (2019)":  "Program.cs",
-  "SQL Server (2019)":       "query.sql",
+  "SQL Server (2019)":       "main.sql",
   "C++":                     "main.cpp",
   "CassandraDB Standalone":  "query.cql",
   "MySQL (8.0)":             "file.sql",
