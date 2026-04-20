@@ -652,6 +652,15 @@
   border-radius: 4px; font-weight: 600;
 }
 
+.rx-question-html img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 8px 0;
+  border-radius: 6px;
+  border: 1px solid var(--c-border);
+}
+
 /* ══════════════════════════════════════════════════════════
    RESPONSIVE
 ══════════════════════════════════════════════════════════ */
