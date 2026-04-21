@@ -1103,7 +1103,7 @@ import * as XLSX from "xlsx";
 import "./ResultX.css";
 
 const API    = "https://api.examly.io";
-//  const AI_API = "http://localhost:4000";
+// const AI_API = "http://localhost:4000";
 const AI_API = "https://cubeintouch-backend.onrender.com";
 const sleep  = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -1549,37 +1549,65 @@ export default function ResultX() {
     navigator.clipboard.writeText(analysisModal.paragraph).then(() => { setCopyOk(true); setTimeout(() => setCopyOk(false), 2200); });
   };
 
-  const downloadAnalysisCSV = () => {
-    const lines = ["Student\tReport"];
+  // ── CSV Download with filename popup + loading animation ─────────────────────
+  const [csvModal,    setCsvModal]    = useState(null);
+  const [csvFilename, setCsvFilename] = useState("analysis_report");
+
+  const openCsvModal = () => {
+    if (!hasAnyReport) return;
+    setCsvFilename("analysis_report");
+    setCsvModal("prompt");
+  };
+
+  const doDownloadCSV = async (filename) => {
+    setCsvModal("loading");
+    await sleep(2800);
+
+    // Determine max COD count across all students
+    const maxCods = Math.max(
+      1,
+      ...results.filter(r => !r.fetchError).map(r => r.questions?.length || 0)
+    );
+
+    // Build header: Student Name, COD1, COD2... (or just Report if single)
+    const hasCods    = maxCods > 1;
+    const codHeaders = hasCods
+      ? Array.from({ length: maxCods }, (_, i) => `COD${i + 1}`)
+      : ["Report"];
+
+    // CSV escape helper
+    const esc = (val) => {
+      const s = String(val ?? "").replace(/\r?\n/g, " ").replace(/"/g, '""');
+      return `"${s}"`;
+    };
+
+    // Build rows — one column per COD, each cell quoted
+    const rows = [];
     results.forEach(r => {
       if (r.fetchError) return;
       const questions = r.questions || [];
       if (!questions.length) return;
-
-      let reportCell;
-      if (questions.length === 1) {
-        const report = questions[0].analysisReport
-          ? questions[0].analysisReport.replace(/\t/g, " ").replace(/\n/g, " ")
-          : "(not analysed)";
-        reportCell = report;
-      } else {
-        reportCell = questions.map((q, qi) => {
-          const label  = q.label || `COD ${qi + 1}`;
-          const report = q.analysisReport
-            ? q.analysisReport.replace(/\t/g, " ").replace(/\n/g, " ")
-            : "(not analysed)";
-          return `${label}: ${report}`;
-        }).join(" | ");
+      const row = [esc(r.studentName)];
+      for (let i = 0; i < maxCods; i++) {
+        const report = questions[i]?.analysisReport || "(not analysed)";
+        row.push(esc(report));
       }
-
-      lines.push(`${r.studentName}\t${reportCell}`);
+      rows.push(row.join(","));
     });
-    const blob = new Blob([lines.join("\n")], { type: "text/tab-separated-values" });
-    const url  = URL.createObjectURL(blob);
-    const a    = Object.assign(document.createElement("a"), { href: url, download: "analysis_report.csv" });
+
+    const header   = [esc("Student Name"), ...codHeaders.map(esc)].join(",");
+    const csv      = "\uFEFF" + [header, ...rows].join("\r\n");
+    const blob     = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url      = URL.createObjectURL(blob);
+    const safeName = (filename || "analysis_report").replace(/[^a-zA-Z0-9_]/g, "_");
+    const a        = Object.assign(document.createElement("a"), { href: url, download: `${safeName}.csv` });
     document.body.appendChild(a); a.click();
     document.body.removeChild(a); URL.revokeObjectURL(url);
+
+    setCsvModal("done");
+    setTimeout(() => setCsvModal(null), 1500);
   };
+
 
   // ── code viewer ───────────────────────────────────────────────────────────────
 
@@ -1625,6 +1653,15 @@ export default function ResultX() {
   // ═════════════════════════════════════════════════════════════════════════════
   return (
     <div className="rx-page">
+      <style>{`
+        @keyframes csvProgress {
+          0%   { width: 0%; }
+          30%  { width: 45%; }
+          70%  { width: 75%; }
+          95%  { width: 92%; }
+          100% { width: 100%; }
+        }
+      `}</style>
 
       {alert && <div className={`rx-alert rx-alert-${alert.type}`}>{alert.msg}</div>}
 
@@ -2003,6 +2040,109 @@ export default function ResultX() {
         </div>
       )}
 
+      {/* ══ CSV Download Modal ══ */}
+      {csvModal && (
+        <div className="rx-modal-backdrop" onClick={() => csvModal === "prompt" && setCsvModal(null)}>
+          <div className="rx-modal rx-modal-sm" onClick={e => e.stopPropagation()}
+            style={{ maxWidth: "420px" }}>
+
+            {/* ── Prompt state ── */}
+            {csvModal === "prompt" && (
+              <>
+                <div className="rx-modal-header">
+                  <span className="rx-modal-title">⬇ Download CSV</span>
+                  <div className="rx-modal-header-right">
+                    <button className="rx-modal-close" onClick={() => setCsvModal(null)}>✕</button>
+                  </div>
+                </div>
+                <div className="rx-modal-body" style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                  <div>
+                    <label className="rx-label" style={{ marginBottom: "6px" }}>File name</label>
+                    <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                      <input
+                        className="rx-input"
+                        value={csvFilename}
+                        onChange={e => setCsvFilename(e.target.value)}
+                        onKeyDown={e => e.key === "Enter" && csvFilename.trim() && doDownloadCSV(csvFilename.trim())}
+                        placeholder="analysis_report"
+                        style={{ flex: 1 }}
+                        autoFocus
+                      />
+                      <span style={{ fontSize: "12px", color: "var(--c-muted)", fontFamily: "JetBrains Mono, monospace", flexShrink: 0 }}>.csv</span>
+                    </div>
+                  </div>
+                  <div style={{ padding: "10px 14px", background: "var(--c-surface-2)", border: "1px solid var(--c-border)", borderRadius: "8px", fontSize: "11px", color: "var(--c-muted)", fontFamily: "JetBrains Mono, monospace", lineHeight: "1.6" }}>
+                    Format: Student Name {(() => {
+                      const maxCods = Math.max(1, ...results.filter(r => !r.fetchError).map(r => r.questions?.length || 0));
+                      return maxCods > 1
+                        ? Array.from({ length: maxCods }, (_, i) => `COD${i+1}`).join(" | ")
+                        : "Report";
+                    })()}
+                  </div>
+                  <button
+                    className="rx-btn rx-btn-primary rx-btn-full"
+                    onClick={() => csvFilename.trim() && doDownloadCSV(csvFilename.trim())}
+                    disabled={!csvFilename.trim()}
+                  >
+                    ⬇ Download
+                  </button>
+                </div>
+              </>
+            )}
+
+            {/* ── Loading state ── */}
+            {csvModal === "loading" && (
+              <>
+                <div className="rx-modal-header">
+                  <span className="rx-modal-title">⬇ Preparing CSV…</span>
+                </div>
+                <div className="rx-modal-body" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "22px", padding: "36px 24px" }}>
+                  {/* Animated progress bar */}
+                  <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: "10px" }}>
+                    <div style={{ height: "6px", background: "var(--c-border)", borderRadius: "99px", overflow: "hidden" }}>
+                      <div style={{
+                        height: "100%", borderRadius: "99px",
+                        background: "linear-gradient(90deg, var(--c-indigo), var(--c-violet))",
+                        animation: "csvProgress 2.8s ease-in-out forwards",
+                      }} />
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: "var(--c-muted)", fontFamily: "JetBrains Mono, monospace" }}>
+                      <span>Building rows…</span>
+                      <span>Please wait</span>
+                    </div>
+                  </div>
+                  {/* Spinning rings */}
+                  <div style={{ position: "relative", width: "48px", height: "48px" }}>
+                    <div className="rx-ring rx-ring-1" style={{ borderTopColor: "var(--c-indigo)" }} />
+                    <div className="rx-ring rx-ring-2" style={{ borderTopColor: "var(--c-violet)", borderLeftColor: "transparent" }} />
+                  </div>
+                  <div style={{ textAlign: "center" }}>
+                    <div style={{ fontSize: "14px", fontWeight: "600", color: "var(--c-text)" }}>Generating report…</div>
+                    <div style={{ fontSize: "11px", color: "var(--c-muted)", fontFamily: "JetBrains Mono, monospace", marginTop: "4px" }}>
+                      Formatting {results.filter(r => !r.fetchError).length} students
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* ── Done state ── */}
+            {csvModal === "done" && (
+              <>
+                <div className="rx-modal-header">
+                  <span className="rx-modal-title">✅ Downloaded!</span>
+                </div>
+                <div className="rx-modal-body" style={{ textAlign: "center", padding: "32px 24px" }}>
+                  <div style={{ fontSize: "40px", marginBottom: "12px" }}>📥</div>
+                  <div style={{ fontSize: "14px", fontWeight: "600", color: "var(--c-green)" }}>CSV saved successfully</div>
+                  <div style={{ fontSize: "11px", color: "var(--c-muted)", fontFamily: "JetBrains Mono, monospace", marginTop: "6px" }}>{csvFilename}.csv</div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* ══ Welcome ══ */}
       {ui === "welcome" && (
         <div className="rx-welcome">
@@ -2124,8 +2264,8 @@ export default function ResultX() {
               <button
                 className="rx-btn rx-btn-ghost"
                 style={{ padding: "7px 16px", fontSize: "12px", flexShrink: 0 }}
-                onClick={downloadAnalysisCSV}
-                disabled={!hasAnyReport}
+                onClick={openCsvModal}
+                disabled={!hasAnyReport || csvModal !== null}
                 title={hasAnyReport ? "Download analysis as CSV" : "Run analysis first"}
               >
                 ⬇ Download CSV

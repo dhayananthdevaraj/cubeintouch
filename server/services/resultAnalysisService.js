@@ -330,7 +330,7 @@ Write exactly 5 sentences reviewing the student's code against the question requ
 - Do NOT praise. Focus only on issues and gaps.
 - Write in plain paragraph form — no bullet points, no numbered lists, no headers.
 - All 5 sentences must be complete — do not cut off mid-sentence.
-- Start the paragraph with: "Student code has"
+- Start the paragraph with: "Student code has issues on"
 
 Return ONLY the paragraph text. No JSON. No markdown. No extra formatting.
 `;
@@ -350,9 +350,13 @@ Return ONLY the paragraph text. No JSON. No markdown. No extra formatting.
     .replace(/```\s*$/gi, "")
     .trim();
 
-  if (!analysis.startsWith("Student code has")) {
-    analysis = "Student code has " + analysis;
+if (!analysis.toLowerCase().startsWith("student code has issues on")) {
+  if (analysis.toLowerCase().startsWith("student code has")) {
+    analysis = "Student code has issues on" + analysis.slice("student code has".length);
+  } else {
+    analysis = "Student code has issues on " + analysis;
   }
+}
 
   return {
     success:       true,
@@ -364,3 +368,4 @@ Return ONLY the paragraph text. No JSON. No markdown. No extra formatting.
     analysis,
   };
 }
+
