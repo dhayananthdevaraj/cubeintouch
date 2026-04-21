@@ -872,3 +872,14 @@
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+.asc-folder-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+.asc-dl-folder-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 12px; font-size: 12px; font-weight: 600;
+  color: #16a34a; background: #f0fdf4; border: 1.5px solid #86efac;
+  border-radius: 6px; cursor: pointer; white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+}
+.asc-dl-folder-btn:hover:not(:disabled) { background: #dcfce7; border-color: #4ade80; transform: translateY(-1px); }
+.asc-dl-folder-btn:disabled { opacity: 0.5; cursor: not-allowed; }

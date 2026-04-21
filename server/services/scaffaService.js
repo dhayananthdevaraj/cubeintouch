@@ -81,6 +81,27 @@ async function collectSpecFiles(repoKey, folderPath, extensions = [".spec.ts"]) 
 
   return specFiles;
 }
+
+/** Recursively collect ALL files (every extension) under a folder */
+async function collectAllFiles(repoKey, folderPath) {
+  const items = await listGitHubFolder(repoKey, folderPath);
+  const files = [];
+
+  for (const item of items) {
+    if (item.type === "file") {
+      const content = await fetchGitHubFile(repoKey, item.path);
+      if (content !== null) {
+        files.push({ name: item.path, content });
+      }
+    } else if (item.type === "dir") {
+      const nested = await collectAllFiles(repoKey, item.path);
+      files.push(...nested);
+    }
+  }
+
+  return files;
+}
+
 function extractTestNames(content) {
   const regex = /(?:fit|it)\s*\(\s*['"`](.*?)['"`]\s*,/g;
   const names = [];
@@ -158,7 +179,6 @@ ${failLines}
 else
 `;
 
-  // Fallback fail logs when angularapp dir missing
   for (const file of files) {
     const testNames = testNamesMap[file.originalname] || [];
     testNames.forEach((n) => { script += `    echo "${n} FAILED";\n`; });
@@ -181,8 +201,6 @@ export async function fetchFolders(githubUrl, folderPath = "") {
 
 /**
  * Recursively find and return test files under folderName
- * @param {string} type - "angular" → .spec.ts | "react" → .test.js/.test.ts/.spec.js/.spec.ts
- * Returns: [{ name, content }]
  */
 export async function fetchSpecFiles(githubUrl, folderName, type = "angular") {
   const repoKey = extractRepoKey(githubUrl);
@@ -200,7 +218,6 @@ export async function fetchSpecFiles(githubUrl, folderName, type = "angular") {
 
 /**
  * Generate React scaffold ZIP
- * Returns: zipFilePath (string) — caller sends as download
  */
 export async function generateReactZip(testCase, zipFileName) {
   const tempDir         = await fs.mkdtemp(path.join(os.tmpdir(), "scaffa-react-"));
@@ -215,10 +232,8 @@ export async function generateReactZip(testCase, zipFileName) {
   await fs.ensureDir(testsDir);
   await fs.ensureDir(srcDir);
 
-  // Write test file
   await fs.writeFile(path.join(testsDir, "App.test.js"), testCase, "utf8");
 
-  // Auto-create component stubs from import statements
   const componentRegex = /import\s+(\w+)\s+from\s+['"`]\.\.\/components\/([\w\/]+)['"`]/g;
   for (const match of [...testCase.matchAll(componentRegex)]) {
     const componentPath = path.join(srcDir, `components/${match[2]}.jsx`);
@@ -226,7 +241,6 @@ export async function generateReactZip(testCase, zipFileName) {
     console.log(`  ✅ Component stub: ${match[2]}.jsx`);
   }
 
-  // Build ZIP
   const zipPath = path.join(tempDir, `${zipFileName}.zip`);
   await buildZip(zipPath, [
     { dir: tempReactDir,    name: `${zipFileName}/react` },
@@ -239,7 +253,6 @@ export async function generateReactZip(testCase, zipFileName) {
 
 /**
  * Generate Angular scaffold ZIP with karma.sh
- * Returns: zipFilePath (string) — caller sends as download
  */
 export async function generateAngularZip(files, zipFileName) {
   const tempDir           = await fs.mkdtemp(path.join(os.tmpdir(), "scaffa-angular-"));
@@ -249,7 +262,6 @@ export async function generateAngularZip(files, zipFileName) {
   await fs.copy(angularAppDir, tempAngularAppDir);
   await fs.copy(karmaDir,      tempKarmaDir);
 
-  // Write uploaded spec files + collect test names
   const testNamesMap = {};
   for (const file of files) {
     await fs.writeFile(path.join(tempKarmaDir, file.originalname), file.buffer);
@@ -257,12 +269,10 @@ export async function generateAngularZip(files, zipFileName) {
     console.log(`  ✅ Spec file: ${file.originalname} (${testNamesMap[file.originalname].length} tests)`);
   }
 
-  // Generate karma.sh
   const karmaScript = buildKarmaScript(files, testNamesMap);
   await fs.writeFile(path.join(tempKarmaDir, "karma.sh"), karmaScript, "utf8");
   console.log(`  ✅ karma.sh generated`);
 
-  // Build ZIP
   const zipPath = path.join(tempDir, `${zipFileName}.zip`);
   await buildZip(zipPath, [
     { dir: tempAngularAppDir, name: `${zipFileName}/angularapp` },
@@ -270,6 +280,46 @@ export async function generateAngularZip(files, zipFileName) {
   ]);
 
   console.log(`✅ Angular ZIP ready: ${zipFileName}.zip`);
+  return { zipPath, tempDir };
+}
+
+/**
+ * Download an entire folder (ALL file types) as a ZIP
+ */
+export async function downloadFolderAsZip(githubUrl, folderPath, zipFileName) {
+  const repoKey = extractRepoKey(githubUrl);
+
+  console.log(`  📦 Collecting all files from: ${folderPath}`);
+  const files = await collectAllFiles(repoKey, folderPath);
+
+  if (!files.length) throw new Error("No files found in the specified folder");
+
+  console.log(`  📄 Found ${files.length} files — building ZIP...`);
+
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "scaffa-folder-"));
+  const zipPath = path.join(tempDir, `${zipFileName}.zip`);
+
+  await new Promise((resolve, reject) => {
+    const output  = fs.createWriteStream(zipPath);
+    const archive = archiver("zip", { zlib: { level: 6 } });
+
+    output.on("close", resolve);
+    archive.on("error", reject);
+    archive.pipe(output);
+
+    for (const file of files) {
+      // Strip the leading folderPath so ZIP root = selected folder
+      const entryPath = file.name.startsWith(folderPath)
+        ? file.name.slice(folderPath.length).replace(/^\//, "")
+        : file.name;
+
+      archive.append(Buffer.from(file.content, "utf-8"), { name: entryPath });
+    }
+
+    archive.finalize();
+  });
+
+  console.log(`✅ Folder ZIP ready: ${zipFileName}.zip (${files.length} files)`);
   return { zipPath, tempDir };
 }
 
