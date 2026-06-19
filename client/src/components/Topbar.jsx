@@ -71,6 +71,12 @@ export default function Topbar() {
         icon: "🏗️",
         subtitle: "Scaffold & Structure Manager"
       };
+      case "/specq":
+      return {
+        title: "specQ",
+        icon: "⚗️",
+        subtitle: "Automated QC · AI-Powered Validation"
+      };
  
       default:
         return {

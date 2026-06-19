@@ -550,3 +550,22 @@
 .nav-link:not(.disabled):hover::after {
   left: 100%;
 }
+
+/* specQ External Link */
+.nav-link-specq {
+  background: linear-gradient(90deg, rgba(0, 198, 251, 0.1), rgba(0, 91, 234, 0.06));
+  border-left: 3px solid #00c6fb;
+  color: #00c6fb !important;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.nav-link-specq:hover {
+  background: linear-gradient(90deg, rgba(0, 198, 251, 0.2), rgba(0, 91, 234, 0.15));
+}
+
+.nav-external {
+  margin-left: auto;
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
