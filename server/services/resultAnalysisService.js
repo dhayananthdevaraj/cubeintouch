@@ -323,13 +323,13 @@ STUDENT'S SUBMITTED CODE:
 ${codeBlock}
 
 YOUR JOB:
-Write exactly 5 sentences reviewing the student's code against the question requirements.
+Write exactly 3 sentences reviewing the student's code against the question requirements.
 - Mention specific class names, method names, or function names from their actual code.
 - Identify what is missing, incorrect, or poorly implemented based on the tech stack above.
 - Be direct and educational — this feedback will help the student improve.
 - Do NOT praise. Focus only on issues and gaps.
 - Write in plain paragraph form — no bullet points, no numbered lists, no headers.
-- All 5 sentences must be complete — do not cut off mid-sentence.
+- All 3 sentences must be complete — do not cut off mid-sentence.
 - Start the paragraph with: "Student code has issues on"
 
 Return ONLY the paragraph text. No JSON. No markdown. No extra formatting.

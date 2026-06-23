@@ -72,6 +72,29 @@ const PROVIDERS = [
     modelLimits:    {},
   },
   {
+    name:   "groq-3",
+    type:   "groq",
+    client: new Groq({ apiKey: process.env.GROQ_API_KEY_3 }),
+    models: {
+      // ── Existing (unchanged) ──
+      default:  "llama-3.3-70b-versatile",
+      qc:       "openai/gpt-oss-20b",
+      analysis: "llama-3.3-70b-versatile",
+      // ── COD QC dedicated slots ──
+      "cod-ai-solution": "llama-3.3-70b-versatile",
+      "qc-desc":         "meta-llama/llama-4-scout-17b-16e-instruct",
+      "qc-input":        "llama-3.3-70b-versatile",
+      "qc-output":       "llama-3.3-70b-versatile",
+      "qc-sample":       "meta-llama/llama-4-scout-17b-16e-instruct",
+      "qc-whitelist":    "llama-3.3-70b-versatile",
+      "qc-difficulty":   "llama-3.3-70b-versatile",
+      "qc-ai-failure":   "meta-llama/llama-4-scout-17b-16e-instruct",
+    },
+    isRateLimited:  false,
+    rateLimitUntil: null,
+    modelLimits:    {},
+  },
+  {
     name:   "gemini-1",
     type:   "gemini",
     apiKey: process.env.GEMINI_API_KEY,
@@ -80,7 +103,7 @@ const PROVIDERS = [
       // ── Existing (unchanged) ──
       default:  "gemini-2.5-flash",
       qc:       "gemini-2.5-flash",
-      analysis: "gemini-2.5-flash",
+      analysis: "gemini-2.0-flash",
       // ── COD QC dedicated slots ──
       "cod-ai-solution": "gemini-2.5-flash",
       "qc-desc":         "gemini-2.5-flash",
@@ -89,7 +112,7 @@ const PROVIDERS = [
       "qc-sample":       "gemini-2.5-flash",
       "qc-whitelist":    "gemini-2.5-flash",
       "qc-difficulty":   "gemini-2.5-flash",
-      "qc-ai-failure":   "gemini-2.5-flash",
+      "qc-ai-failure":   "gemini-2.0-flash",
     },
     isRateLimited:  false,
     rateLimitUntil: null,
@@ -104,7 +127,7 @@ const PROVIDERS = [
       // ── Existing (unchanged) ──
       default:  "gemini-2.5-flash",
       qc:       "gemini-2.5-flash",
-      analysis: "gemini-2.5-flash",
+      analysis: "gemini-2.0-flash",
       // ── COD QC dedicated slots ──
       "cod-ai-solution": "gemini-2.5-flash",
       "qc-desc":         "gemini-2.5-flash",
@@ -113,7 +136,7 @@ const PROVIDERS = [
       "qc-sample":       "gemini-2.5-flash",
       "qc-whitelist":    "gemini-2.5-flash",
       "qc-difficulty":   "gemini-2.5-flash",
-      "qc-ai-failure":   "gemini-2.5-flash",
+      "qc-ai-failure":   "gemini-2.0-flash",
     },
     isRateLimited:  false,
     rateLimitUntil: null,
