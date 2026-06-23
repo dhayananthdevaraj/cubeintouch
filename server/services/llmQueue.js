@@ -103,7 +103,7 @@ const PROVIDERS = [
       // ── Existing (unchanged) ──
       default:  "gemini-2.5-flash",
       qc:       "gemini-2.5-flash",
-      analysis: "gemini-2.0-flash",
+      analysis: "gemini-2.5-flash",
       // ── COD QC dedicated slots ──
       "cod-ai-solution": "gemini-2.5-flash",
       "qc-desc":         "gemini-2.5-flash",
@@ -112,7 +112,7 @@ const PROVIDERS = [
       "qc-sample":       "gemini-2.5-flash",
       "qc-whitelist":    "gemini-2.5-flash",
       "qc-difficulty":   "gemini-2.5-flash",
-      "qc-ai-failure":   "gemini-2.0-flash",
+      "qc-ai-failure":   "gemini-2.5-flash",
     },
     isRateLimited:  false,
     rateLimitUntil: null,
@@ -127,7 +127,7 @@ const PROVIDERS = [
       // ── Existing (unchanged) ──
       default:  "gemini-2.5-flash",
       qc:       "gemini-2.5-flash",
-      analysis: "gemini-2.0-flash",
+      analysis: "gemini-2.5-flash",
       // ── COD QC dedicated slots ──
       "cod-ai-solution": "gemini-2.5-flash",
       "qc-desc":         "gemini-2.5-flash",
@@ -136,7 +136,7 @@ const PROVIDERS = [
       "qc-sample":       "gemini-2.5-flash",
       "qc-whitelist":    "gemini-2.5-flash",
       "qc-difficulty":   "gemini-2.5-flash",
-      "qc-ai-failure":   "gemini-2.0-flash",
+      "qc-ai-failure":   "gemini-2.5-flash",
     },
     isRateLimited:  false,
     rateLimitUntil: null,
