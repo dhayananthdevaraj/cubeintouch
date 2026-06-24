@@ -35,7 +35,7 @@ const SKIP_FOLDERS = [
   "bin", "obj", "target", "Migrations",
   ".config", "Properties", "wwwroot", ".vs", ".idea", ".vscode",
   "TestResults", ".mvn","__pycache__", ".pytest_cache", "venv", ".venv", "env",
-  "migrations", "static", "media", "htmlcov",
+  "migrations", "static", "media", "htmlcov", "TestProject", "UnitTests", "IntegrationTests"
 ];
 
 const SKIP_FILE_PATTERNS = [
@@ -82,6 +82,10 @@ const SKIP_FILE_PATTERNS = [
   /^pyproject\.toml$/i,
   /^requirements.*\.txt$/i,
   /^__init__\.py$/i,
+  /^UnitTest\d*\.cs$/i,         
+  /^Usings\.cs$/i,              
+  /^WeatherForecast\.cs$/i,     
+  /WeatherForecast.*\.cs$/i,  
 ];
 
 const PRIORITY_KEYWORDS = [

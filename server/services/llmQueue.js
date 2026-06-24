@@ -33,7 +33,7 @@ const PROVIDERS = [
       // ── Existing (unchanged) ──
       default:  "llama-3.3-70b-versatile",
       qc:       "openai/gpt-oss-20b",
-      analysis: "llama-3.3-70b-versatile",
+      analysis: "meta-llama/llama-4-scout-17b-16e-instruct",
       // ── COD QC dedicated slots ──
       "cod-ai-solution": "llama-3.3-70b-versatile",
       "qc-desc":         "meta-llama/llama-4-scout-17b-16e-instruct",
