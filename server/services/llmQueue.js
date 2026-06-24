@@ -329,7 +329,7 @@ const PROVIDERS = [
     models: {
       default:  "llama-3.3-70b-versatile",
       qc:       "openai/gpt-oss-20b",
-      analysis: "meta-llama/llama-4-scout-17b-16e-instruct",
+      analysis: "llama-3.3-70b-versatile",
       "cod-ai-solution": "llama-3.3-70b-versatile",
       "qc-desc":         "meta-llama/llama-4-scout-17b-16e-instruct",
       "qc-input":        "llama-3.3-70b-versatile",
@@ -350,7 +350,7 @@ const PROVIDERS = [
     models: {
       default:  "llama-3.3-70b-versatile",
       qc:       "openai/gpt-oss-20b",
-      analysis: "meta-llama/llama-4-scout-17b-16e-instruct", // ← FIXED
+      analysis: "llama-3.3-70b-versatile", // ← FIXED
       "cod-ai-solution": "llama-3.3-70b-versatile",
       "qc-desc":         "meta-llama/llama-4-scout-17b-16e-instruct",
       "qc-input":        "llama-3.3-70b-versatile",
@@ -371,7 +371,7 @@ const PROVIDERS = [
     models: {
       default:  "llama-3.3-70b-versatile",
       qc:       "openai/gpt-oss-20b",
-      analysis: "meta-llama/llama-4-scout-17b-16e-instruct", // ← FIXED
+      analysis: "llama-3.3-70b-versatile", // ← FIXED
       "cod-ai-solution": "llama-3.3-70b-versatile",
       "qc-desc":         "meta-llama/llama-4-scout-17b-16e-instruct",
       "qc-input":        "llama-3.3-70b-versatile",
@@ -393,7 +393,7 @@ const PROVIDERS = [
     models: {
       default:  "gemini-2.5-flash",
       qc:       "gemini-2.5-flash",
-      analysis: "gemini-1.5-flash", // ← FIXED: 1.5 more stable than 2.5
+      analysis: "gemini-2.5-flash", // ← FIXED: 1.5 more stable than 2.5
       "cod-ai-solution": "gemini-2.5-flash",
       "qc-desc":         "gemini-2.5-flash",
       "qc-input":        "gemini-2.5-flash",
@@ -415,7 +415,7 @@ const PROVIDERS = [
     models: {
       default:  "gemini-2.5-flash",
       qc:       "gemini-2.5-flash",
-      analysis: "gemini-1.5-flash", // ← FIXED: 1.5 more stable than 2.5
+      analysis: "gemini-2.5-flash", // ← FIXED: 1.5 more stable than 2.5
       "cod-ai-solution": "gemini-2.5-flash",
       "qc-desc":         "gemini-2.5-flash",
       "qc-input":        "gemini-2.5-flash",
