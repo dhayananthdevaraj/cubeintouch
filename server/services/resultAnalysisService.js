@@ -290,14 +290,15 @@ export async function analyzeStudentResult({
   }
 
   fileList.sort((a, b) => scoreFile(b.path) - scoreFile(a.path));
-  const topFiles = fileList.slice(0, 12);
+  // const topFiles = fileList.slice(0, 12);
+  const topFiles = fileList.slice(0, 8);
   console.log(`  📄 Top files: ${topFiles.map(f => f.path).join(", ")}`);
 
   const fileContents = [];
   for (const file of topFiles) {
     const content = await fetchGitHubFile(repoKey, file.path);
     if (content) {
-      fileContents.push({ path: file.path, content: content.slice(0, 8000) });
+      fileContents.push({ path: file.path, content: content.slice(0, 6000) });
     }
   }
   if (fileContents.length === 0) {
