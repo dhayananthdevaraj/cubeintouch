@@ -34,7 +34,7 @@ const SKIP_FOLDERS = [
   "__tests__", "__mocks__", "test", "tests", "spec", "specs",
   "bin", "obj", "target", "Migrations",
   ".config", "Properties", "wwwroot", ".vs", ".idea", ".vscode",
-  "TestResults", ".mvn","__pycache__", ".pytest_cache", "venv", ".venv", "env",
+  "TestResults", ".mvn", "__pycache__", ".pytest_cache", "venv", ".venv", "env",
   "migrations", "static", "media", "htmlcov", "TestProject", "UnitTests", "IntegrationTests"
 ];
 
@@ -82,10 +82,10 @@ const SKIP_FILE_PATTERNS = [
   /^pyproject\.toml$/i,
   /^requirements.*\.txt$/i,
   /^__init__\.py$/i,
-  /^UnitTest\d*\.cs$/i,         
-  /^Usings\.cs$/i,              
-  /^WeatherForecast\.cs$/i,     
-  /WeatherForecast.*\.cs$/i,  
+  /^UnitTest\d*\.cs$/i,
+  /^Usings\.cs$/i,
+  /^WeatherForecast\.cs$/i,
+  /WeatherForecast.*\.cs$/i,
 ];
 
 const PRIORITY_KEYWORDS = [
@@ -108,6 +108,10 @@ function scoreFile(filePath) {
   return 0;
 }
 
+function estimateTokens(text) {
+  return Math.ceil(text.length / 3.5);
+}
+
 // ── GitHub helpers ─────────────────────────────────────────────────────────────
 
 async function fetchGitHubFile(repoKey, filePath) {
@@ -115,8 +119,8 @@ async function fetchGitHubFile(repoKey, filePath) {
   const res = await fetch(url, {
     headers: {
       Authorization: `Bearer ${GITHUB_TOKEN}`,
-      Accept: "application/vnd.github.v3+json",
-      "User-Agent": "GoldenApp-ResultX",
+      Accept:        "application/vnd.github.v3+json",
+      "User-Agent":  "GoldenApp-ResultX",
     },
   });
   if (!res.ok) return null;
@@ -129,8 +133,8 @@ async function listGitHubFolder(repoKey, folderPath) {
   const res = await fetch(url, {
     headers: {
       Authorization: `Bearer ${GITHUB_TOKEN}`,
-      Accept: "application/vnd.github.v3+json",
-      "User-Agent": "GoldenApp-ResultX",
+      Accept:        "application/vnd.github.v3+json",
+      "User-Agent":  "GoldenApp-ResultX",
     },
   });
   if (!res.ok) return [];
@@ -179,7 +183,6 @@ async function discoverAppRoot(repoKey, stack) {
     if (rootHasSrc) { console.log(`  🎯 App root is repo root`); return ""; }
   }
 
-  // ── Pytest: find subfolder with .py source files ──
   if (stack === "pytest") {
     for (const item of rootItems) {
       if (item.type !== "dir") continue;
@@ -252,6 +255,97 @@ function stripHtml(html) {
     .slice(0, 3000);
 }
 
+// ── Stage 1: Code Summary ──────────────────────────────────────────────────────
+// Reads the actual code and produces a structured summary:
+//   - what classes/functions exist
+//   - what each one does (briefly)
+//   - what looks wrong, incomplete, or incorrectly implemented
+// No question context. No stack assumptions. Pure code reading.
+
+async function observeCode(codeBlock) {
+  const prompt = `You are a code reader. Read the code below carefully.
+
+Produce a structured summary with two sections:
+
+STRUCTURE:
+List every class, function, or method you see. One line each.
+Format: <name> — <what it does in 5 words or less>
+
+ISSUES:
+List every problem you can directly see in the code.
+Each issue must reference the exact class name or method name where it occurs.
+Focus on: wrong logic, incorrect return values, missing implementation, wrong behavior, bad error handling, missing required operations.
+Do NOT guess what is missing based on conventions. Only report what you can see is wrong or incomplete in the actual code.
+One line per issue. Be specific. Be short.
+
+CODE:
+${codeBlock}
+
+Return only the two sections. No extra text. No explanations.`;
+
+  console.log(`  🔍 Stage 1 — Code observation (~${estimateTokens(prompt)} tokens)`);
+
+  const { text, provider, model } = await llmCall({
+    task:        "analysis-observe",
+    messages:    [{ role: "user", content: prompt }],
+    temperature: 0.1,
+    max_tokens:  600,
+  });
+
+  console.log(`  ✅ Stage 1 done via [${provider}/${model}]`);
+  console.log(`  📋 Code summary:\n${text}`);
+
+  return text.trim();
+}
+
+// ── Stage 2: Final Report ──────────────────────────────────────────────────────
+// Takes the code summary + question requirements.
+// Matches actual code issues against what the question expects.
+// Writes a natural flowing paragraph — no lists, no test case mentions.
+
+async function writeReport(codeSummary, questionText, failedTcText, stackContext) {
+  const prompt = `You are a senior code reviewer writing feedback for a student submission on an educational platform.
+
+TECH STACK CONTEXT:
+${stackContext}
+
+QUESTION REQUIREMENTS:
+${questionText}
+${failedTcText ? `\nFailed checks: ${failedTcText}` : ""}
+
+CODE SUMMARY (what the student actually wrote):
+${codeSummary}
+
+YOUR JOB:
+Write a feedback paragraph of 3 to 5 sentences.
+
+Rules:
+- Cross-reference the code summary against the question requirements.
+- Mention specific class names and method names from the code summary.
+- Describe what the code actually does wrong or what is missing, compared to what the question requires.
+- Be direct and educational. This helps the student understand where their implementation failed.
+- Do NOT use the words: testcase, test case, test-case, TC, unit test, spec.
+- Do NOT praise anything.
+- Do NOT use bullet points, numbered lists, or headers.
+- Write as one continuous paragraph only.
+- Every sentence must be complete — do not cut off.
+- Start the paragraph with exactly: "Student code has issues on"
+
+Return ONLY the paragraph. No JSON. No markdown. No extra text.`;
+
+  console.log(`  ✍️  Stage 2 — Report writing (~${estimateTokens(prompt)} tokens)`);
+
+  const { text, provider, model } = await llmCall({
+    task:        "analysis",
+    messages:    [{ role: "user", content: prompt }],
+    temperature: 0.3,
+    max_tokens:  600,
+  });
+
+  console.log(`  ✅ Stage 2 done via [${provider}/${model}]`);
+  return { text: text.trim(), provider, model };
+}
+
 // ── Main export ────────────────────────────────────────────────────────────────
 
 export async function analyzeStudentResult({
@@ -264,15 +358,14 @@ export async function analyzeStudentResult({
   const allowedExts  = STACK_EXTENSIONS[techStack] || ["js"];
   const stackContext = STACK_CONTEXT[techStack]     || STACK_CONTEXT["puppeteer"];
 
+  // ── Discover repo structure ───────────────────────────────────────────────────
   const appRoot = await discoverAppRoot(repoKey, techStack);
 
   let scanPath;
   if (techStack === "junit") {
     scanPath = await findJavaSourceRoot(repoKey, appRoot);
     console.log(`  📂 Java source root resolved to: "${scanPath}"`);
-  } else if (techStack === "nunit") {
-    scanPath = appRoot;
-  } else if (techStack === "pytest") {
+  } else if (techStack === "nunit" || techStack === "pytest") {
     scanPath = appRoot;
   } else {
     const tryWithSrc = [appRoot, "src"].filter(Boolean).join("/");
@@ -280,6 +373,7 @@ export async function analyzeStudentResult({
     scanPath = srcItems.length > 0 ? tryWithSrc : appRoot;
   }
 
+  // ── Collect and score files ───────────────────────────────────────────────────
   let fileList = await collectSourceFiles(repoKey, scanPath, allowedExts);
   if (fileList.length === 0) {
     console.warn(`  ⚠️  No files in "${scanPath}". Scanning full repo root...`);
@@ -290,78 +384,74 @@ export async function analyzeStudentResult({
   }
 
   fileList.sort((a, b) => scoreFile(b.path) - scoreFile(a.path));
-  // const topFiles = fileList.slice(0, 12);
-  const topFiles = fileList.slice(0, 8);
-  console.log(`  📄 Top files: ${topFiles.map(f => f.path).join(", ")}`);
+
+  // ── Read files — token-aware budget ──────────────────────────────────────────
+  // Stage 1 target: keep codeBlock under ~3500 tokens (~12000 chars total)
+  const CODE_CHAR_BUDGET = 12_000;
+  const topFiles         = fileList.slice(0, 10);
+
+  console.log(`  📄 Candidate files: ${topFiles.map(f => f.path).join(", ")}`);
 
   const fileContents = [];
+  let   charsSoFar   = 0;
+
   for (const file of topFiles) {
+    if (charsSoFar >= CODE_CHAR_BUDGET) break;
     const content = await fetchGitHubFile(repoKey, file.path);
-    if (content) {
-      fileContents.push({ path: file.path, content: content.slice(0, 6000) });
-    }
+    if (!content) continue;
+    const remaining = CODE_CHAR_BUDGET - charsSoFar;
+    const sliced    = content.slice(0, Math.min(4000, remaining));
+    fileContents.push({ path: file.path, content: sliced });
+    charsSoFar += sliced.length;
   }
+
   if (fileContents.length === 0) {
     throw new Error("Could not read any source files from repository");
   }
 
-  const questionText = stripHtml(questionHtml);
-  const failedTcText = failedTestcases.length > 0
-    ? `\nFailed test cases: ${failedTestcases.join(", ")}`
-    : "";
+  console.log(`  📦 Files loaded: ${fileContents.length} — total chars: ${charsSoFar}`);
+
   const codeBlock = fileContents
     .map(f => `// ===== ${f.path} =====\n${f.content}`)
     .join("\n\n");
 
-  // ── Prompt — fixed sentence count to prevent Gemini truncation ──────────────
-  const prompt = `
-You are a senior code reviewer analyzing a student's project submission for an educational platform.
+  const questionText = stripHtml(questionHtml);
+  const failedTcText = failedTestcases.length > 0
+    ? failedTestcases.join(", ")
+    : "";
 
-TECH STACK CONTEXT:
-${stackContext}
+  // ── Stage 1: Read and summarise the code ─────────────────────────────────────
+  const codeSummary = await observeCode(codeBlock);
 
-QUESTION REQUIREMENTS:
-${questionText}
-${failedTcText}
+  // ── Stage 2: Write final report ───────────────────────────────────────────────
+  const { text, provider, model } = await writeReport(
+    codeSummary,
+    questionText,
+    failedTcText,
+    stackContext
+  );
 
-STUDENT'S SUBMITTED CODE:
-${codeBlock}
-
-YOUR JOB:
-Write exactly 3 sentences reviewing the student's code against the question requirements.
-- Mention specific class names, method names, or function names from their actual code.
-- Identify what is missing, incorrect, or poorly implemented based on the tech stack above.
-- Be direct and educational — this feedback will help the student improve.
-- Do NOT praise. Focus only on issues and gaps.
-- Write in plain paragraph form — no bullet points, no numbered lists, no headers.
-- All 3 sentences must be complete — do not cut off mid-sentence.
-- Start the paragraph with: "Student code has issues on"
-
-Return ONLY the paragraph text. No JSON. No markdown. No extra formatting.
-`;
-
-  // ── LLM call — max_tokens 800 to prevent Gemini truncation ─────────────────
-  const { text, provider, model } = await llmCall({
-    task:        "analysis",
-    messages:    [{ role: "user", content: prompt }],
-    temperature: 0.4,
-    max_tokens:  2000,   // ✅ bumped from 500 → 800 to fix Gemini truncation
-  });
-
-  console.log(`  ✅ Analysis done via [${provider}] model: ${model}`);
-
+  // ── Normalise output prefix ───────────────────────────────────────────────────
   let analysis = text
     .replace(/^```[a-z]*\s*/gi, "")
     .replace(/```\s*$/gi, "")
     .trim();
 
-if (!analysis.toLowerCase().startsWith("student code has issues on")) {
-  if (analysis.toLowerCase().startsWith("student code has")) {
-    analysis = "Student code has issues on" + analysis.slice("student code has".length);
-  } else {
-    analysis = "Student code has issues on " + analysis;
+  if (!analysis.toLowerCase().startsWith("student code has issues on")) {
+    if (analysis.toLowerCase().startsWith("student code has")) {
+      analysis = "Student code has issues on" + analysis.slice("student code has".length);
+    } else {
+      analysis = "Student code has issues on " + analysis;
+    }
   }
-}
+
+  // ── Strip any "test case" mentions that slipped through ──────────────────────
+  analysis = analysis
+    .replace(/\btest[\s-]?cases?\b/gi, "checks")
+    .replace(/\bunit[\s-]?tests?\b/gi, "validations")
+    .replace(/\b(TC|spec)\b/g, "check");
+
+  console.log(`  ✅ Analysis complete via [${provider}/${model}]`);
 
   return {
     success:       true,
@@ -369,8 +459,8 @@ if (!analysis.toLowerCase().startsWith("student code has issues on")) {
     repoKey,
     techStack,
     filesAnalyzed: fileContents.map(f => f.path),
+    codeSummary,                      // stored for debugging
     provider,
     analysis,
   };
 }
-
