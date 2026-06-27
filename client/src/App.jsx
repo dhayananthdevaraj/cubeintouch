@@ -16,6 +16,7 @@ import ResultX from "./pages/result/ResultX";
 import CodeLens from "./pages/CodeLens";
 import CODSync from "./pages/CODSync";
 import Scaffa from "./pages/scaf/Scaffa";
+import Packager from "./pages/Packager";
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -44,6 +45,7 @@ export default function App() {
                 <Route path="/codelens" element={<CodeLens />} />
                 <Route path="/cod-sync" element={<CODSync />} />
                 <Route path="/scaffa" element={<Scaffa />} /> 
+                 <Route path="/packager" element={<Packager />} />
               </Routes>
             </div>
           </div>

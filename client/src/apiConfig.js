@@ -7,7 +7,9 @@ const apiConfig = {
   FETCH_SPEC_FILES: `${API_BASE_URL}/scaffa/fetch-spec-files`,
   UPLOAD:           `${API_BASE_URL}/scaffa/upload`,
   UPLOAD_SPECS:     `${API_BASE_URL}/scaffa/upload-angular-scaf`,
- DOWNLOAD_FOLDER:   `${API_BASE_URL}/scaffa/download-folder`,
+  DOWNLOAD_FOLDER:   `${API_BASE_URL}/scaffa/download-folder`,
+  PACKAGER_RUN:     `${API_BASE_URL}/packager/run`,
+  PACKAGER_PREVIEW: `${API_BASE_URL}/packager/preview`,
 };
 
 export default apiConfig;  

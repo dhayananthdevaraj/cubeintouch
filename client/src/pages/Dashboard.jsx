@@ -436,6 +436,16 @@ export default function Dashboard() {
       gradient: 'linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)',
       span: 1,
     },
+     {
+      id: 'packager',
+      icon: '📦',
+      title: 'Packager',
+      description: 'Upload a test folder zip, select a tech stack — get a packaged self-extracting artifact ready to ship.',
+      path: '/packager',
+      status: 'active',
+      gradient: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
+      span: 1,
+    },
     {
       id: 'reports',
       icon: '📊',

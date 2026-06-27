@@ -16,6 +16,7 @@ import codQcRoutes from "./routes/codqc.js";
 import codCompileRoutes from "./routes/codcompile.js";
 import scaffaRoutes from "./routes/scaffa.js";  
 import fetchImageRoutes from "./routes/fetchimage.js";  
+import packagerRoutes from "./routes/packager.js";
  
 
 dotenv.config();
@@ -44,6 +45,7 @@ app.use("/", repoViewerRoutes);
 app.use("/cod-qc", codQcRoutes);       // ✅ NEW — POST /cod-qc
 app.use("/cod-compile", codCompileRoutes);
 app.use("/scaffa", scaffaRoutes);  
+app.use("/packager", packagerRoutes);
 app.use("/", fetchImageRoutes);   
 
 app.use((err, req, res, next) => {
@@ -73,7 +75,8 @@ app.listen(PORT, () => {
 ✅ Result X:      /analyze-result
 ✅ Scaffa:        /scaffa/*
 ✅ Fetch Image:   /api/fetch-image
-
+✅ Packager:      /packager/run
+ 
 =================================
   `);
 });

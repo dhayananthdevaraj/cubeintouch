@@ -71,6 +71,12 @@ export default function Topbar() {
         icon: "🏗️",
         subtitle: "Scaffold & Structure Manager"
       };
+         case "/packager":
+        return {
+          title: "Packager",
+          icon: "📦",
+          subtitle: "pytest · junit · nunit · Test Artifact Builder"
+        };
       case "/specq":
       return {
         title: "specQ",

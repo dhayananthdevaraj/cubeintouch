@@ -82,6 +82,12 @@ export default function Sidebar() {
           <span className="nav-indicator"></span>
         </NavLink>
 
+        <NavLink to="/packager" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
+          <span className="nav-icon">{"📦"}</span>
+          <span className="nav-text">Packager</span>
+          <span className="nav-indicator"></span>
+        </NavLink>
+
         <NavLink to="/scaffa" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
           <span className="nav-icon">{"🏗️"}</span>
           <span className="nav-text">Scaffa</span>
