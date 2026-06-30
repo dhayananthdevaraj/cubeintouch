@@ -12,7 +12,7 @@ const PROVIDERS = [
       default:           "llama-3.3-70b-versatile",
       qc:                "openai/gpt-oss-20b",
       analysis:          "llama-3.3-70b-versatile",
-      "analysis-observe": "llama-3.1-8b-instant",      // ← Stage 1: fast + huge quota
+      "analysis-observe": "llama-3.3-70b-versatile",   // ← Stage 1: moved off 8B — 8B was hallucinating issues against the actual code
       "cod-ai-solution": "llama-3.3-70b-versatile",
       "qc-desc":         "meta-llama/llama-4-scout-17b-16e-instruct",
       "qc-input":        "llama-3.3-70b-versatile",
@@ -34,7 +34,7 @@ const PROVIDERS = [
       default:           "llama-3.3-70b-versatile",
       qc:                "openai/gpt-oss-20b",
       analysis:          "llama-3.3-70b-versatile",
-      "analysis-observe": "llama-3.1-8b-instant",      // ← Stage 1: separate TPD bucket
+      "analysis-observe": "llama-3.3-70b-versatile",   // ← Stage 1: moved off 8B
       "cod-ai-solution": "llama-3.3-70b-versatile",
       "qc-desc":         "meta-llama/llama-4-scout-17b-16e-instruct",
       "qc-input":        "llama-3.3-70b-versatile",
@@ -56,7 +56,7 @@ const PROVIDERS = [
       default:           "llama-3.3-70b-versatile",
       qc:                "openai/gpt-oss-20b",
       analysis:          "llama-3.3-70b-versatile",
-      "analysis-observe": "llama-3.1-8b-instant",      // ← Stage 1: separate TPD bucket
+      "analysis-observe": "llama-3.3-70b-versatile",   // ← Stage 1: moved off 8B
       "cod-ai-solution": "llama-3.3-70b-versatile",
       "qc-desc":         "meta-llama/llama-4-scout-17b-16e-instruct",
       "qc-input":        "llama-3.3-70b-versatile",
@@ -190,7 +190,14 @@ async function callGroq(provider, { model, messages, temperature, max_tokens }) 
     );
     const content = res.choices[0].message.content;
     if (!content || !content.trim()) throw new Error("Groq returned empty content");
-    return stripThinkBlocks(content.trim());
+    return {
+      text: stripThinkBlocks(content.trim()),
+      usage: {
+        promptTokens:     res.usage?.prompt_tokens     ?? null,
+        completionTokens: res.usage?.completion_tokens ?? null,
+        totalTokens:      res.usage?.total_tokens      ?? null,
+      },
+    };
   } finally {
     clearTimeout(timer);
   }
@@ -236,7 +243,14 @@ async function callGemini(provider, { model, messages, temperature, max_tokens }
   const json = await res.json();
   const text = json.candidates?.[0]?.content?.parts?.[0]?.text;
   if (!text || !text.trim()) throw new Error("Gemini returned empty response");
-  return text.trim();
+  return {
+    text: text.trim(),
+    usage: {
+      promptTokens:     json.usageMetadata?.promptTokenCount     ?? null,
+      completionTokens: json.usageMetadata?.candidatesTokenCount ?? null,
+      totalTokens:      json.usageMetadata?.totalTokenCount      ?? null,
+    },
+  };
 }
 
 // ── Core queue function ────────────────────────────────────────────────────────
@@ -262,15 +276,18 @@ export async function llmCall({
     try {
       console.log(`  🤖 [${provider.name}] Trying model: ${model}`);
 
-      let text;
+      let result;
       if (provider.type === "groq") {
-        text = await callGroq(provider, { model, messages, temperature, max_tokens });
+        result = await callGroq(provider, { model, messages, temperature, max_tokens });
       } else if (provider.type === "gemini") {
-        text = await callGemini(provider, { model, messages, temperature, max_tokens });
+        result = await callGemini(provider, { model, messages, temperature, max_tokens });
       }
 
-      console.log(`  ✅ [${provider.name}] Success.`);
-      return { text, provider: provider.name, model };
+      console.log(
+        `  ✅ [${provider.name}] Success. ` +
+        `tokens → prompt: ${result.usage.promptTokens}, completion: ${result.usage.completionTokens}, total: ${result.usage.totalTokens}`
+      );
+      return { text: result.text, provider: provider.name, model, usage: result.usage };
 
     } catch (err) {
       const status  = err.status || 0;

@@ -464,7 +464,6 @@
 //     analysis,
 //   };
 // }
-
 // services/resultAnalysisService.js
 import { llmCall } from "./llmQueue.js";
 import dotenv from "dotenv";
@@ -725,8 +724,8 @@ function stripHtml(html) {
 // ── Stage 1: Code Summary ──────────────────────────────────────────────────────
 // Reads the actual code and produces a structured summary:
 //   - what classes/functions exist
-//   - what each one does (briefly)
-//   - what looks wrong, incomplete, or incorrectly implemented
+//   - what's correctly implemented
+//   - what looks wrong, incomplete, or incorrectly implemented (with literal code quotes)
 // No question context. No stack assumptions. Pure code reading.
 
 async function observeCode(codeBlock) {
@@ -745,10 +744,15 @@ If nothing stands out as notably correct, write "Standard implementation, no not
 
 ISSUES:
 List every problem you can directly see in the code.
-Each issue must reference the exact class name or method name where it occurs, and explain WHY it is wrong (not just that it is wrong) — describe the actual behavior you observe versus what correct behavior would look like.
+Each issue MUST follow this exact format:
+<ClassName.MethodName> — CODE: "<paste the exact relevant line(s) from the code, max 1-2 lines, verbatim, no paraphrasing>" — PROBLEM: <why this is wrong, referencing only what the quoted code actually does>
+Do NOT describe an issue without quoting the literal code line that causes it. If you cannot quote the exact line that causes the problem, do not report the issue at all.
 Focus only on what is directly observable in the code: wrong logic, incorrect return values, wrong status codes, missing implementation, wrong behavior, bad error handling, missing required operations.
 Do NOT guess what is missing based on general conventions, best practices, or "what a real-world app should have." Only report what you can concretely see is wrong or incomplete in the actual code in front of you.
 Do NOT invent validation rules, business logic checks, or features that aren't present in the code — you are describing what exists and what's broken in what exists, not suggesting new features.
+CRITICAL DISTINCTION — read carefully before writing each issue:
+- If a check, validation, or piece of logic is completely ABSENT from the code (no relevant line exists at all), describe it as "missing" — e.g. "no null check exists before X".
+- If a check, validation, or piece of logic IS present in the code but is logically wrong, backwards, or broken (wrong method call, wrong comparison, wrong condition, references the wrong variable, etc.), you MUST describe it as "incorrectly implemented" and explain exactly what it does versus what it should do. NEVER describe existing-but-broken logic as "missing", "does not have", or "does not validate" — that is a false claim. Quote the broken line and explain the actual behavior it produces.
 One line per issue, but explain it fully — do not over-compress into a fragment.
 
 CODE:
@@ -763,7 +767,7 @@ Return only the three sections. No extra text. No explanations outside the secti
     task:        "analysis-observe",
     messages:    [{ role: "user", content: prompt }],
     temperature: 0.1,
-    max_tokens:  1600,
+    max_tokens:  1800,
   });
 
   console.log(
@@ -782,10 +786,11 @@ Return only the three sections. No extra text. No explanations outside the secti
   };
 }
 
-
 // ── Stage 2: Final Report ──────────────────────────────────────────────────────
 // Takes the code summary + question requirements.
 // Matches actual code issues against what the question expects.
+// Filters out irrelevant generic observations AND forbids inventing requirements
+// that aren't explicitly in the question text.
 // Writes a natural flowing paragraph — no lists, no test case mentions.
 
 async function writeReport(codeSummary, questionText, failedTcText, stackContext) {
@@ -798,7 +803,7 @@ QUESTION REQUIREMENTS:
 ${questionText}
 ${failedTcText ? `\nFailed checks: ${failedTcText}` : ""}
 
-CODE SUMMARY (structure, what works, and what's wrong — may include general observations not relevant to this question):
+CODE SUMMARY (structure, what works, and what's wrong, with literal code quotes — may include general observations not relevant to this question):
 ${codeSummary}
 
 YOUR JOB:
@@ -809,7 +814,8 @@ HARD RULES — READ CAREFULLY:
 2. Do NOT invent validation rules, business logic checks, uniqueness checks, association checks, or "best practice" concerns that are not explicitly written in QUESTION REQUIREMENTS — even if they would be reasonable in a real-world API. Never include things like duplicate-name checks, checking for existing associations before create, generic extra input validation, or checking for related records before delete unless QUESTION REQUIREMENTS explicitly asks for them.
 3. Before claiming a delete/cascade-related issue, check the OnDelete/cascade behavior stated in QUESTION REQUIREMENTS first — do not suggest a pre-delete check that would contradict an explicit cascade-delete requirement.
 4. For every issue you mention, you must be able to point to the specific line or sentence in QUESTION REQUIREMENTS it violates (a stated status code, a stated return type, a stated field behavior, a stated relationship). If you cannot point to that exact line, do not mention the issue — do not pad the paragraph with vague claims like "incorrect handling" without naming the precise expected behavior from the requirements.
-5. If, after applying rules 1-4, there are very few or no qualifying issues, write a shorter, more precise paragraph rather than stretching to 6 sentences with unsupported claims.
+5. Preserve the CODE SUMMARY's distinction between "missing" and "incorrectly implemented" exactly as written. If the CODE SUMMARY says something is incorrectly implemented (exists but is broken), you MUST describe it the same way in your paragraph — never rephrase an "incorrectly implemented" issue as if it were "missing" or "not handled". Misrepresenting a broken-but-present check as absent is a factual error.
+6. If, after applying rules 1-5, there are very few or no qualifying issues, write a shorter, more precise paragraph rather than stretching to 6 sentences with unsupported claims.
 
 CONTENT RULES:
 - Mention specific class and method names for every issue you report.
@@ -891,7 +897,6 @@ export async function analyzeStudentResult({
   fileList.sort((a, b) => scoreFile(b.path) - scoreFile(a.path));
 
   // ── Read files — token-aware budget ──────────────────────────────────────────
-  // Stage 1 target: keep codeBlock under ~3500 tokens (~12000 chars total)
   const CODE_CHAR_BUDGET = 14_000;
   const topFiles         = fileList.slice(0, 10);
 
