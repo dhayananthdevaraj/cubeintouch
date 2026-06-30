@@ -730,20 +730,25 @@ function stripHtml(html) {
 // No question context. No stack assumptions. Pure code reading.
 
 async function observeCode(codeBlock) {
-  const prompt = `You are a code reader. Read the code below carefully.
+  const prompt = `You are a code reader. Read the code below carefully and thoroughly.
 
-Produce a structured summary with two sections:
+Produce a structured summary with three sections:
 
 STRUCTURE:
 List every class, function, or method you see. One line each.
-Format: <name> — <what it does in 5 words or less>
+Format: <name> — <what it does, 8-15 words, describing actual logic not just a label>
+
+WORKING CORRECTLY:
+List what is properly implemented and functions as expected — correct logic, proper return types, correct status codes, proper validation, correct relationships, etc.
+Be specific: name the class/method and what it does right.
+If nothing stands out as notably correct, write "Standard implementation, no notable correct highlights."
 
 ISSUES:
 List every problem you can directly see in the code.
-Each issue must reference the exact class name or method name where it occurs.
+Each issue must reference the exact class name or method name where it occurs, and explain WHY it is wrong (not just that it is wrong).
 Focus on: wrong logic, incorrect return values, missing implementation, wrong behavior, bad error handling, missing required operations.
 Do NOT guess what is missing based on conventions. Only report what you can see is wrong or incomplete in the actual code.
-One line per issue. Be specific. Be short.
+One line per issue, but explain it fully — do not over-compress into a fragment.
 
 CODE:
 ${codeBlock}
@@ -782,7 +787,7 @@ Return only the two sections. No extra text. No explanations.`;
 // Writes a natural flowing paragraph — no lists, no test case mentions.
 
 async function writeReport(codeSummary, questionText, failedTcText, stackContext) {
-  const prompt = `You are a senior code reviewer writing feedback for a student submission on an educational platform.
+  const prompt = `You are a senior code reviewer writing honest, accurate feedback for a student submission that failed evaluation.
 
 TECH STACK CONTEXT:
 ${stackContext}
@@ -791,19 +796,23 @@ QUESTION REQUIREMENTS:
 ${questionText}
 ${failedTcText ? `\nFailed checks: ${failedTcText}` : ""}
 
-CODE SUMMARY (what the student actually wrote):
+CODE SUMMARY (structure, what works, and what's wrong — may include general observations not relevant to this question):
 ${codeSummary}
 
 YOUR JOB:
-Write a feedback paragraph of 3 to 5 sentences.
+Write an honest feedback paragraph of 3 to 6 sentences explaining why this submission failed, relative to what THIS QUESTION asks for — not generic best practices.
+
+RELEVANCE RULE:
+Before mentioning anything from WORKING CORRECTLY or ISSUES, check it against QUESTION REQUIREMENTS:
+- If the requirement text explicitly asks for it → it is fair to mention, whether correct or wrong.
+- If it is a general code-quality observation never mentioned in the requirements (e.g. constructors, generic error handling, schema details not specified) → DISCARD it entirely, do not mention it even briefly.
 
 Rules:
-- Cross-reference the code summary against the question requirements.
-- Mention specific class names and method names from the code summary.
-- Describe what the code actually does wrong or what is missing, compared to what the question requires.
-- Be direct and educational. This helps the student understand where their implementation failed.
+- Mention specific class and method names.
+- Lead with and prioritize the genuine requirement violations that caused the failure — this is the main point of the paragraph.
+- If there are parts of the requirements that ARE correctly implemented, you may briefly acknowledge them for context, but the paragraph must stay focused on explaining the failure.
+- Be direct and educational, not vague.
 - Do NOT use the words: testcase, test case, test-case, TC, unit test, spec.
-- Do NOT praise anything.
 - Do NOT use bullet points, numbered lists, or headers.
 - Write as one continuous paragraph only.
 - Every sentence must be complete — do not cut off.
@@ -818,7 +827,7 @@ Return ONLY the paragraph. No JSON. No markdown. No extra text.`;
     task:        "analysis",
     messages:    [{ role: "user", content: prompt }],
     temperature: 0.3,
-    max_tokens:  600,
+    max_tokens:  700,
   });
 
   console.log(
