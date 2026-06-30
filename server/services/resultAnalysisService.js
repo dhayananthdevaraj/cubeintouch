@@ -739,21 +739,22 @@ List every class, function, or method you see. One line each.
 Format: <name> — <what it does, 8-15 words, describing actual logic not just a label>
 
 WORKING CORRECTLY:
-List what is properly implemented and functions as expected — correct logic, proper return types, correct status codes, proper validation, correct relationships, etc.
-Be specific: name the class/method and what it does right.
+List what is properly implemented and functions as expected — correct logic, proper return types, correct status codes, proper validation, correct relationships, correct use of attributes/annotations, etc.
+Be specific: name the class/method and explain what it does right.
 If nothing stands out as notably correct, write "Standard implementation, no notable correct highlights."
 
 ISSUES:
 List every problem you can directly see in the code.
-Each issue must reference the exact class name or method name where it occurs, and explain WHY it is wrong (not just that it is wrong).
-Focus on: wrong logic, incorrect return values, missing implementation, wrong behavior, bad error handling, missing required operations.
-Do NOT guess what is missing based on conventions. Only report what you can see is wrong or incomplete in the actual code.
+Each issue must reference the exact class name or method name where it occurs, and explain WHY it is wrong (not just that it is wrong) — describe the actual behavior you observe versus what correct behavior would look like.
+Focus only on what is directly observable in the code: wrong logic, incorrect return values, wrong status codes, missing implementation, wrong behavior, bad error handling, missing required operations.
+Do NOT guess what is missing based on general conventions, best practices, or "what a real-world app should have." Only report what you can concretely see is wrong or incomplete in the actual code in front of you.
+Do NOT invent validation rules, business logic checks, or features that aren't present in the code — you are describing what exists and what's broken in what exists, not suggesting new features.
 One line per issue, but explain it fully — do not over-compress into a fragment.
 
 CODE:
 ${codeBlock}
 
-Return only the two sections. No extra text. No explanations.`;
+Return only the three sections. No extra text. No explanations outside the sections. Do not skip the WORKING CORRECTLY section even if short.`;
 
   const reqEstimate = estimateTokens(prompt);
   console.log(`  🔍 Stage 1 — Code observation (request est: ~${reqEstimate} tokens)`);
@@ -762,7 +763,7 @@ Return only the two sections. No extra text. No explanations.`;
     task:        "analysis-observe",
     messages:    [{ role: "user", content: prompt }],
     temperature: 0.1,
-    max_tokens:  1200,
+    max_tokens:  1600,
   });
 
   console.log(
@@ -780,6 +781,7 @@ Return only the two sections. No extra text. No explanations.`;
     },
   };
 }
+
 
 // ── Stage 2: Final Report ──────────────────────────────────────────────────────
 // Takes the code summary + question requirements.
@@ -800,17 +802,19 @@ CODE SUMMARY (structure, what works, and what's wrong — may include general ob
 ${codeSummary}
 
 YOUR JOB:
-Write an honest feedback paragraph of 3 to 6 sentences explaining why this submission failed, relative to what THIS QUESTION asks for — not generic best practices.
+Write an honest feedback paragraph of 3 to 6 sentences explaining why this submission failed, relative to what THIS QUESTION asks for.
 
-RELEVANCE RULE:
-Before mentioning anything from WORKING CORRECTLY or ISSUES, check it against QUESTION REQUIREMENTS:
-- If the requirement text explicitly asks for it → it is fair to mention, whether correct or wrong.
-- If it is a general code-quality observation never mentioned in the requirements (e.g. constructors, generic error handling, schema details not specified) → DISCARD it entirely, do not mention it even briefly.
+HARD RULES — READ CAREFULLY:
+1. You may ONLY report issues that are explicitly present in the ISSUES section of the CODE SUMMARY above, AND that map to something explicitly stated in QUESTION REQUIREMENTS. If an issue from the CODE SUMMARY is real but not mentioned anywhere in QUESTION REQUIREMENTS, DISCARD it completely — do not mention it even briefly.
+2. Do NOT invent validation rules, business logic checks, uniqueness checks, association checks, or "best practice" concerns that are not explicitly written in QUESTION REQUIREMENTS — even if they would be reasonable in a real-world API. Never include things like duplicate-name checks, checking for existing associations before create, generic extra input validation, or checking for related records before delete unless QUESTION REQUIREMENTS explicitly asks for them.
+3. Before claiming a delete/cascade-related issue, check the OnDelete/cascade behavior stated in QUESTION REQUIREMENTS first — do not suggest a pre-delete check that would contradict an explicit cascade-delete requirement.
+4. For every issue you mention, you must be able to point to the specific line or sentence in QUESTION REQUIREMENTS it violates (a stated status code, a stated return type, a stated field behavior, a stated relationship). If you cannot point to that exact line, do not mention the issue — do not pad the paragraph with vague claims like "incorrect handling" without naming the precise expected behavior from the requirements.
+5. If, after applying rules 1-4, there are very few or no qualifying issues, write a shorter, more precise paragraph rather than stretching to 6 sentences with unsupported claims.
 
-Rules:
-- Mention specific class and method names.
+CONTENT RULES:
+- Mention specific class and method names for every issue you report.
 - Lead with and prioritize the genuine requirement violations that caused the failure — this is the main point of the paragraph.
-- If there are parts of the requirements that ARE correctly implemented, you may briefly acknowledge them for context, but the paragraph must stay focused on explaining the failure.
+- If parts of the requirements ARE correctly implemented (per the WORKING CORRECTLY section), you may briefly acknowledge them for context, but the paragraph must stay focused on explaining the failure.
 - Be direct and educational, not vague.
 - Do NOT use the words: testcase, test case, test-case, TC, unit test, spec.
 - Do NOT use bullet points, numbered lists, or headers.
@@ -826,7 +830,7 @@ Return ONLY the paragraph. No JSON. No markdown. No extra text.`;
   const { text, provider, model, usage } = await llmCall({
     task:        "analysis",
     messages:    [{ role: "user", content: prompt }],
-    temperature: 0.3,
+    temperature: 0.2,
     max_tokens:  700,
   });
 
@@ -888,7 +892,7 @@ export async function analyzeStudentResult({
 
   // ── Read files — token-aware budget ──────────────────────────────────────────
   // Stage 1 target: keep codeBlock under ~3500 tokens (~12000 chars total)
-  const CODE_CHAR_BUDGET = 12_000;
+  const CODE_CHAR_BUDGET = 14_000;
   const topFiles         = fileList.slice(0, 10);
 
   console.log(`  📄 Candidate files: ${topFiles.map(f => f.path).join(", ")}`);
