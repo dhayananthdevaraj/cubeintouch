@@ -77,6 +77,12 @@ export default function Topbar() {
           icon: "📦",
           subtitle: "pytest · junit · nunit · Test Artifact Builder"
         };
+        case "/dup-detect":
+          return {
+          title: "Dup Detect",
+          icon: "🔁",
+          subtitle: "Find Duplicate MCQs · Text Similarity"
+         };
       case "/specq":
       return {
         title: "specQ",

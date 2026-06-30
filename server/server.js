@@ -17,8 +17,8 @@ import codCompileRoutes from "./routes/codcompile.js";
 import scaffaRoutes from "./routes/scaffa.js";  
 import fetchImageRoutes from "./routes/fetchimage.js";  
 import packagerRoutes from "./routes/packager.js";
+import dupDetectRoutes from "./routes/dupdetect.js";
  
-
 dotenv.config();
 
 const app = express();
@@ -47,6 +47,7 @@ app.use("/cod-compile", codCompileRoutes);
 app.use("/scaffa", scaffaRoutes);  
 app.use("/packager", packagerRoutes);
 app.use("/", fetchImageRoutes);   
+app.use("/dup-detect", dupDetectRoutes);
 
 app.use((err, req, res, next) => {
   console.error("🔥 SERVER ERROR:", err.message);
@@ -76,6 +77,7 @@ app.listen(PORT, () => {
 ✅ Scaffa:        /scaffa/*
 ✅ Fetch Image:   /api/fetch-image
 ✅ Packager:      /packager/run
+✅ Dup Detect:    /dup-detect
  
 =================================
   `);

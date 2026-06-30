@@ -289,7 +289,7 @@ Return only the two sections. No extra text. No explanations.`;
     task:        "analysis-observe",
     messages:    [{ role: "user", content: prompt }],
     temperature: 0.1,
-    max_tokens:  600,
+    max_tokens:  1200,
   });
 
   console.log(`  ✅ Stage 1 done via [${provider}/${model}]`);

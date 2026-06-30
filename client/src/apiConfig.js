@@ -10,6 +10,7 @@ const apiConfig = {
   DOWNLOAD_FOLDER:   `${API_BASE_URL}/scaffa/download-folder`,
   PACKAGER_RUN:     `${API_BASE_URL}/packager/run`,
   PACKAGER_PREVIEW: `${API_BASE_URL}/packager/preview`,
+  DUP_DETECT: `${API_BASE_URL}/dup-detect`,
 };
 
 export default apiConfig;  

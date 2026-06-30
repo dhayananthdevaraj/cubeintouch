@@ -17,6 +17,7 @@ import CodeLens from "./pages/CodeLens";
 import CODSync from "./pages/CODSync";
 import Scaffa from "./pages/scaf/Scaffa";
 import Packager from "./pages/Packager";
+import DupDetect from "./pages/DupDetect";
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -46,6 +47,7 @@ export default function App() {
                 <Route path="/cod-sync" element={<CODSync />} />
                 <Route path="/scaffa" element={<Scaffa />} /> 
                  <Route path="/packager" element={<Packager />} />
+                 <Route path="/dup-detect" element={<DupDetect />} />
               </Routes>
             </div>
           </div>
