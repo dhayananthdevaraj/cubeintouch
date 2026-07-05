@@ -132,6 +132,16 @@ export default function Dashboard() {
     span: 1,
     },
     {
+    id: 'weight-gen',
+    icon: '⚖️',
+    title: 'WeightGen',
+    description: 'Extract testcases from Java/React/.NET test files and auto-calculate weightage + failed echo statements.',
+    path: '/weight-gen',
+    status: 'active',
+    gradient: 'linear-gradient(135deg, #ff6b6b 0%, #feca57 100%)',
+    span: 1,
+  },
+    {
       id: 'reports',
       icon: '📊',
       title: 'Reports',

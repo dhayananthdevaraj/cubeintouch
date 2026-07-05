@@ -83,6 +83,12 @@ export default function Topbar() {
           icon: "🔁",
           subtitle: "Find Duplicate MCQs · Text Similarity"
          };
+         case "/weight-gen":
+  return {
+    title: "WeightGen",
+    icon: "⚖️",
+    subtitle: "Test Extractor · Weightage Calculator"
+  };
       case "/specq":
       return {
         title: "specQ",
