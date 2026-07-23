@@ -18,6 +18,7 @@ import scaffaRoutes from "./routes/scaffa.js";
 import fetchImageRoutes from "./routes/fetchimage.js";  
 import packagerRoutes from "./routes/packager.js";
 import dupDetectRoutes from "./routes/dupdetect.js";
+import fileReformatRoutes from "./routes/filereformat.js";
  
 dotenv.config();
 
@@ -48,6 +49,7 @@ app.use("/scaffa", scaffaRoutes);
 app.use("/packager", packagerRoutes);
 app.use("/", fetchImageRoutes);   
 app.use("/dup-detect", dupDetectRoutes);
+app.use("/file-reformat", fileReformatRoutes);
 
 app.use((err, req, res, next) => {
   console.error("🔥 SERVER ERROR:", err.message);
@@ -78,6 +80,7 @@ app.listen(PORT, () => {
 ✅ Fetch Image:   /api/fetch-image
 ✅ Packager:      /packager/run
 ✅ Dup Detect:    /dup-detect
+✅ File-reformat:    /file-reformat
  
 =================================
   `);

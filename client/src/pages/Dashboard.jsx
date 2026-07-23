@@ -141,6 +141,12 @@ export default function Dashboard() {
     gradient: 'linear-gradient(135deg, #ff6b6b 0%, #feca57 100%)',
     span: 1,
   },
+  {
+  id: 'file-sync', icon: '📎', title: 'FileSync',
+  description: 'Bulk upload file-upload (essay/report) questions to University question banks.',
+  path: '/file-sync', status: 'active',
+  gradient: 'linear-gradient(135deg, #7950f2 0%, #4facfe 100%)', span: 1,
+},
     {
       id: 'reports',
       icon: '📊',

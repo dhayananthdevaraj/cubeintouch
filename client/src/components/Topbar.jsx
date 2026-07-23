@@ -89,6 +89,8 @@ export default function Topbar() {
     icon: "⚖️",
     subtitle: "Test Extractor · Weightage Calculator"
   };
+  case "/file-sync":
+  return { title: "FileSync", icon: "📎", subtitle: "Upload File-Upload Questions · University" };
       case "/specq":
       return {
         title: "specQ",
