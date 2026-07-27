@@ -11,18 +11,23 @@ echo "Running in: $(pwd)"
 echo
 
 # =========================================================
-# STEP 1 - FIND PROJECT FOLDER
+# STEP 1 - FIND PROJECT FOLDER (dynamic)
 # =========================================================
 
 PROJ=""
 
 for d in ./*/ ; do
+
     bn="$(basename "$d")"
-    if [ "$bn" = "nunit" ] || [[ "$bn" == .* ]]; then
+
+    # skip nunit, test, and hidden folders
+    if [ "$bn" = "nunit" ] || [ "$bn" = "test" ] || [[ "$bn" == .* ]]; then
         continue
     fi
+
     PROJ="$bn"
     break
+
 done
 
 if [ -z "$PROJ" ]; then
@@ -37,6 +42,7 @@ echo "Detected project folder: $PROJ"
 # =========================================================
 
 rm -rf nunits || true
+
 mv nunit nunits
 
 # =========================================================
@@ -46,37 +52,53 @@ mv nunit nunits
 TEST_FILE="nunits/test/TestProject/UnitTest1.cs"
 
 FAILED_TESTS=$(grep -oP 'public\s+(async\s+Task|void)\s+\K[A-Za-z0-9_]+' "$TEST_FILE" | \
-grep -vE '^(Setup|SetUp|TearDown|Dispose)$' | while read testname
+grep -vE '^(Setup|SetUp|OneTimeSetUp|LoadAssembly|TearDown|Dispose)$' | while read testname
 do
     echo "        echo \"$testname FAILED\""
 done)
 
 # =========================================================
-# STEP 4 - CREATE nunits/run.sh
+# STEP 3b - FIND .sln FILE NAME (dynamic, no longer assumes
+# it matches $PROJ — falls back to $PROJ.sln if none found)
+# =========================================================
+
+SLN_PATH="$(find nunits/test -maxdepth 1 -type f -name "*.sln" | head -n 1)"
+
+if [ -n "$SLN_PATH" ]; then
+    SLN_NAME="$(basename "$SLN_PATH")"
+else
+    echo "WARNING: no .sln found under nunits/test — falling back to \$PROJ.sln"
+    SLN_NAME="$PROJ.sln"
+fi
+
+echo "Detected solution file: $SLN_NAME"
+
+# =========================================================
+# STEP 4 - CREATE nunits/run.sh (uses $PROJ and $SLN_NAME dynamically)
 # =========================================================
 
 cat > nunits/run.sh <<EOF
 #!/bin/bash
 
-if [ ! -d "/home/coder/project/workspace/dotnetapp" ]
+if [ ! -d "/home/coder/project/workspace/$PROJ" ]
 then
-    cp -r /home/coder/project/workspace/nunits/dotnetapp /home/coder/project/workspace/
+    cp -r /home/coder/project/workspace/nunits/$PROJ /home/coder/project/workspace/
 fi
 
-if [ -d "/home/coder/project/workspace/dotnetapp/" ]
+if [ -d "/home/coder/project/workspace/$PROJ/" ]
 then
 
     echo "project folder present"
 
     # checking for project folder
-    if [ -d "/home/coder/project/workspace/dotnetapp/" ]
+    if [ -d "/home/coder/project/workspace/$PROJ/" ]
     then
 
         cp -r /home/coder/project/workspace/nunits/test/TestProject /home/coder/project/workspace/
 
-        cp -r /home/coder/project/workspace/nunits/test/dotnetapp.sln /home/coder/project/workspace/dotnetapp/
+        cp -r /home/coder/project/workspace/nunits/test/$SLN_NAME /home/coder/project/workspace/$PROJ/
 
-        cd /home/coder/project/workspace/dotnetapp || exit
+        cd /home/coder/project/workspace/$PROJ || exit
 
         dotnet clean
 
@@ -84,7 +106,7 @@ then
 
         rm -rf /home/coder/project/workspace/TestProject
         rm -rf /home/coder/project/workspace/nunits
-        rm -rf /home/coder/project/workspace/dotnetapp/dotnetapp.sln
+        rm -rf /home/coder/project/workspace/$PROJ/$SLN_NAME
 
     else
 
@@ -133,12 +155,25 @@ chmod +x nunit/run.sh
 
 chmod +x nunits/run.sh
 
+# create initial tar
 tar -cvpf nunits.tar.gz nunits
+
+# append tar
 cat nunits.tar.gz >> nunit/run.sh
+
+# remove initial tar
 rm -f nunits.tar.gz
+
+# create compressed tar
 tar -cvpzf nunits.tar.gz nunits
+
+# append compressed tar
 cat nunits.tar.gz >> nunit/run.sh
+
+# cleanup archive section
 sed -i '7,$ {/ARCHIVE/{n; :a; N; $!ba; d}}' nunit/run.sh
+
+# append compressed tar again
 cat nunits.tar.gz >> nunit/run.sh
 
 # =========================================================
