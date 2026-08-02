@@ -1,5 +1,38 @@
+
 // src/components/WelcomeLoader.jsx
 import { useState, useEffect } from 'react';
+
+// Palette pulled from the CubeInTouch swirl mark
+const COLORS = {
+  indigo: '#6E63D6',
+  blue:   '#5B8DEF',
+  coral:  '#F0663F',
+  orange: '#FF8A3D',
+};
+
+// Background orbital-arc rings — a slow "simulation" echoing the logo swirl.
+// Each entry: radius, color, arc fraction (0-1), opacity, seconds/rev, direction.
+const BG_RINGS = [
+  { r: 110, c: COLORS.orange, f: 0.30, o: 0.55, dur: 26, dir:  1, w: 2 },
+  { r: 165, c: COLORS.coral,  f: 0.55, o: 0.42, dur: 34, dir: -1, w: 2 },
+  { r: 225, c: COLORS.coral,  f: 0.40, o: 0.32, dur: 46, dir:  1, w: 1.5 },
+  { r: 290, c: COLORS.blue,   f: 0.62, o: 0.30, dur: 58, dir: -1, w: 1.5 },
+  { r: 360, c: COLORS.indigo, f: 0.45, o: 0.24, dur: 72, dir:  1, w: 1.5 },
+  { r: 435, c: COLORS.indigo, f: 0.58, o: 0.18, dur: 90, dir: -1, w: 1 },
+];
+
+// Concentric spiral arcs that make up the mark itself (outer indigo -> inner coral).
+const MARK_ARCS = [
+  { r: 46, c: COLORS.indigo, f: 0.74, rot:   0 },
+  { r: 35, c: COLORS.blue,   f: 0.74, rot:  58 },
+  { r: 24, c: COLORS.coral,  f: 0.76, rot: 120 },
+  { r: 14, c: COLORS.orange, f: 0.80, rot: 186 },
+];
+
+const arc = (r, f) => {
+  const C = 2 * Math.PI * r;
+  return { strokeDasharray: `${(f * C).toFixed(2)} ${C.toFixed(2)}` };
+};
 
 export default function WelcomeLoader({ onLoadComplete }) {
   const [progress, setProgress] = useState(0);
@@ -27,316 +60,235 @@ export default function WelcomeLoader({ onLoadComplete }) {
 
   if (stage === 'complete') return null;
 
+  const status =
+    progress < 30 ? 'Initializing' :
+    progress < 60 ? 'Loading tools' :
+    progress < 90 ? 'Setting up workspace' :
+    'Ready';
+
   return (
-    <div className={`welcome-loader ${stage === 'fadeout' ? 'fade-out' : ''}`}>
-      <div className="loader-content">
-        {/* Animated Logo */}
-        <div className="loader-logo">
-          <div className="logo-cube">
-            <div className="cube-face front">📦</div>
-            <div className="cube-face back">📦</div>
-            <div className="cube-face right">📦</div>
-            <div className="cube-face left">📦</div>
-            <div className="cube-face top">📦</div>
-            <div className="cube-face bottom">📦</div>
-          </div>
+    <div className={`cw-loader ${stage === 'fadeout' ? 'cw-fade-out' : ''}`} role="status" aria-live="polite">
+      {/* Background simulation — orbital arcs echoing the logo swirl */}
+      <div className="cw-sim" aria-hidden="true">
+        <svg viewBox="0 0 1000 1000" width="100%" height="100%" preserveAspectRatio="xMidYMid slice">
+          <g transform="translate(500 500)">
+            {BG_RINGS.map((ring, i) => (
+              <circle
+                key={i}
+                cx="0" cy="0" r={ring.r}
+                fill="none"
+                stroke={ring.c}
+                strokeWidth={ring.w}
+                strokeLinecap="round"
+                style={{
+                  ...arc(ring.r, ring.f),
+                  opacity: ring.o,
+                  transformBox: 'fill-box',
+                  transformOrigin: 'center',
+                  animation: `${ring.dir > 0 ? 'cw-rot' : 'cw-rotR'} ${ring.dur}s linear infinite`,
+                }}
+              />
+            ))}
+          </g>
+        </svg>
+      </div>
+      <div className="cw-vignette" aria-hidden="true" />
+
+      <div className="cw-content">
+        {/* Brand mark — the CubeInTouch swirl */}
+        <div className="cw-mark-wrap" aria-hidden="true">
+          <svg className="cw-mark" viewBox="0 0 120 120" width="112" height="112">
+            <g transform="translate(60 60)">
+              {MARK_ARCS.map((a, i) => (
+                <circle
+                  key={i}
+                  cx="0" cy="0" r={a.r}
+                  fill="none"
+                  stroke={a.c}
+                  strokeWidth="7"
+                  strokeLinecap="round"
+                  transform={`rotate(${a.rot})`}
+                  style={arc(a.r, a.f)}
+                />
+              ))}
+              <circle cx="0" cy="0" r="5" fill={COLORS.orange} />
+            </g>
+          </svg>
         </div>
 
-        {/* Brand Name */}
-        <h1 className="loader-title">
-          <span className="title-cube">Cube</span>
-          <span className="title-in">In</span>
-          <span className="title-touch">Touch</span>
+        {/* Wordmark */}
+        <h1 className="cw-wordmark">
+          <span className="cw-w-strong">Cube</span><span className="cw-w-thin">In</span><span className="cw-w-strong">Touch</span>
         </h1>
 
-        {/* Tagline */}
-        <p className="loader-tagline">Support Hub</p>
-
-        {/* Progress Bar */}
-        <div className="loader-progress-container">
-          <div className="loader-progress-bar">
-            <div 
-              className="loader-progress-fill" 
-              style={{ width: `${progress}%` }}
-            ></div>
+        {/* Progress */}
+        <div className="cw-progress">
+          <div className="cw-readout">
+            <span className="cw-status">{status}</span>
+            <span className="cw-pct">{String(progress).padStart(3, '0')}<span className="cw-pct-sym">%</span></span>
           </div>
-          <div className="loader-percentage">{progress}%</div>
-        </div>
-
-        {/* Loading Text */}
-        <div className="loader-status">
-          {progress < 30 && "Initializing..."}
-          {progress >= 30 && progress < 60 && "Loading tools..."}
-          {progress >= 60 && progress < 90 && "Setting up workspace..."}
-          {progress >= 90 && "Ready!"}
-        </div>
-
-        {/* Floating Icons */}
-        <div className="floating-icons">
-          <span className="float-icon" style={{ '--delay': '0s', '--duration': '3s' }}>📚</span>
-          <span className="float-icon" style={{ '--delay': '0.5s', '--duration': '3.5s' }}>🔍</span>
-          <span className="float-icon" style={{ '--delay': '1s', '--duration': '4s' }}>🎓</span>
-          <span className="float-icon" style={{ '--delay': '1.5s', '--duration': '3.2s' }}>🔄</span>
-          <span className="float-icon" style={{ '--delay': '2s', '--duration': '3.8s' }}>📊</span>
-          <span className="float-icon" style={{ '--delay': '2.5s', '--duration': '3.3s' }}>⚙️</span>
+          <div className="cw-track">
+            <div className="cw-fill" style={{ width: `${progress}%` }}>
+              <span className="cw-fill-tip" />
+            </div>
+          </div>
         </div>
       </div>
 
       <style>{`
-        .welcome-loader {
+        .cw-loader {
           position: fixed;
           inset: 0;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          background:
+            radial-gradient(120% 90% at 50% 42%, #16224a 0%, #0b1226 48%, #070b18 100%);
           display: flex;
           align-items: center;
           justify-content: center;
           z-index: 9999;
+          overflow: hidden;
           transition: opacity 0.8s ease;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
-        .welcome-loader.fade-out {
-          opacity: 0;
+        .cw-loader.cw-fade-out { opacity: 0; }
+
+        /* Background simulation */
+        .cw-sim {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 150vmax;
+          height: 150vmax;
+          transform: translate(-50%, -50%);
+          pointer-events: none;
+          animation: cw-drift 42s ease-in-out infinite;
         }
 
-        .loader-content {
-          text-align: center;
+        @keyframes cw-drift {
+          0%, 100% { transform: translate(-50%, -50%) scale(1); }
+          50%      { transform: translate(-50%, -50%) scale(1.08); }
+        }
+
+        .cw-vignette {
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          background: radial-gradient(circle at 50% 46%, transparent 30%, rgba(7,11,24,0.55) 70%, rgba(7,11,24,0.9) 100%);
+        }
+
+        @keyframes cw-rot  { from { transform: rotate(0deg);   } to { transform: rotate(360deg);  } }
+        @keyframes cw-rotR { from { transform: rotate(0deg);   } to { transform: rotate(-360deg); } }
+
+        .cw-content {
           position: relative;
           z-index: 2;
+          text-align: center;
+          padding: 0 24px;
         }
 
-        /* 3D Rotating Cube Logo */
-        .loader-logo {
-          perspective: 1000px;
-          margin-bottom: 40px;
+        /* Brand mark */
+        .cw-mark-wrap {
+          margin-bottom: 42px;
+          display: flex;
+          justify-content: center;
         }
 
-        .logo-cube {
-          width: 100px;
-          height: 100px;
-          position: relative;
-          transform-style: preserve-3d;
-          animation: rotateCube 4s infinite linear;
+        .cw-mark {
+          animation: cw-rot 22s linear infinite;
+          filter: drop-shadow(0 6px 22px rgba(240,102,63,0.35));
+        }
+
+        /* Wordmark */
+        .cw-wordmark {
+          font-size: 44px;
+          line-height: 1;
+          letter-spacing: -0.02em;
+          margin: 0 0 40px;
+          color: #eaf0ff;
+          animation: cw-rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+        }
+
+        .cw-w-strong { font-weight: 800; }
+        .cw-w-thin   { font-weight: 300; color: ${COLORS.coral}; margin: 0 1px; }
+
+        @keyframes cw-rise {
+          from { opacity: 0; transform: translateY(14px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Progress */
+        .cw-progress {
+          width: min(360px, 78vw);
           margin: 0 auto;
+          animation: cw-rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.15s backwards;
         }
 
-        @keyframes rotateCube {
-          0% { transform: rotateX(0deg) rotateY(0deg); }
-          100% { transform: rotateX(360deg) rotateY(360deg); }
-        }
-
-        .cube-face {
-          position: absolute;
-          width: 100px;
-          height: 100px;
+        .cw-readout {
           display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 50px;
-          background: rgba(255, 255, 255, 0.1);
-          border: 2px solid rgba(255, 255, 255, 0.3);
-          backdrop-filter: blur(10px);
-        }
-
-        .cube-face.front  { transform: rotateY(0deg) translateZ(50px); }
-        .cube-face.back   { transform: rotateY(180deg) translateZ(50px); }
-        .cube-face.right  { transform: rotateY(90deg) translateZ(50px); }
-        .cube-face.left   { transform: rotateY(-90deg) translateZ(50px); }
-        .cube-face.top    { transform: rotateX(90deg) translateZ(50px); }
-        .cube-face.bottom { transform: rotateX(-90deg) translateZ(50px); }
-
-        /* Brand Title */
-        .loader-title {
-          font-size: 64px;
-          font-weight: 800;
-          color: white;
-          margin-bottom: 16px;
-          letter-spacing: -2px;
-          display: flex;
-          gap: 8px;
-          justify-content: center;
-          align-items: center;
-        }
-
-        .title-cube {
-          animation: slideInLeft 0.8s ease-out;
-        }
-
-        .title-in {
-          animation: scaleIn 0.8s ease-out 0.2s backwards;
-        }
-
-        .title-touch {
-          animation: slideInRight 0.8s ease-out 0.4s backwards;
-        }
-
-        @keyframes slideInLeft {
-          from {
-            opacity: 0;
-            transform: translateX(-50px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-
-        @keyframes slideInRight {
-          from {
-            opacity: 0;
-            transform: translateX(50px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-
-        @keyframes scaleIn {
-          from {
-            opacity: 0;
-            transform: scale(0);
-          }
-          to {
-            opacity: 1;
-            transform: scale(1);
-          }
-        }
-
-        /* Tagline */
-        .loader-tagline {
-          font-size: 20px;
-          color: rgba(255, 255, 255, 0.9);
-          font-weight: 600;
-          margin-bottom: 48px;
-          letter-spacing: 3px;
-          text-transform: uppercase;
-          animation: fadeIn 0.8s ease-out 0.6s backwards;
-        }
-
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-
-        /* Progress Bar */
-        .loader-progress-container {
-          max-width: 400px;
-          margin: 0 auto 20px;
-        }
-
-        .loader-progress-bar {
-          width: 100%;
-          height: 6px;
-          background: rgba(255, 255, 255, 0.2);
-          border-radius: 10px;
-          overflow: hidden;
+          align-items: baseline;
+          justify-content: space-between;
           margin-bottom: 12px;
         }
 
-        .loader-progress-fill {
-          height: 100%;
-          background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%);
-          border-radius: 10px;
-          transition: width 0.3s ease;
-          box-shadow: 0 0 20px rgba(67, 233, 123, 0.5);
-        }
-
-        .loader-percentage {
-          font-size: 14px;
-          color: rgba(255, 255, 255, 0.8);
-          font-weight: 600;
-          font-family: 'SF Mono', 'Monaco', monospace;
-        }
-
-        /* Loading Status */
-        .loader-status {
-          font-size: 16px;
-          color: rgba(255, 255, 255, 0.9);
+        .cw-status {
+          font-size: 12px;
           font-weight: 500;
-          margin-top: 24px;
-          min-height: 24px;
-          animation: pulse 1.5s ease-in-out infinite;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          color: #8ea0c8;
         }
 
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.6; }
+        .cw-pct {
+          font-family: 'SF Mono', 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+          font-size: 15px;
+          font-weight: 600;
+          color: #eaf0ff;
+          letter-spacing: 0.04em;
+          font-variant-numeric: tabular-nums;
         }
 
-        /* Floating Icons */
-        .floating-icons {
-          position: fixed;
-          inset: 0;
-          pointer-events: none;
+        .cw-pct-sym { color: ${COLORS.orange}; margin-left: 2px; }
+
+        .cw-track {
+          height: 3px;
+          width: 100%;
+          background: rgba(148,178,255,0.14);
+          border-radius: 99px;
           overflow: hidden;
         }
 
-        .float-icon {
-          position: absolute;
-          font-size: 40px;
-          opacity: 0.3;
-          animation: float var(--duration, 3s) ease-in-out infinite;
-          animation-delay: var(--delay, 0s);
+        .cw-fill {
+          position: relative;
+          height: 100%;
+          border-radius: 99px;
+          background: linear-gradient(90deg, ${COLORS.indigo} 0%, ${COLORS.coral} 60%, ${COLORS.orange} 100%);
+          box-shadow: 0 0 16px rgba(240,102,63,0.55);
+          transition: width 0.25s ease;
         }
 
-        .float-icon:nth-child(1) { left: 10%; top: 20%; }
-        .float-icon:nth-child(2) { left: 80%; top: 15%; }
-        .float-icon:nth-child(3) { left: 15%; bottom: 20%; }
-        .float-icon:nth-child(4) { right: 15%; top: 30%; }
-        .float-icon:nth-child(5) { right: 10%; bottom: 25%; }
-        .float-icon:nth-child(6) { left: 50%; top: 10%; }
-
-        @keyframes float {
-          0%, 100% {
-            transform: translateY(0) rotate(0deg);
-          }
-          25% {
-            transform: translateY(-20px) rotate(5deg);
-          }
-          50% {
-            transform: translateY(0) rotate(0deg);
-          }
-          75% {
-            transform: translateY(20px) rotate(-5deg);
-          }
+        .cw-fill-tip {
+          position: absolute;
+          right: 0;
+          top: 50%;
+          width: 7px;
+          height: 7px;
+          transform: translate(50%, -50%);
+          border-radius: 50%;
+          background: #fff4ec;
+          box-shadow: 0 0 10px rgba(255,255,255,0.9);
         }
 
         /* Responsive */
         @media (max-width: 768px) {
-          .loader-title {
-            font-size: 48px;
-            flex-direction: column;
-            gap: 4px;
-          }
+          .cw-wordmark { font-size: 34px; }
+          .cw-mark { width: 92px; height: 92px; }
+        }
 
-          .logo-cube {
-            width: 80px;
-            height: 80px;
-          }
-
-          .cube-face {
-            width: 80px;
-            height: 80px;
-            font-size: 40px;
-          }
-
-          .cube-face.front, .cube-face.back,
-          .cube-face.right, .cube-face.left,
-          .cube-face.top, .cube-face.bottom {
-            transform: rotateY(0deg) translateZ(40px);
-          }
-
-          .loader-tagline {
-            font-size: 16px;
-          }
-
-          .loader-progress-container {
-            max-width: 300px;
-          }
-
-          .float-icon {
-            font-size: 30px;
-          }
+        /* Accessibility — respect reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+          .cw-sim, .cw-mark, .cw-wordmark, .cw-progress { animation: none; }
+          .cw-sim :where(circle) { animation: none !important; }
+          .cw-loader { transition: none; }
         }
       `}</style>
     </div>
