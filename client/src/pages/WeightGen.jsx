@@ -1,3 +1,5 @@
+
+
 import { useState } from "react";
 import "./WeightGen.css";
 
@@ -41,6 +43,24 @@ export default function WeightGen() {
     setError("");
   };
 
+  const buildEvenTestcases = (testNames, weight) => {
+    const totalTests = testNames.length;
+    const baseWeight = parseFloat((weight / totalTests).toFixed(3));
+
+    const testcases = testNames.map((name) => ({
+      name,
+      weightage: baseWeight,
+    }));
+
+    const sum = testcases.reduce((a, b) => a + b.weightage, 0);
+    const diff = parseFloat((weight - sum).toFixed(3));
+    testcases[testcases.length - 1].weightage = parseFloat(
+      (testcases[testcases.length - 1].weightage + diff).toFixed(3)
+    );
+
+    return { testcases, baseWeight };
+  };
+
   const handleGenerate = () => {
     setError("");
     setResult(null);
@@ -65,19 +85,7 @@ export default function WeightGen() {
     }
 
     const weight = parseFloat(totalWeight) || 0;
-    const totalTests = testNames.length;
-    const baseWeight = parseFloat((weight / totalTests).toFixed(3));
-
-    const testcases = testNames.map((name) => ({
-      name,
-      weightage: baseWeight,
-    }));
-
-    const sum = testcases.reduce((a, b) => a + b.weightage, 0);
-    const diff = parseFloat((weight - sum).toFixed(3));
-    testcases[testcases.length - 1].weightage = parseFloat(
-      (testcases[testcases.length - 1].weightage + diff).toFixed(3)
-    );
+    const { testcases, baseWeight } = buildEvenTestcases(testNames, weight);
 
     const failedEcho = testNames.map((name) => `echo "${name} FAILED";`);
 
@@ -85,12 +93,32 @@ export default function WeightGen() {
       testNames,
       testcases,
       failedEcho,
-      totalTests,
+      totalTests: testNames.length,
       baseWeight,
       totalWeight: weight,
     });
     setCopiedJson(false);
     setCopiedEcho(false);
+  };
+
+  // ── Customisable weightage: edit a single testcase's weight after generation ──
+  const updateWeight = (idx, rawValue) => {
+    setResult((prev) => {
+      if (!prev) return prev;
+      const nextTestcases = prev.testcases.map((tc, i) =>
+        i === idx ? { ...tc, weightage: rawValue } : tc
+      );
+      return { ...prev, testcases: nextTestcases };
+    });
+  };
+
+  // ── Reset back to an even split across all testcases ──
+  const rebalanceEvenly = () => {
+    setResult((prev) => {
+      if (!prev) return prev;
+      const { testcases, baseWeight } = buildEvenTestcases(prev.testNames, prev.totalWeight);
+      return { ...prev, testcases, baseWeight };
+    });
   };
 
   const copyToClipboard = async (text, which) => {
@@ -108,22 +136,27 @@ export default function WeightGen() {
     }
   };
 
-//   const jsonOutput = result
-//     ? JSON.stringify({ testcases: result.testcases }, null, 2)
-//     : "";
-
-// const jsonOutput = result
-//   ? JSON.stringify(result.testcases, null, 2)
-//   : "";
-
-const jsonOutput = result
-  ? JSON.stringify(result.testcases, null, 2)
-      .replace(/^\[\n/, "")   // remove opening [
-      .replace(/\n\]$/, "")   // remove closing ]
-  : "";
+  const jsonOutput = result
+    ? JSON.stringify(
+        result.testcases.map((tc) => ({ ...tc, weightage: parseFloat(tc.weightage) || 0 })),
+        null,
+        2
+      )
+        .replace(/^\[\n/, "")   // remove opening [
+        .replace(/\n\]$/, "")   // remove closing ]
+    : "";
 
   const echoOutput = result ? result.failedEcho.join("\n") : "";
   const lineCount = sourceCode ? sourceCode.split("\n").length : 0;
+
+  // ── Live sum of the (possibly hand-edited) weightages vs the target total ──
+  const currentSum = result
+    ? parseFloat(
+        result.testcases.reduce((a, b) => a + (parseFloat(b.weightage) || 0), 0).toFixed(3)
+      )
+    : 0;
+  const diffFromTarget = result ? parseFloat((result.totalWeight - currentSum).toFixed(3)) : 0;
+  const isBalanced = Math.abs(diffFromTarget) < 0.001;
 
   return (
     <div className="wg-root">
@@ -225,11 +258,40 @@ const jsonOutput = result
               </div>
             </div>
             <div className="wg-stat">
-              <span className="wg-stat-icon">📊</span>
+              <span className="wg-stat-icon">{isBalanced ? "✅" : "🔄"}</span>
               <div>
-                <div className="wg-stat-n">{result.baseWeight}</div>
-                <div className="wg-stat-l">Per Testcase</div>
+                <div className="wg-stat-n">{currentSum}</div>
+                <div className="wg-stat-l">Current Sum</div>
               </div>
+            </div>
+          </div>
+
+          {/* Customisable weightage — edit each testcase after generation */}
+          <div className="wg-output-card wg-weights-card">
+            <div className="wg-output-head wg-output-head--weights">
+              <span className="wg-output-title"><span>🎛️</span> Adjust Weightage</span>
+              <div className="wg-weights-head-right">
+                <span className={`wg-balance-pill ${isBalanced ? "wg-balance-pill--ok" : "wg-balance-pill--off"}`}>
+                  {isBalanced ? "✓ Balanced" : `⚠ Off by ${diffFromTarget}`}
+                </span>
+                <button className="wg-rebalance-btn" onClick={rebalanceEvenly}>
+                  ↺ Even Split
+                </button>
+              </div>
+            </div>
+            <div className="wg-weight-list">
+              {result.testcases.map((tc, idx) => (
+                <div className="wg-weight-row" key={`${tc.name}-${idx}`}>
+                  <span className="wg-weight-row-name">{tc.name}</span>
+                  <input
+                    type="number"
+                    step="0.001"
+                    className="wg-weight-row-input"
+                    value={tc.weightage}
+                    onChange={(e) => updateWeight(idx, e.target.value)}
+                  />
+                </div>
+              ))}
             </div>
           </div>
 
