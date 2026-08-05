@@ -39,7 +39,7 @@ const inline  = s => esc(s).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
 function textToHtml(text) {
   if (!text) return "";
   const t = text.trim();
-  if (/^<(p|ul|ol|div|h[1-6]|strong|table)\b/i.test(t)) return t;
+  if (/^<(p|ul|ol|div|h[1-6]|strong|table)\b/i.test(t)) return t.replace(/>\s+</g, "><");
 
   const lines = t.split("\n");
   const out = [];
@@ -61,6 +61,8 @@ function textToHtml(text) {
 
   for (const raw of lines) {
     const line   = raw.replace(/\s+$/, "");
+    const psHeading = line.match(/^\s*Problem Statement\s*:?\s*$/i);
+    if (psHeading) { flushPara(); flushList(); out.push("<p><strong><u>Problem Statement</u></strong></p>"); continue; }
     const bullet = line.match(/^\s*[-*•]\s+(.*)/);
     if (bullet) { flushPara(); listBuf.push(bullet[1]); continue; }
     if (line.trim() === "") { flushPara(); flushList(); continue; }
@@ -166,19 +168,11 @@ const SAMPLE_FORMAT = `---QUESTION---
 TITLE: Mobile Forensics Essay
 TAGS: forensics, mobile
 DESCRIPTION:
-Problem Statement:
-
-Mobile devices have become one of the most significant sources of digital evidence in modern forensic investigations. Write a structured essay that explores the scope of mobile forensics and the types of evidence that can be recovered.
-
-Your essay must cover the following:
-
-- Call logs — what they contain and their investigative value
-- SMS and MMS messages — storage locations and recovery potential
-- Contacts — on-device vs SIM-stored contacts
-- Application data — social media, messaging apps, location history
-- EXIF metadata — what it is, where it is stored, what it reveals
-
-**Note: Upload the file in PDF format, and ensure that it does not exceed 50 MB in size.**
+<p><strong><u>Problem Statement</u></strong></p>
+<p>Mobile devices have become one of the most significant sources of digital evidence in modern forensic investigations. Write a structured essay that explores the scope of <b>mobile forensics</b> and the types of evidence that can be recovered.</p>
+<p>Your essay must cover the following:</p>
+<ul><li><b>Call logs</b> — what they contain and their investigative value.</li><li><b>SMS and MMS messages</b> — storage locations and recovery potential.</li><li><b>Contacts</b> — on-device versus SIM-stored contacts.</li><li><b>Application data</b> — social media, messaging apps, and location history.</li><li><b>EXIF metadata</b> — what it is, where it is stored, and what it reveals.</li></ul>
+<p><b>Note:</b> Upload the file in <b>PDF</b> format, and ensure that it does not exceed <b>50 MB</b> in size.</p>
 ---END---`;
 
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
@@ -202,10 +196,10 @@ export default function FileSyncPlatform({ platform, onBack }) {
   const [bloomsSearch, setBloomsSearch]       = useState("");
   const [bloomsFocused, setBloomsFocused]     = useState(false);
 
-  // File Settings (chosen once, manually, for the whole batch)
-  const [fileSettings, setFileSettings] = useState({ types: [".pdf"], size: 50, mandatory: true });
+  // File Settings (chosen once, manually, for the whole batch) — nothing preselected
+  const [fileSettings, setFileSettings] = useState({ types: [], size: 50, mandatory: true });
   const toggleFileType = ext => setFileSettings(p => ({ ...p, types: p.types.includes(ext) ? p.types.filter(t => t !== ext) : [...p.types, ext] }));
-  const resetFileSettings = () => setFileSettings({ types: [".pdf"], size: 50, mandatory: true });
+  const resetFileSettings = () => setFileSettings({ types: [], size: 50, mandatory: true });
 
   // QB Step
   const [qbMode, setQbMode]                   = useState("create");
@@ -770,7 +764,7 @@ export default function FileSyncPlatform({ platform, onBack }) {
                     type="button"
                     onClick={() => toggleFileType(ext)}
                     className={`cod-diff-btn ${isSel ? "active" : ""}`}
-                    style={{ fontFamily: "monospace", padding: "6px 12px" }}
+                    style={{ fontFamily: "monospace", padding: "6px 12px", flex: "0 0 auto" }}
                   >
                     {ext}
                   </button>
