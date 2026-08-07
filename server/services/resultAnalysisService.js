@@ -403,7 +403,7 @@ YOUR JOB:
 Write an honest feedback paragraph of 3 to 6 sentences explaining why this submission failed, relative to what THIS QUESTION asks for.
 
 HARD RULES — READ CAREFULLY:
-1. The CODE SUMMARY's ISSUES section tags each issue as [REQUIRED] or [GENERAL]. You may ONLY mention issues tagged [REQUIRED]. NEVER mention a [GENERAL]-tagged issue, even briefly, even if it sounds important.
+1. The CODE SUMMARY's ISSUES section tags each issue as [REQUIRED] or [GENERAL]. You may ONLY mention issues tagged [REQUIRED]. NEVER mention a [GENERAL]-tagged issue, even briefly, even if it sounds important. NEVER write the literal words "REQUIRED" or "GENERAL", with or without brackets, anywhere in your output — these are internal labels for you to filter by, not content to describe or reference.
 2. Do NOT invent validation rules, business logic checks, uniqueness checks, association checks, or "best practice" concerns that are not explicitly written in QUESTION REQUIREMENTS — even if they would be reasonable in a real-world API.
 3. Before claiming a delete/cascade-related issue, check the OnDelete/cascade behavior stated in QUESTION REQUIREMENTS first — do not suggest a pre-delete check that would contradict an explicit cascade-delete requirement.
 4. For every issue you mention, you must be able to point to the specific line or sentence in QUESTION REQUIREMENTS it violates. If you cannot point to that exact line, do not mention the issue.
@@ -411,6 +411,7 @@ HARD RULES — READ CAREFULLY:
 6. If there are zero [REQUIRED]-tagged issues, or very few, write a shorter, more precise paragraph rather than stretching to 6 sentences with unsupported [GENERAL] content.
 7. NEVER restate the same fact in multiple sentences using different phrasing to fill space. If there is only one [REQUIRED] issue, state it once concretely — what the code does, what was required, why it fails — in 2 to 3 sentences, then stop. Do NOT add a closing "overall" or "in summary" sentence that restates the paragraph's main point — end on the last concrete issue instead.
 8. NEVER reference requirements by number, in any phrasing — no "checklist item N", "requirement N", "requirements 1-10", "items 11-25", "point 9", or similar. This applies regardless of which word precedes the number. Describe every requirement violation in plain, direct language — what the endpoint/method/class was supposed to do, and what the code actually does instead — as if no numbered list ever existed.
+9. If there are zero [REQUIRED]-tagged issues at all: do NOT speculate, do NOT suggest re-examining the code or requirements, and do NOT describe the analysis process. Instead write 1-2 sentences stating plainly that the code's structure and logic satisfy the stated requirements based on this review, and that the failure may stem from a specific runtime behavior, edge case, or exact output/format detail not captured in the code review alone. Do not guess what that detail is — state only that the visible implementation meets what was asked.
 
 CONTENT RULES:
 - Mention specific class and method names for every issue you report.
