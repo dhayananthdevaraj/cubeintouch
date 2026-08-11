@@ -1,7 +1,3 @@
-// CODSyncMultifile.jsx
-// Drop-in replacement for the upload UI section in CODSyncPlatform
-// Handles both Single-file and Multi-file programming question formats
-
 import { useState } from "react";
 
 const API = "https://api.examly.io";
@@ -64,6 +60,25 @@ const DEFAULT_FILENAME = {
   "Scala":                   "Main.scala",
 };
 
+// ─── LANGUAGE LABEL → API IDENTIFIER ─────────────────────────────────────────
+// The platform dropdown shows verbose labels, but the payload's `multilanguage`
+// and each `solution[].language` must carry the platform's INTERNAL identifier.
+// Most labels equal their API value (e.g. "MySQL (8.0)"), so only the ones that
+// differ need an entry here. Confirmed from a captured working payload:
+//   "Javascript File Based"  →  "JavaScript"
+// Add more here as you capture real payloads for other languages.
+export const MULTIFILE_LANG_API = {
+  "Javascript File Based": "JavaScript",
+};
+const toApiLang = lang => MULTIFILE_LANG_API[lang] || lang;
+
+// Non-main solution files get a UUID id, matching what the platform generates.
+const newFileId = idx =>
+  (typeof crypto !== "undefined" && crypto.randomUUID) ? crypto.randomUUID() : `file_${idx}`;
+
+// Standard Bloom's levels — used only to WARN on non-standard BLOOMS values (not a hard error).
+const BLOOMS_LEVELS = ["Knowledge", "Comprehension", "Application", "Analysis", "Synthesis", "Evaluation"];
+
 // ─── MULTIFILE PARSER ─────────────────────────────────────────────────────────
 /*
   Format expected (multifile):
@@ -94,6 +109,7 @@ const DEFAULT_FILENAME = {
 */
 export function parseMultifileQuestions(raw) {
   const errors = [];
+  const warnings = [];
   const questions = [];
 
   const blocks = raw
@@ -103,7 +119,7 @@ export function parseMultifileQuestions(raw) {
 
   if (blocks.length === 0) {
     errors.push("No ---QUESTION--- blocks found.");
-    return { questions, errors };
+    return { questions, errors, warnings };
   }
 
   blocks.forEach((block, bi) => {
@@ -118,7 +134,7 @@ export function parseMultifileQuestions(raw) {
 
     // HEADER_RE: matches plain keys OR bracketed keys like SOLUTION_FILE[MySQL (8.0)]
     // Bracket content can contain ANY chars (spaces, dots, digits, parens, dots).
-    const HEADER_RE = /^(TITLE|DIFFICULTY|LANGUAGE|TAGS|DESCRIPTION|INPUT_FORMAT|OUTPUT_FORMAT|CONSTRAINTS|INITIAL_QUERY\[[^\]]+\]|SOLUTION_FILE\[[^\]]+\]|TESTCASE|SAMPLE_IO)\s*:/i;
+    const HEADER_RE = /^(TITLE|DIFFICULTY|LANGUAGE|BLOOMS|TAGS|DESCRIPTION|INPUT_FORMAT|OUTPUT_FORMAT|CONSTRAINTS|INITIAL_QUERY\[[^\]]+\]|SOLUTION_FILE\[[^\]]+\]|TESTCASE|SAMPLE_IO)\s*:/i;
 
     // LINE_RE: key prefix = word chars; bracket content = anything except ]
     const LINE_RE = /^([A-Za-z_][A-Za-z0-9_]*)(\[[^\]]+\])?\s*:\s*(.*)/;
@@ -240,6 +256,7 @@ export function parseMultifileQuestions(raw) {
     const title       = get("TITLE");
     const difficulty  = get("DIFFICULTY");
     const langRaw     = get("LANGUAGE");
+    const blooms      = get("BLOOMS") || null;
     const tagsRaw     = get("TAGS");
     const description = get("DESCRIPTION");
     const inputFmt    = get("INPUT_FORMAT");
@@ -254,6 +271,8 @@ export function parseMultifileQuestions(raw) {
     if (!difficulty || !["Easy","Medium","Hard"].includes(difficulty))
       qErrors.push(`Q${qNum}: DIFFICULTY must be Easy, Medium, or Hard`);
     if (!langRaw)     qErrors.push(`Q${qNum}: Missing LANGUAGE`);
+    if (blooms && !BLOOMS_LEVELS.includes(blooms))
+      warnings.push(`Q${qNum}: BLOOMS "${blooms}" is not a standard Bloom's level`);
     if (!description) qErrors.push(`Q${qNum}: Missing DESCRIPTION`);
     if (!inputFmt)    qErrors.push(`Q${qNum}: Missing INPUT_FORMAT`);
     if (!outputFmt)   qErrors.push(`Q${qNum}: Missing OUTPUT_FORMAT`);
@@ -270,7 +289,7 @@ export function parseMultifileQuestions(raw) {
     });
 
     questions.push({
-      title, difficulty,
+      title, difficulty, blooms,
       languages: langRaw.split(",").map(l => l.trim()).filter(Boolean),
       tags: tagsRaw ? tagsRaw.split(",").map(t => t.trim()).filter(Boolean) : [""],
       description, inputFmt, outputFmt,
@@ -281,7 +300,7 @@ export function parseMultifileQuestions(raw) {
     });
   });
 
-  return { questions, errors };
+  return { questions, errors, warnings };
 }
 
 // ─── MULTIFILE PAYLOAD BUILDER ────────────────────────────────────────────────
@@ -303,7 +322,7 @@ export function buildMultifilePayload(q, batchConfig, qbId, userId) {
     const files = q.solutionFiles[lang] || [];
 
     return {
-      language: lang,
+      language: toApiLang(lang),
       hasSnippet: false,
       solutiondata: [{
         solution: null,
@@ -314,7 +333,7 @@ export function buildMultifilePayload(q, batchConfig, qbId, userId) {
         solutionfiles: files.map((f, idx) => ({
           filename: f.filename,
           content: f.content,
-          id: idx === 0 ? "main" : `file_${idx}`,
+          id: idx === 0 ? "main" : newFileId(idx),
         })),
       }],
       hideHeader: false,
@@ -326,7 +345,7 @@ export function buildMultifilePayload(q, batchConfig, qbId, userId) {
     question_type: "programming_file_based",
     question_editor_type: 1,
     question_data: wrapHtml(q.description),
-    multilanguage: q.languages,
+    multilanguage: q.languages.map(toApiLang),
     inputformat: wrapHtml(q.inputFmt),
     outputformat: wrapHtml(q.outputFmt),
     enablecustominput: true,
@@ -335,10 +354,10 @@ export function buildMultifilePayload(q, batchConfig, qbId, userId) {
     timelimit: null, memorylimit: null, codesize: null,
     setLimit: false, enable_api: false, outputLimit: null,
     subject_id: batchConfig.subject_id || null,
-    blooms_taxonomy: null, course_outcome: null, program_outcome: null,
+    blooms_taxonomy: q.blooms || batchConfig.blooms || null, course_outcome: null, program_outcome: null,
     hint: [],
     manual_difficulty: batchConfig.manual_difficulty || q.difficulty,
-    ...(topLevelInitialQuery ? { initialQuery: topLevelInitialQuery } : {}),
+    initialQuery: topLevelInitialQuery,
     solution: solutionArray,
     testcases: q.testcases,
     topic_id: batchConfig.topic_id || null,
@@ -353,7 +372,7 @@ export function buildMultifilePayload(q, batchConfig, qbId, userId) {
   };
 }
 
-// ─── FORMAT TEMPLATE FOR MULTIFILE ───────────────────────────────────────────
+// ─── FORMAT TEMPLATE FOR MULTIFILE (SQL) ─────────────────────────────────────
 const MULTIFILE_FORMAT_EXAMPLE = `---QUESTION---
 TITLE: Find Top Performing Employees
 DIFFICULTY: Medium
@@ -405,6 +424,66 @@ ORDER BY TOTAL_SALES DESC;
 
 TESTCASE: null|EMPLOYEE_NAME\\tDEPARTMENT\\tTOTAL_SALES\\tAVG_SALES_ALL_EMPLOYEES\\nEva Menon\\tMobiles\\t13500.00\\t5875.00\\nAlice Roy\\tElectronics\\t10500.00\\t5875.00\\n|Medium|100
 SAMPLE_IO: null|EMPLOYEE_NAME\\tDEPARTMENT\\tTOTAL_SALES\\tAVG_SALES_ALL_EMPLOYEES\\nEva Menon\\tMobiles\\t13500.00\\t5875.00\\nAlice Roy\\tElectronics\\t10500.00\\t5875.00\\n
+---END---`;
+
+// ─── FORMAT TEMPLATE FOR MULTIFILE (JavaScript File Based) ───────────────────
+// LANGUAGE uses the dropdown label "Javascript File Based"; the tool maps it to
+// the platform's API value "JavaScript" automatically (see MULTIFILE_LANG_API).
+// Shows TWO SOLUTION_FILE blocks (a main index.js + a data file) and a non-null
+// stdin input.
+const MULTIFILE_FORMAT_EXAMPLE_JS = `---QUESTION---
+TITLE: File Existence Checker
+DIFFICULTY: Medium
+LANGUAGE: Javascript File Based
+TAGS: NodeJS, filesystem
+
+DESCRIPTION:
+Read a filename from standard input and report whether it exists. If it exists, print whether it is readable and writable, its type, and its size; otherwise print that it does not exist.
+
+INPUT_FORMAT:
+A single line containing the filename to check.
+
+OUTPUT_FORMAT:
+Refer to the sample output for formatting specifications.
+
+CONSTRAINTS:
+Use the Node.js built-in fs and path modules. Read the input from process.stdin.
+
+SOLUTION_FILE[Javascript File Based]:
+<filename>index.js</filename>
+<content>
+const fs = require('fs');
+const path = require('path');
+
+process.stdin.on('data', data => {
+  const fileName = data.toString().trim();
+  const targetPath = fs.existsSync(fileName) ? fileName : path.join(__dirname, fileName);
+  if (fs.existsSync(targetPath)) {
+    const stats = fs.statSync(targetPath);
+    let readable = true;
+    let writable = true;
+    try { fs.accessSync(targetPath, fs.constants.R_OK); } catch (e) { readable = false; }
+    try { fs.accessSync(targetPath, fs.constants.W_OK); } catch (e) { writable = false; }
+    const type = stats.isDirectory() ? 'Directory' : 'File';
+    console.log(\`Exists: true\`);
+    console.log(\`Readable: \${readable}\`);
+    console.log(\`Writable: \${writable}\`);
+    console.log(\`Type: \${type}\`);
+    console.log(\`Size: \${stats.size} bytes\`);
+  } else {
+    console.log(\`Exists: false\`);
+  }
+});
+</content>
+
+SOLUTION_FILE[Javascript File Based]:
+<filename>demo.txt</filename>
+<content>
+NodeJS File
+</content>
+
+TESTCASE: demo.txt|Exists: false\\n|Hard|100
+SAMPLE_IO: demo.txt|Exists: false\\n
 ---END---`;
 
 // ─── MODE TOGGLE PILL ─────────────────────────────────────────────────────────
@@ -459,9 +538,12 @@ export function QuestionTypePill({ mode, onChange }) {
 function MultifileFormatCard() {
   const [copied, setCopied] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [example, setExample] = useState("sql"); // 'sql' | 'js'
+
+  const activeExample = example === "js" ? MULTIFILE_FORMAT_EXAMPLE_JS : MULTIFILE_FORMAT_EXAMPLE;
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(MULTIFILE_FORMAT_EXAMPLE).then(() => {
+    navigator.clipboard.writeText(activeExample).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     });
@@ -511,6 +593,7 @@ function MultifileFormatCard() {
         {[
           { icon: "📁", title: "SOLUTION_FILE[Lang]", desc: "Wrap code in <filename> and <content> tags" },
           { icon: "🔧", title: "INITIAL_QUERY[Lang]", desc: "Optional starter code shown to students" },
+          { icon: "🧠", title: "BLOOMS (optional)", desc: "e.g. BLOOMS: Application — overrides the batch default for this question" },
           { icon: "🚫", title: "No CODE_STUB / HEADER / FOOTER", desc: "Not used in multifile format" },
           { icon: "⬛", title: "Null inputs OK", desc: "Use 'null' for SQL/DB testcase inputs" },
         ].map((item, i) => (
@@ -531,29 +614,52 @@ function MultifileFormatCard() {
 
       {/* Expandable example */}
       {expanded && (
-        <div style={{ position: "relative" }}>
-          <pre style={{
-            background: "#0f172a",
-            color: "#e2e8f0",
-            borderRadius: 10, padding: "14px 16px",
-            fontSize: 11, lineHeight: 1.6,
-            overflowX: "auto", margin: 0,
-            maxHeight: 400, overflowY: "auto",
-            fontFamily: "'Fira Code', 'Cascadia Code', monospace",
-          }}>
-            <code>{MULTIFILE_FORMAT_EXAMPLE}</code>
-          </pre>
-          <button
-            onClick={handleCopy}
-            style={{
-              position: "absolute", top: 10, right: 10,
-              background: copied ? "#10b981" : "rgba(255,255,255,0.1)",
-              border: "1px solid rgba(255,255,255,0.2)",
-              borderRadius: 7, padding: "5px 12px",
-              color: "white", fontSize: 11, fontWeight: 700,
-              cursor: "pointer", transition: "all 0.2s",
-            }}
-          >{copied ? "✓ Copied!" : "📋 Copy"}</button>
+        <div>
+          {/* Example language tabs */}
+          <div style={{ display: "flex", gap: 6, marginBottom: 8 }}>
+            {[
+              { k: "sql", label: "🗄️ SQL (MySQL)" },
+              { k: "js",  label: "🟨 JavaScript (File Based)" },
+            ].map(t => (
+              <button
+                key={t.k}
+                onClick={() => setExample(t.k)}
+                style={{
+                  border: `1.5px solid ${example === t.k ? "#6366f1" : "#e4e7f0"}`,
+                  background: example === t.k ? "rgba(99,102,241,0.08)" : "white",
+                  color: example === t.k ? "#6366f1" : "#6b7280",
+                  borderRadius: 8, padding: "5px 12px",
+                  fontSize: 11, fontWeight: 700, cursor: "pointer",
+                  transition: "all 0.15s",
+                }}
+              >{t.label}</button>
+            ))}
+          </div>
+
+          <div style={{ position: "relative" }}>
+            <pre style={{
+              background: "#0f172a",
+              color: "#e2e8f0",
+              borderRadius: 10, padding: "14px 16px",
+              fontSize: 11, lineHeight: 1.6,
+              overflowX: "auto", margin: 0,
+              maxHeight: 400, overflowY: "auto",
+              fontFamily: "'Fira Code', 'Cascadia Code', monospace",
+            }}>
+              <code>{activeExample}</code>
+            </pre>
+            <button
+              onClick={handleCopy}
+              style={{
+                position: "absolute", top: 10, right: 10,
+                background: copied ? "#10b981" : "rgba(255,255,255,0.1)",
+                border: "1px solid rgba(255,255,255,0.2)",
+                borderRadius: 7, padding: "5px 12px",
+                color: "white", fontSize: 11, fontWeight: 700,
+                cursor: "pointer", transition: "all 0.2s",
+              }}
+            >{copied ? "✓ Copied!" : "📋 Copy"}</button>
+          </div>
         </div>
       )}
 
@@ -562,7 +668,7 @@ function MultifileFormatCard() {
         <span style={{ fontSize: 10, fontWeight: 700, color: "#9ca3af", alignSelf: "center", marginRight: 4 }}>
           Supported:
         </span>
-        {["MySQL (8.0)", "PostgreSQL (13.6)", "Python", "Java (11)", "Java (17)", "Java (21)", "C++", "SQL Server (2019)", "R (3.5)", "Scala", "+ more"].map(lang => (
+        {["MySQL (8.0)", "PostgreSQL (13.6)", "Python", "Java (11)", "Java (17)", "Java (21)", "Javascript File Based", "C++", "SQL Server (2019)", "R (3.5)", "Scala", "+ more"].map(lang => (
           <span key={lang} style={{
             background: "rgba(99,102,241,0.08)",
             border: "1px solid rgba(99,102,241,0.2)",
@@ -599,7 +705,7 @@ export function MultifileUploadSection({
 
   const handleParse = () => {
     if (!pasteInput.trim()) { showAlert("Nothing to parse", "warning"); return; }
-    const { questions, errors } = parseMultifileQuestions(pasteInput);
+    const { questions, errors, warnings } = parseMultifileQuestions(pasteInput);
     if (errors.length > 0) {
       const preview = errors.slice(0, 6).join("\n");
       const more = errors.length > 6 ? `\n...and ${errors.length - 6} more` : "";
@@ -608,7 +714,12 @@ export function MultifileUploadSection({
       return;
     }
     setParsed(questions);
-    showAlert(`✅ Parsed ${questions.length} multifile question(s)!`, "success");
+    if (warnings.length > 0) {
+      const preview = warnings.slice(0, 4).join("\n");
+      showAlert(`✅ Parsed ${questions.length} multifile question(s) with ${warnings.length} warning(s):\n\n${preview}`, "warning");
+    } else {
+      showAlert(`✅ Parsed ${questions.length} multifile question(s)!`, "success");
+    }
   };
 
   const uploadQuestions = async () => {
@@ -710,6 +821,12 @@ export function MultifileUploadSection({
                     color: "#6366f1", padding: "3px 10px", borderRadius: 20, fontSize: 11, fontWeight: 700,
                   }}>💻 {l}</span>
                 ))}
+                {currentQ.blooms && (
+                  <span style={{
+                    background: "rgba(99,102,241,0.08)", border: "1px solid rgba(99,102,241,0.2)",
+                    color: "#6366f1", padding: "3px 10px", borderRadius: 20, fontSize: 11, fontWeight: 700,
+                  }}>🧠 {currentQ.blooms}</span>
+                )}
                 {currentQ.tags.filter(t => t).map(t => (
                   <span key={t} style={{
                     background: "#f3f4f6", color: "#6b7280",
@@ -884,6 +1001,7 @@ export function MultifileUploadSection({
                   {q.languages.map(l => <span key={l} className="cod-lang-pill">{l}</span>)}
                 </span>
                 <span className={`cod-diff-pill cod-diff-${q.difficulty.toLowerCase()}`}>{q.difficulty}</span>
+                {q.blooms && <span className="cod-lang-pill">🧠 {q.blooms}</span>}
                 <span className="cod-parsed-tc">{q.testcases.length} TCs</span>
                 <span style={{
                   fontSize: 10, fontWeight: 700,

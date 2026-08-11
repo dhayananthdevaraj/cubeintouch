@@ -1,5 +1,3 @@
-
-
 import { useState, useEffect } from "react";
 import "./CODSync.css";
 import {
@@ -854,6 +852,20 @@ function ParseErrorsPanel({ errors, warnings, onDismiss }) {
   );
 }
 
+// ─── BLOOM'S TAXONOMY ─────────────────────────────────────────────────────────
+const BLOOMS_LEVELS = ["Knowledge", "Comprehension", "Application", "Analysis", "Synthesis", "Evaluation"];
+
+// UI label (as shown in the platform's own Bloom's dropdown) → backend value sent to the API.
+// Order matches the platform dropdown: Evaluate at top, Remember at bottom.
+const BLOOMS_UI = [
+  { label: "Evaluate",   value: "Evaluation" },
+  { label: "Create",     value: "Synthesis" },
+  { label: "Analyse",    value: "Analysis" },
+  { label: "Apply",      value: "Application" },
+  { label: "Understand", value: "Comprehension" },
+  { label: "Remember",   value: "Knowledge" },
+];
+
 // ─── SUPPORTED LANGUAGE IDENTIFIERS ───────────────────────────────────────────
 // Exact words the platform accepts for LANGUAGE and SOLUTION[...] (CASE-SENSITIVE).
 const ALLOWED_LANGUAGES = [
@@ -879,7 +891,7 @@ function parseQuestions(raw) {
     return { questions, errors, warnings };
   }
 
-  const HEADER_RE = /^(TITLE|DIFFICULTY|LANGUAGE|TAGS|DESCRIPTION|INPUT_FORMAT|OUTPUT_FORMAT|CONSTRAINTS|CODE_STUB\[[^\]]+\]|SOLUTION\[[^\]]+\]|HEADER\[[^\]]+\]|FOOTER\[[^\]]+\]|WHITELIST\[[^\]]+\]|BLACKLIST\[[^\]]+\]|TESTCASE|SAMPLE_IO)\s*:/i;
+  const HEADER_RE = /^(TITLE|DIFFICULTY|LANGUAGE|BLOOMS|TAGS|DESCRIPTION|INPUT_FORMAT|OUTPUT_FORMAT|CONSTRAINTS|CODE_STUB\[[^\]]+\]|SOLUTION\[[^\]]+\]|HEADER\[[^\]]+\]|FOOTER\[[^\]]+\]|WHITELIST\[[^\]]+\]|BLACKLIST\[[^\]]+\]|TESTCASE|SAMPLE_IO)\s*:/i;
 
   blocks.forEach((block, bi) => {
     const qNum    = bi + 1;
@@ -1005,6 +1017,7 @@ function parseQuestions(raw) {
     const title       = get("TITLE");
     const difficulty  = get("DIFFICULTY");
     const langRaw     = get("LANGUAGE");
+    const blooms      = get("BLOOMS") || null;
     const tagsRaw     = get("TAGS");
     const description = get("DESCRIPTION");
     const inputFmt    = get("INPUT_FORMAT");
@@ -1024,6 +1037,9 @@ function parseQuestions(raw) {
     if (!difficulty || !["Easy","Medium","Hard"].includes(difficulty))
       qErrors.push(`Q${qNum}: DIFFICULTY must be Easy, Medium, or Hard (got "${difficulty || "missing"}")`);
     if (!langRaw)     qErrors.push(`Q${qNum}: Missing LANGUAGE`);
+
+    if (blooms && !BLOOMS_LEVELS.includes(blooms))
+      qWarns.push(`Q${qNum}: BLOOMS "${blooms}" is not a standard Bloom's level`);
 
     // ── Language identifier validation (case-sensitive, must be a supported word) ──
     const declaredLangs = langRaw ? langRaw.split(",").map(l => l.trim()).filter(Boolean) : [];
@@ -1073,6 +1089,7 @@ function parseQuestions(raw) {
       questions.push({
         title,
         difficulty,
+        blooms,
         languages: langRaw.split(",").map(l => l.trim()).filter(Boolean),
         tags: tagsRaw ? tagsRaw.split(",").map(t => t.trim()).filter(Boolean) : [""],
         description,
@@ -1141,7 +1158,7 @@ function buildPayload(q, batchConfig, qbId, userId) {
     timelimit: null, memorylimit: null, codesize: null,
     setLimit: false, enable_api: false, outputLimit: null,
     subject_id: batchConfig.subject_id || null,
-    blooms_taxonomy: null, course_outcome: null, program_outcome: null,
+    blooms_taxonomy: q.blooms || batchConfig.blooms || null, course_outcome: null, program_outcome: null,
     hint: [],
     manual_difficulty: batchConfig.manual_difficulty || q.difficulty,
     solution: solutionArray,
@@ -1167,7 +1184,7 @@ export default function CODSyncPlatform({ platform, onBack }) {
   const [tokenInput, setTokenInput] = useState("");
 
   // Batch Config
-  const [batchConfig, setBatchConfig]         = useState({ topic_id:"", sub_topic_id:"", subject_id:"", pcm_combination_id:"", manual_difficulty:"Medium" });
+  const [batchConfig, setBatchConfig]         = useState({ topic_id:"", sub_topic_id:"", subject_id:"", pcm_combination_id:"", blooms:"Comprehension", manual_difficulty:"Medium" });
   const [bcLoading, setBcLoading]             = useState(false);
   const [allSubjects, setAllSubjects]         = useState([]);
   const [allTopics, setAllTopics]             = useState([]);
@@ -1185,6 +1202,8 @@ export default function CODSyncPlatform({ platform, onBack }) {
   const [pcmLevelSel, setPcmLevelSel]         = useState(null);
   const [pcmSubjectSearch, setPcmSubjectSearch] = useState("");
   const [pcmTopicSearch, setPcmTopicSearch]     = useState("");
+  const [bloomsSearch, setBloomsSearch]         = useState("");
+  const [bloomsFocused, setBloomsFocused]       = useState(false);
 
   // QB Step
   const [qbMode, setQbMode]                   = useState("create");
@@ -1281,10 +1300,11 @@ export default function CODSyncPlatform({ platform, onBack }) {
   };
 
   const resetAll = () => {
-    setBatchConfig({ topic_id:"", sub_topic_id:"", subject_id:"", pcm_combination_id:"", manual_difficulty:"Medium" });
+    setBatchConfig({ topic_id:"", sub_topic_id:"", subject_id:"", pcm_combination_id:"", blooms:"Comprehension", manual_difficulty:"Medium" });
     setSelSubject(null); setSelTopic(null); setSelSubTopic(null);
     setPcmSubjectSel(null); setPcmTopicSel(null); setPcmLevelSel(null);
     setSubTopicSearch(""); setPcmSubjectSearch(""); setPcmTopicSearch("");
+    setBloomsSearch(""); setBloomsFocused(false);
     resetQBStep(); resetUpload();
   };
 
@@ -1440,6 +1460,7 @@ export default function CODSyncPlatform({ platform, onBack }) {
               <div className="cod-preview-meta">
                 <span className="cod-preview-difficulty">{currentQ.difficulty}</span>
                 {currentQ.languages.map(l => <span key={l} className="cod-preview-lang">💻 {l}</span>)}
+                {currentQ.blooms && <span className="cod-preview-lang">🧠 {currentQ.blooms}</span>}
                 {currentQ.tags.filter(t => t).map(t => <span key={t} className="cod-preview-tag">🏷️ {t}</span>)}
               </div>
               <div className="cod-preview-section"><h4>Title</h4><p className="cod-preview-title-text">{currentQ.title}</p></div>
@@ -1621,7 +1642,7 @@ export default function CODSyncPlatform({ platform, onBack }) {
                 <span>🗂 {allTopics.length} topics</span><span>·</span>
                 <span>📌 {allSubTopics.length} sub topics</span><span>·</span>
                 <span>🔗 {pcmCombos.length} PCM combos</span>
-                <button onClick={() => { setBatchConfig({ topic_id:"", sub_topic_id:"", subject_id:"", pcm_combination_id:"", manual_difficulty:"Medium" }); setSelSubject(null); setSelTopic(null); setSelSubTopic(null); setPcmSubjectSel(null); setPcmTopicSel(null); setPcmLevelSel(null); setSubTopicSearch(""); setPcmSubjectSearch(""); setPcmTopicSearch(""); }} className="cod-button cod-button-secondary cod-button-small">↺ Reset</button>
+                <button onClick={() => { setBatchConfig({ topic_id:"", sub_topic_id:"", subject_id:"", pcm_combination_id:"", blooms:"Comprehension", manual_difficulty:"Medium" }); setSelSubject(null); setSelTopic(null); setSelSubTopic(null); setPcmSubjectSel(null); setPcmTopicSel(null); setPcmLevelSel(null); setSubTopicSearch(""); setPcmSubjectSearch(""); setPcmTopicSearch(""); setBloomsSearch(""); setBloomsFocused(false); }} className="cod-button cod-button-secondary cod-button-small">↺ Reset</button>
               </div>
               <div className="cod-bc-sections">
                 <div className="cod-bc-panel">
@@ -1745,6 +1766,52 @@ export default function CODSyncPlatform({ platform, onBack }) {
                 </div>
               </div>
 
+              {/* Bloom's default — searchable dropdown, matches the platform's own Bloom's picker */}
+              <div className="cod-bc-panel">
+                <div className="cod-bc-panel-title">🧠 Default Bloom's Taxonomy <span className="cod-required">*</span></div>
+                <input
+                  type="text"
+                  value={bloomsSearch}
+                  onChange={e => setBloomsSearch(e.target.value)}
+                  placeholder="Search Bloom's level..."
+                  className="cod-input cod-search-input"
+                  onFocus={() => setBloomsFocused(true)}
+                  onBlur={() => setTimeout(() => setBloomsFocused(false), 300)}
+                />
+                {(bloomsSearch.trim().length > 0 || bloomsFocused) && (
+                  <div className="cod-bc-list cod-bc-subtopic-list">
+                    {(() => {
+                      const term     = bloomsSearch.toLowerCase().trim();
+                      const filtered = BLOOMS_UI.filter(b => b.label.toLowerCase().includes(term));
+                      if (filtered.length === 0) return <div className="cod-bc-empty" style={{border:"none"}}>No results for "{bloomsSearch}"</div>;
+                      return filtered.map(b => (
+                        <div
+                          key={b.value}
+                          className={`cod-bc-item ${batchConfig.blooms === b.value ? "selected" : ""}`}
+                          onMouseDown={e => {
+                            e.preventDefault();
+                            setBatchConfig(p => ({ ...p, blooms: b.value }));
+                            setBloomsSearch("");
+                            setBloomsFocused(false);
+                          }}
+                        >
+                          <span className="cod-st-name">{b.label}</span>
+                          <span className="cod-st-breadcrumb"><span className="cod-st-subject">{b.value}</span></span>
+                        </div>
+                      ));
+                    })()}
+                  </div>
+                )}
+                <div className="cod-bc-resolved">
+                  <div className="cod-bc-resolved-row">
+                    <span className="cod-bc-resolved-label">Selected</span>
+                    <span className="cod-bc-resolved-val">{BLOOMS_UI.find(b => b.value === batchConfig.blooms)?.label || "—"}</span>
+                    <code className="cod-bc-resolved-id">{batchConfig.blooms}</code>
+                  </div>
+                </div>
+                <p className="cod-diff-note">Used when a question doesn't specify its own BLOOMS line. Shown as its Bloom's-wheel label, sent to the API as its backend value.</p>
+              </div>
+
               {batchConfig.subject_id && batchConfig.topic_id && batchConfig.sub_topic_id && batchConfig.pcm_combination_id && (
                 <div className="cod-bc-summary">
                   {[
@@ -1824,7 +1891,7 @@ export default function CODSyncPlatform({ platform, onBack }) {
                   ))}
                 </div>
                 <div style={{ fontSize:11, color:"#78350f", lineHeight:1.6 }}>
-                  The <code>LANGUAGE:</code> line and every <code>SOLUTION[...]</code> block must use one of the words above, spelled exactly (e.g. <code>Java21</code>, not <code>java21</code> or <code>Java 21</code>). Each question's <code>SOLUTION[x]</code> language must match the <code>LANGUAGE</code> declared for that question.
+                  The <code>LANGUAGE:</code> line and every <code>SOLUTION[...]</code> block must use one of the words above, spelled exactly (e.g. <code>Java21</code>, not <code>java21</code> or <code>Java 21</code>). Each question's <code>SOLUTION[x]</code> language must match the <code>LANGUAGE</code> declared for that question. Add an optional <code>BLOOMS:</code> line (e.g. <code>BLOOMS: Application</code>) to override the batch default per question.
                 </div>
               </div>
 
@@ -1885,6 +1952,7 @@ export default function CODSyncPlatform({ platform, onBack }) {
                         <span className="cod-parsed-qtitle">{q.title}</span>
                         <span className="cod-parsed-langs">{q.languages.map(l => <span key={l} className="cod-lang-pill">{l}</span>)}</span>
                         <span className={`cod-diff-pill cod-diff-${q.difficulty.toLowerCase()}`}>{q.difficulty}</span>
+                        {q.blooms && <span className="cod-lang-pill">🧠 {q.blooms}</span>}
                         <span className="cod-parsed-tc">{q.testcases.length} TCs</span>
                         <span style={{
                           fontSize:10, fontWeight:700,
