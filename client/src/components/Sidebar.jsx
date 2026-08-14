@@ -151,6 +151,12 @@ export default function Sidebar() {
   <span className="nav-indicator"></span>
 </NavLink>
 
+<NavLink to="/blank-sync" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
+  <span className="nav-icon">{"✏️"}</span>
+  <span className="nav-text">BlankSync</span>
+  <span className="nav-indicator"></span>
+</NavLink>
+
         {/* specQ — External Tool */}
         <a  
           href="https://qc-automation-frontend.onrender.com/"

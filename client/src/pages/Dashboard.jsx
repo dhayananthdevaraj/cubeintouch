@@ -147,6 +147,12 @@ export default function Dashboard() {
   path: '/file-sync', status: 'active',
   gradient: 'linear-gradient(135deg, #7950f2 0%, #4facfe 100%)', span: 1,
 },
+{
+  id: 'blank-sync', icon: '✏️', title: 'BlankSync',
+  description: 'Bulk upload fill-in-the-blank questions to University question banks.',
+  path: '/blank-sync', status: 'active',
+  gradient: 'linear-gradient(135deg, #f59f00 0%, #f76707 100%)', span: 1,
+},
     {
       id: 'reports',
       icon: '📊',

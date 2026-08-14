@@ -97,6 +97,8 @@ export default function Topbar() {
         icon: "⚗️",
         subtitle: "Automated QC · AI-Powered Validation"
       };
+      case "/blank-sync":
+      return { title: "BlankSync", icon: "✏️", subtitle: "Upload Fill-in-the-Blank Questions · University" };
  
       default:
         return {

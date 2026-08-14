@@ -20,6 +20,7 @@ import Packager from "./pages/Packager";
 import DupDetect from "./pages/DupDetect";
 import WeightGen from "./pages/WeightGen";
 import FileSync from "./pages/FileSync";
+import BlankSync from "./pages/Blanksync";
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -52,6 +53,7 @@ export default function App() {
                  <Route path="/dup-detect" element={<DupDetect />} />
                  <Route path="/weight-gen" element={<WeightGen />} />
                  <Route path="/file-sync" element={<FileSync />} />
+                 <Route path="/blank-sync" element={<BlankSync />} />
               </Routes>
             </div>
           </div>
