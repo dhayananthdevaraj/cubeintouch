@@ -485,7 +485,6 @@
 //       : null,
 //   }));
 // }
-
 import Groq from "groq-sdk";
 import dotenv from "dotenv";
 
@@ -791,9 +790,20 @@ async function callGroq(provider, { model, messages, temperature, max_tokens }) 
   const controller      = new AbortController();
   const timer           = setTimeout(() => controller.abort(), GROQ_TIMEOUT_MS);
 
+  // openai/gpt-oss-* are reasoning models — they spend tokens on hidden chain-of-thought
+  // before writing the final answer. At this queue's default max_tokens (500), they can
+  // burn the entire budget on reasoning and return empty `content` (confirmed via Groq's
+  // own reasoning_effort docs + community reports of the same symptom). "low" keeps the
+  // hidden reasoning brief so the budget goes to the actual answer, and
+  // include_reasoning:false keeps any reasoning text out of the response we don't parse.
+  const isReasoningModel = model.includes("gpt-oss");
+
   try {
     const res = await provider.client.chat.completions.create(
-      { model, messages, temperature, max_tokens },
+      {
+        model, messages, temperature, max_tokens,
+        ...(isReasoningModel ? { reasoning_effort: "low", include_reasoning: false } : {}),
+      },
       { signal: controller.signal }
     );
     const content = res.choices[0].message.content;
