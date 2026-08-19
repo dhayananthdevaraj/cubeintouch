@@ -92,9 +92,12 @@ int classifyGrade(int marks) {
 
 WHITELIST[C]:
 classifyGrade,printf
+Sample3,Sample4
+Sample5,Sample6,Sample7
 
 BLACKLIST[C]:
 Sample1,Sample2
+Sample3,Sample4
 
 
 TESTCASE: 95 | Grade: O (Outstanding)\nGrade Points: 10 | Hard | 25
