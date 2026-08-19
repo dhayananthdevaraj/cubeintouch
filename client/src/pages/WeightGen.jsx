@@ -23,6 +23,14 @@ const FRAMEWORKS = {
     defaultWeight: 1,
     regex: /\[Test[^\]]*\]\s*(?:\[[^\]]*\]\s*)*public\s+(?:async\s+)?(?:void|Task)\s+([A-Za-z0-9_]+)\s*\(/g,
   },
+  puppeteer: {
+    label: "Puppeteer",
+    sub: "console.log TESTCASE",
+    icon: "🎭",
+    defaultWeight: 1,
+    ext: "js",
+    regex: /console\.log\(\s*['"`]TESTCASE:([A-Za-z0-9_]+):(?:success|failure)['"`]\s*\)/g,
+  },
 };
 
 export default function WeightGen() {
@@ -71,10 +79,15 @@ export default function WeightGen() {
     const { regex } = FRAMEWORKS[framework];
     regex.lastIndex = 0;
 
+    const seen = new Set();
     const testNames = [];
     let match;
     while ((match = regex.exec(sourceCode)) !== null) {
-      testNames.push(match[1]);
+      // Same testcase name can appear twice (e.g. Puppeteer's success/failure branches) — keep first occurrence only
+      if (!seen.has(match[1])) {
+        seen.add(match[1]);
+        testNames.push(match[1]);
+      }
     }
 
     if (testNames.length === 0) {
@@ -213,7 +226,7 @@ export default function WeightGen() {
             <span className="wg-editor-dots">
               <span></span><span></span><span></span>
             </span>
-            <span className="wg-editor-label">test-source.{framework === "dotnet" ? "cs" : framework === "react" ? "test.jsx" : "java"}</span>
+            <span className="wg-editor-label">test-source.{FRAMEWORKS[framework].ext || (framework === "dotnet" ? "cs" : framework === "react" ? "test.jsx" : "java")}</span>
             <span className="wg-editor-lines">{lineCount} lines</span>
           </div>
           <textarea

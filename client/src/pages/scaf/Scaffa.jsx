@@ -2,7 +2,181 @@
 import { useState } from "react";
 import ReactScaf from "./ReactScaf";
 import AngularScaf from "./AngularScaf";
+import apiConfig from "../../apiConfig";
 import "./Scaffa.css";
+
+const validateUrl = (url) =>
+  /^https:\/\/808[0-9]{1}-[\w\d]+\.premiumproject\.examly\.io\/?$/.test(url);
+
+/* ══ Quick Folder Download — independent of the React/Angular tabs ══ */
+function QuickFolderDownload() {
+  const [repoUrl, setRepoUrl]                 = useState("");
+  const [urlError, setUrlError]               = useState("");
+  const [folderPath, setFolderPath]           = useState("");
+  const [pathHistory, setPathHistory]         = useState([]);
+  const [folders, setFolders]                 = useState([]);
+  const [fetchingFolders, setFetchingFolders] = useState(false);
+  const [downloadingFolder, setDownloadingFolder] = useState(null);
+  const [status, setStatus]                   = useState({ text: "", type: "success" });
+
+  const isValidUrl = validateUrl(repoUrl);
+
+  const showStatus = (text, type = "success") => {
+    setStatus({ text, type });
+    setTimeout(() => setStatus({ text: "", type: "success" }), 3500);
+  };
+
+  const handleUrlChange = (e) => {
+    const val = e.target.value;
+    setRepoUrl(val);
+    setUrlError(
+      val && !validateUrl(val)
+        ? "Invalid URL — format: https://808*-...premiumproject.examly.io/"
+        : ""
+    );
+  };
+
+  const fetchFolders = async (path = "") => {
+    setFetchingFolders(true);
+    try {
+      const res  = await fetch(apiConfig.FETCH_FOLDERS, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ githubUrl: repoUrl, path }),
+      });
+      const data = await res.json();
+      setFolders(data.folders || []);
+      setFolderPath(path);
+    } catch (err) {
+      console.error("Folder fetch error:", err);
+      showStatus("Failed to fetch folders.", "error");
+    } finally {
+      setFetchingFolders(false);
+    }
+  };
+
+  const handleFolderClick = (folder) => {
+    const newPath = folderPath ? `${folderPath}/${folder}` : folder;
+    setPathHistory((h) => [...h, folderPath]);
+    fetchFolders(newPath);
+  };
+
+  const handleBack = () => {
+    const prev = pathHistory[pathHistory.length - 1] ?? "";
+    setPathHistory((h) => h.slice(0, -1));
+    fetchFolders(prev);
+  };
+
+  const handleClear = () => {
+    setRepoUrl(""); setUrlError("");
+    setFolders([]); setFolderPath(""); setPathHistory([]);
+  };
+
+  const handleDownloadFolder = async (folder, fullPath) => {
+    setDownloadingFolder(fullPath);
+    try {
+      const res = await fetch(apiConfig.DOWNLOAD_FOLDER, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ githubUrl: repoUrl, folderPath: fullPath, zipFileName: folder }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Server error");
+      }
+
+      const blob = await res.blob();
+      const url  = window.URL.createObjectURL(blob);
+      const a    = document.createElement("a");
+      a.href     = url;
+      a.download = `${folder}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+
+      showStatus(`✅ "${folder}" folder downloaded as ZIP!`);
+    } catch (err) {
+      console.error("Folder download error:", err);
+      showStatus(`Failed to download "${folder}". ${err.message}`, "error");
+    } finally {
+      setDownloadingFolder(null);
+    }
+  };
+
+  return (
+    <div className="sc-panel">
+      <h3 className="sc-panel-title">📦 Quick Folder Download</h3>
+
+      <label className="sc-label">Repo / Workspace URL</label>
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+        <input
+          className={`sc-input ${urlError ? "error" : ""}`}
+          style={{ flex: "1 1 320px" }}
+          value={repoUrl}
+          onChange={handleUrlChange}
+          placeholder="https://808*-...premiumproject.examly.io/"
+        />
+        <button
+          className="sc-btn sc-btn-primary"
+          onClick={() => { setPathHistory([]); fetchFolders(""); }}
+          disabled={!isValidUrl || fetchingFolders}
+        >
+          {fetchingFolders ? "Fetching..." : "Fetch Folders"}
+        </button>
+        {repoUrl && (
+          <button className="sc-btn sc-btn-ghost" onClick={handleClear}>Clear</button>
+        )}
+      </div>
+      {urlError && <p className="sc-error-msg">⚠ {urlError}</p>}
+      {status.text && (
+        <p className="sc-error-msg" style={{ color: status.type === "error" ? "var(--sc-rose)" : "#34d399" }}>
+          {status.text}
+        </p>
+      )}
+
+      {folders.length > 0 && (
+        <div className="sc-folder-browser">
+          <div className="sc-folder-header">
+            <span className="sc-folder-path">
+              root{folderPath && folderPath.split("/").map((seg) => ` / ${seg}`).join("")}
+            </span>
+            {pathHistory.length > 0 && (
+              <button className="sc-spec-btn" onClick={handleBack}>← Back</button>
+            )}
+          </div>
+          <div className="sc-folder-list">
+            {folders.map((folder, i) => {
+              const fullPath      = folderPath ? `${folderPath}/${folder}` : folder;
+              const isDownloading = downloadingFolder === fullPath;
+              return (
+                <div key={i} className="sc-folder-item">
+                  <div
+                    className="sc-folder-item-left"
+                    onClick={() => handleFolderClick(folder)}
+                    style={{ cursor: "pointer" }}
+                  >
+                    <span className="sc-folder-icon">📁</span>
+                    <span>{folder}</span>
+                  </div>
+                  <button
+                    className="sc-dl-btn"
+                    onClick={() => handleDownloadFolder(folder, fullPath)}
+                    disabled={isDownloading || !!downloadingFolder}
+                    title={`Download entire "${folder}" folder as ZIP`}
+                  >
+                    {isDownloading ? "Zipping..." : "📦 Download"}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 const TABS = [
   {
@@ -71,6 +245,9 @@ export default function Scaffa() {
           <span>Ready</span>
         </div>
       </div>
+
+      {/* Quick Folder Download — repo URL → browse → download any folder as ZIP */}
+      <QuickFolderDownload />
 
       {/* Tab Selector */}
       <div className="scaffa-tabs-wrap">

@@ -805,6 +805,30 @@
   box-shadow: 0 0 12px rgba(59,130,246,0.15);
 }
 
+.sc-dl-btn {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(16,185,129,0.25);
+  background: rgba(16,185,129,0.08);
+  color: #34d399;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-family: var(--sc-mono);
+  transition: all var(--sc-dur);
+  letter-spacing: 0.04em;
+}
+
+.sc-dl-btn:hover:not(:disabled) {
+  background: rgba(16,185,129,0.16);
+  border-color: rgba(16,185,129,0.45);
+  box-shadow: 0 0 12px rgba(16,185,129,0.18);
+}
+
+.sc-dl-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
 /* ══════════════════════════════════════════════════════════════
    SPEC FILE LIST
 ══════════════════════════════════════════════════════════════ */

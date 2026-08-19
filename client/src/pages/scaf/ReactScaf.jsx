@@ -66,6 +66,9 @@ export default function ReactScaf() {
   const [zipFileName, setZipFileName]         = useState("");
   const [loading, setLoading]                 = useState(false);
 
+  // ── Folder download (NEW) ──────────────────────────────────
+  const [downloadingFolder, setDownloadingFolder] = useState(null);
+
   // ── Toast ─────────────────────────────────────────────────
   const [toast, setToast]                     = useState({ show: false, message: "", type: "success" });
 
@@ -213,6 +216,44 @@ export default function ReactScaf() {
     }
   };
 
+  // ── NEW: Download entire folder (all file types) as ZIP ───
+  const handleDownloadFolder = async (folder, fullPath) => {
+    setDownloadingFolder(fullPath);
+    try {
+      const res = await fetch(apiConfig.DOWNLOAD_FOLDER, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          githubUrl,
+          folderPath: fullPath,
+          zipFileName: folder,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Server error");
+      }
+
+      const blob = await res.blob();
+      const url  = window.URL.createObjectURL(blob);
+      const a    = document.createElement("a");
+      a.href     = url;
+      a.download = `${folder}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+
+      showToast(`✅ "${folder}" folder downloaded as ZIP!`);
+    } catch (err) {
+      console.error("Folder download error:", err);
+      showToast(`Failed to download "${folder}". ${err.message}`, "error");
+    } finally {
+      setDownloadingFolder(null);
+    }
+  };
+
   // ── Weight ───────────────────────────────────────────────
 
   const parseTestNames = (code) => {
@@ -320,22 +361,38 @@ export default function ReactScaf() {
             </div>
             <div className="rsc-browser-list">
               {folders.map((folder, i) => {
-                const fullPath = folderPath ? `${folderPath}/${folder}` : folder;
+                const fullPath      = folderPath ? `${folderPath}/${folder}` : folder;
+                const isDownloading = downloadingFolder === fullPath;
                 return (
                   <div key={i} className="rsc-folder-row">
                     <div className="rsc-folder-name" onClick={() => handleFolderClick(folder)}>
                       <span className="rsc-folder-icon">📁</span>
                       <span>{folder}</span>
                     </div>
-                    <button
-                      className="rsc-view-btn"
-                      onClick={() => fetchSpecFiles(fullPath)}
-                      disabled={fetchingSpecs}
-                    >
-                      {fetchingSpecs && specFolder === fullPath
-                        ? <span className="rsc-btn-spinner rsc-btn-spinner--sm" />
-                        : "View .js/.ts"}
-                    </button>
+                    <div className="rsc-folder-actions">
+                      <button
+                        className="rsc-view-btn"
+                        onClick={() => fetchSpecFiles(fullPath)}
+                        disabled={fetchingSpecs}
+                      >
+                        {fetchingSpecs && specFolder === fullPath
+                          ? <span className="rsc-btn-spinner rsc-btn-spinner--sm" />
+                          : "View .js/.ts"}
+                      </button>
+
+                      {/* NEW: download entire folder as ZIP */}
+                      <button
+                        className="rsc-dl-folder-btn"
+                        title={`Download entire "${folder}" folder as ZIP`}
+                        onClick={() => handleDownloadFolder(folder, fullPath)}
+                        disabled={isDownloading || !!downloadingFolder}
+                      >
+                        {isDownloading
+                          ? <><span className="rsc-btn-spinner rsc-btn-spinner--sm" /> Zipping...</>
+                          : <>📦 Download Folder</>
+                        }
+                      </button>
+                    </div>
                   </div>
                 );
               })}
