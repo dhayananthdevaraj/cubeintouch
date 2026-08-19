@@ -2187,7 +2187,6 @@
 //     </div>
 //   );
 // }
-
 import { useState, useEffect } from "react";
 import "./CODSync.css";
 import {
@@ -4098,6 +4097,7 @@ export default function CODSyncPlatform({ platform, onBack }) {
                   <strong>WHITELIST[Lang]:</strong> / <strong>BLACKLIST[Lang]:</strong> — every comma-separated term on one line becomes a single combined list; add a second line under the same block to create a second, separate list:
                   <br />
                   <code style={{ display: "block", marginTop: 4, background: "#fff7ed", padding: "6px 8px", borderRadius: 4, whiteSpace: "pre" }}>{"WHITELIST[Java21]:\ntry,catch,ArithmeticException\nsample1,sample2,sample3"}</code>
+                  <code style={{ display: "block", marginTop: 6, background: "#fff7ed", padding: "6px 8px", borderRadius: 4, whiteSpace: "pre" }}>{"BLACKLIST[Java21]:\nSystem.exit\nRuntime.getRuntime\nreflection,unsafe"}</code>
                 </div>
               </div>
 
