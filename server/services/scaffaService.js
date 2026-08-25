@@ -16,8 +16,18 @@ const angularAppDir = path.join(templateDir, "angularapp");
 const karmaDir      = path.join(templateDir, "karma");
 
 // ── GitHub config ─────────────────────────────────────────────────────────────
-const GITHUB_ORG   = process.env.GITHUB_ORG   || "iamneo-production";
+// Workspace repos can live under either org — resolve per-repo and cache the result.
+const GITHUB_ORGS = [
+  process.env.GITHUB_ORG   || "iamneo-production",
+  process.env.GITHUB_ORG_2 || "iamneo-production-2",
+];
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+
+const ghHeaders = {
+  Authorization: `Bearer ${GITHUB_TOKEN}`,
+  Accept:        "application/vnd.github.v3+json",
+  "User-Agent":  "Scaffa-SupportHub",
+};
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -28,16 +38,31 @@ function extractRepoKey(githubUrl) {
   return match[1];
 }
 
+// repoKey → org that actually holds it, so we don't re-probe both orgs on every file/folder call
+const repoOrgCache = new Map();
+
+/** Find which configured org actually holds this repo (falls back to the first org if neither responds) */
+async function resolveOrgForRepo(repoKey) {
+  if (repoOrgCache.has(repoKey)) return repoOrgCache.get(repoKey);
+
+  for (const org of GITHUB_ORGS) {
+    const res = await fetch(`https://api.github.com/repos/${org}/${repoKey}`, { headers: ghHeaders });
+    if (res.ok) {
+      repoOrgCache.set(repoKey, org);
+      return org;
+    }
+  }
+
+  console.warn(`⚠️  Repo "${repoKey}" not found under any of: ${GITHUB_ORGS.join(", ")}`);
+  repoOrgCache.set(repoKey, GITHUB_ORGS[0]);
+  return GITHUB_ORGS[0];
+}
+
 /** GitHub API — list folder contents */
 async function listGitHubFolder(repoKey, folderPath = "") {
-  const url = `https://api.github.com/repos/${GITHUB_ORG}/${repoKey}/contents/${folderPath}`;
-  const res = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${GITHUB_TOKEN}`,
-      Accept:        "application/vnd.github.v3+json",
-      "User-Agent":  "Scaffa-SupportHub",
-    },
-  });
+  const org = await resolveOrgForRepo(repoKey);
+  const url = `https://api.github.com/repos/${org}/${repoKey}/contents/${folderPath}`;
+  const res = await fetch(url, { headers: ghHeaders });
   if (!res.ok) {
     console.warn(`⚠️  GitHub API ${res.status} for ${folderPath}`);
     return [];
@@ -48,14 +73,9 @@ async function listGitHubFolder(repoKey, folderPath = "") {
 
 /** GitHub API — fetch single file content as utf-8 string */
 async function fetchGitHubFile(repoKey, filePath) {
-  const url = `https://api.github.com/repos/${GITHUB_ORG}/${repoKey}/contents/${filePath}`;
-  const res = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${GITHUB_TOKEN}`,
-      Accept:        "application/vnd.github.v3+json",
-      "User-Agent":  "Scaffa-SupportHub",
-    },
-  });
+  const org = await resolveOrgForRepo(repoKey);
+  const url = `https://api.github.com/repos/${org}/${repoKey}/contents/${filePath}`;
+  const res = await fetch(url, { headers: ghHeaders });
   if (!res.ok) return null;
   const json = await res.json();
   return json.content ? Buffer.from(json.content, "base64").toString("utf-8") : null;
