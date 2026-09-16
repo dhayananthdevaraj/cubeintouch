@@ -1,6 +1,6 @@
 const puppeteer = require('puppeteer');
 // Uncomment the below line if you need to set the CHROME_BIN environment variable to Puppeteer's executable path
-process.env.CHROME_BIN = puppeteer.executablePath();
+// process.env.CHROME_BIN = puppeteer.executablePath();
 module.exports = function (config) {
   config.set({
     basePath: '',

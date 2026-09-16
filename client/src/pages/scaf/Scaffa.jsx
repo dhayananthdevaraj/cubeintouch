@@ -2,6 +2,8 @@
 import { useState } from "react";
 import ReactScaf from "./ReactScaf";
 import AngularScaf from "./AngularScaf";
+import SpringScaf from "./SpringScaf";
+import AngularSpringScaf from "./AngularSpringScaf";
 import apiConfig from "../../apiConfig";
 import "./Scaffa.css";
 
@@ -198,8 +200,14 @@ const TABS = [
     label: "SpringBoot Scaf",
     icon: "🍃",
     color: "#6db33f",
-    desc: "Coming soon",
-    disabled: true,
+    desc: "Fetch a JUnit test file from workspace & generate springapp+junit ZIP",
+  },
+  {
+    id: "angular-springboot",
+    label: "Angular + SpringBoot",
+    icon: "🧩",
+    color: "#6d3fc2",
+    desc: "Combined ZIP — angularapp + karma + springapp + junit",
   },
   {
     id: "dotnet",
@@ -271,7 +279,9 @@ export default function Scaffa() {
       <div className="scaffa-content">
         {activeTab === "react" && <ReactScaf />}
         {activeTab === "angular" && <AngularScaf />}
-        {(activeTab === "springboot" || activeTab === "dotnet" || activeTab === "puppeteer") && (
+        {activeTab === "springboot" && <SpringScaf />}
+        {activeTab === "angular-springboot" && <AngularSpringScaf />}
+        {(activeTab === "dotnet" || activeTab === "puppeteer") && (
           <div className="scaffa-coming-soon">
             <div className="coming-soon-icon">🚧</div>
             <h3>Coming Soon</h3>

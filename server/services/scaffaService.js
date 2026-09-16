@@ -14,6 +14,20 @@ const reactDir      = path.join(templateDir, "react");
 const reactAppDir   = path.join(templateDir, "reactapp");
 const angularAppDir = path.join(templateDir, "angularapp");
 const karmaDir      = path.join(templateDir, "karma");
+const springAppDir  = path.join(templateDir, "springapp");
+const junitDir      = path.join(templateDir, "junit");
+
+// The one file a SpringBoot scaffold's test content actually replaces — same
+// path Examly's own grading runtime expects (com.examly.springapp package).
+const SPRING_TEST_RELATIVE_PATH = path.join("test", "java", "com", "examly", "springapp", "SpringappApplicationTests.java");
+
+// springapp/ ships with a local `target/` (Maven build output) from whoever set
+// the template up — never copy that into a generated scaffold, it's build
+// artifacts, not source, same reasoning as excluding node_modules elsewhere.
+function skipMavenTarget(src) {
+  const rel = path.relative(springAppDir, src);
+  return rel !== "target" && !rel.startsWith(`target${path.sep}`);
+}
 
 // ── GitHub config ─────────────────────────────────────────────────────────────
 // Workspace repos can live under either org — resolve per-repo and cache the result.
@@ -136,7 +150,7 @@ function buildKarmaScript(files, testNamesMap) {
     "#!/bin/bash",
     `export NVM_DIR="/usr/local/nvm"`,
     `[ -s "$NVM_DIR/nvm.sh" ] && \\. "$NVM_DIR/nvm.sh"`,
-    "nvm use 14",
+    "nvm use 20",
     "export CHROME_BIN=/usr/bin/chromium",
     "",
     `if [ ! -d "/home/coder/project/workspace/angularapp" ]; then`,
@@ -226,8 +240,9 @@ export async function fetchSpecFiles(githubUrl, folderName, type = "angular") {
   const repoKey = extractRepoKey(githubUrl);
 
   const EXTENSIONS = {
-    angular: [".spec.ts"],
-    react:   [".test.js", ".test.ts", ".test.jsx", ".test.tsx", ".spec.js", ".spec.ts"],
+    angular:    [".spec.ts"],
+    react:      [".test.js", ".test.ts", ".test.jsx", ".test.tsx", ".spec.js", ".spec.ts"],
+    springboot: [".java"],
   };
 
   const extensions = EXTENSIONS[type] || EXTENSIONS.angular;
@@ -300,6 +315,75 @@ export async function generateAngularZip(files, zipFileName) {
   ]);
 
   console.log(`✅ Angular ZIP ready: ${zipFileName}.zip`);
+  return { zipPath, tempDir };
+}
+
+/**
+ * Generate SpringBoot scaffold ZIP — copies the springapp/junit templates as-is
+ * and overwrites the one test file (SpringappApplicationTests.java) with the
+ * content the user picked from their workspace (or pasted/uploaded locally).
+ */
+export async function generateSpringBootZip(testCase, zipFileName) {
+  const tempDir       = await fs.mkdtemp(path.join(os.tmpdir(), "scaffa-springboot-"));
+  const tempSpringDir = path.join(tempDir, "springapp");
+  const tempJunitDir  = path.join(tempDir, "junit");
+
+  await fs.copy(springAppDir, tempSpringDir, { filter: skipMavenTarget });
+  await fs.copy(junitDir,     tempJunitDir);
+
+  const targetTestFile = path.join(tempJunitDir, SPRING_TEST_RELATIVE_PATH);
+  await fs.ensureDir(path.dirname(targetTestFile));
+  await fs.writeFile(targetTestFile, testCase, "utf8");
+
+  const zipPath = path.join(tempDir, `${zipFileName}.zip`);
+  await buildZip(zipPath, [
+    { dir: tempSpringDir, name: `${zipFileName}/springapp` },
+    { dir: tempJunitDir,  name: `${zipFileName}/junit` },
+  ]);
+
+  console.log(`✅ SpringBoot ZIP ready: ${zipFileName}.zip`);
+  return { zipPath, tempDir };
+}
+
+/**
+ * Generate a COMBINED Angular + SpringBoot scaffold ZIP — same Angular/karma
+ * handling as generateAngularZip, plus the same single-file SpringBoot swap as
+ * generateSpringBootZip, all four folders packed into one zip.
+ */
+export async function generateAngularSpringBootZip(specFiles, javaTestCase, zipFileName) {
+  const tempDir           = await fs.mkdtemp(path.join(os.tmpdir(), "scaffa-angular-springboot-"));
+  const tempAngularAppDir = path.join(tempDir, "angularapp");
+  const tempKarmaDir      = path.join(tempDir, "karma");
+  const tempSpringDir     = path.join(tempDir, "springapp");
+  const tempJunitDir      = path.join(tempDir, "junit");
+
+  await fs.copy(angularAppDir, tempAngularAppDir);
+  await fs.copy(karmaDir,      tempKarmaDir);
+  await fs.copy(springAppDir,  tempSpringDir, { filter: skipMavenTarget });
+  await fs.copy(junitDir,      tempJunitDir);
+
+  const testNamesMap = {};
+  for (const file of specFiles) {
+    await fs.writeFile(path.join(tempKarmaDir, file.originalname), file.buffer);
+    testNamesMap[file.originalname] = extractTestNames(file.buffer.toString());
+    console.log(`  ✅ Spec file: ${file.originalname} (${testNamesMap[file.originalname].length} tests)`);
+  }
+  const karmaScript = buildKarmaScript(specFiles, testNamesMap);
+  await fs.writeFile(path.join(tempKarmaDir, "karma.sh"), karmaScript, "utf8");
+
+  const targetTestFile = path.join(tempJunitDir, SPRING_TEST_RELATIVE_PATH);
+  await fs.ensureDir(path.dirname(targetTestFile));
+  await fs.writeFile(targetTestFile, javaTestCase, "utf8");
+
+  const zipPath = path.join(tempDir, `${zipFileName}.zip`);
+  await buildZip(zipPath, [
+    { dir: tempAngularAppDir, name: `${zipFileName}/angularapp` },
+    { dir: tempKarmaDir,      name: `${zipFileName}/karma` },
+    { dir: tempSpringDir,     name: `${zipFileName}/springapp` },
+    { dir: tempJunitDir,      name: `${zipFileName}/junit` },
+  ]);
+
+  console.log(`✅ Angular+SpringBoot ZIP ready: ${zipFileName}.zip`);
   return { zipPath, tempDir };
 }
 

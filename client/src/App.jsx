@@ -21,6 +21,7 @@ import DupDetect from "./pages/DupDetect";
 import WeightGen from "./pages/WeightGen";
 import FileSync from "./pages/FileSync";
 import BlankSync from "./pages/BlankSync";
+import TestPacking from "./pages/TestPacking";
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -54,6 +55,7 @@ export default function App() {
                  <Route path="/weight-gen" element={<WeightGen />} />
                  <Route path="/file-sync" element={<FileSync />} />
                  <Route path="/blank-sync" element={<BlankSync />} />
+                 <Route path="/test-packing" element={<TestPacking />} />
               </Routes>
             </div>
           </div>

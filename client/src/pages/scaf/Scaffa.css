@@ -5,13 +5,13 @@
    DESIGN TOKENS
 ══════════════════════════════════════════════════════════════ */
 .scaffa-page {
-  --sc-bg:          #060b14;
-  --sc-surface:     #0b1221;
-  --sc-card:        #0f1829;
-  --sc-card-hover:  #141f35;
-  --sc-border:      rgba(255,255,255,0.06);
-  --sc-border-md:   rgba(255,255,255,0.1);
-  --sc-border-glow: rgba(59,130,246,0.3);
+  --sc-bg:          #f8fafc;
+  --sc-surface:     #ffffff;
+  --sc-card:        #ffffff;
+  --sc-card-hover:  #f1f5f9;
+  --sc-border:      #e2e8f0;
+  --sc-border-md:   #cbd5e1;
+  --sc-border-glow: rgba(59,130,246,0.25);
 
   --sc-blue:        #3b82f6;
   --sc-cyan:        #06b6d4;
@@ -20,10 +20,10 @@
   --sc-amber:       #f59e0b;
   --sc-rose:        #f43f5e;
 
-  --sc-text-1:      #f8fafc;
-  --sc-text-2:      #94a3b8;
-  --sc-text-3:      #475569;
-  --sc-text-accent: #60a5fa;
+  --sc-text-1:      #0f172a;
+  --sc-text-2:      #475569;
+  --sc-text-3:      #94a3b8;
+  --sc-text-accent: #2563eb;
 
   --sc-font:        'Plus Jakarta Sans', sans-serif;
   --sc-mono:        'JetBrains Mono', monospace;
@@ -127,7 +127,7 @@
   color: var(--sc-text-1);
   letter-spacing: -0.03em;
   margin: 0 0 4px;
-  background: linear-gradient(135deg, #f8fafc 0%, #94a3b8 100%);
+  background: linear-gradient(135deg, #0f172a 0%, #475569 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -179,14 +179,13 @@
   display: flex;
   gap: 4px;
   margin-bottom: 28px;
-  background: rgba(255,255,255,0.025);
+  background: #f1f5f9;
   border: 1px solid var(--sc-border);
   border-radius: var(--sc-radius-lg);
   padding: 5px;
   width: fit-content;
   max-width: 100%;
   flex-wrap: wrap;
-  backdrop-filter: blur(12px);
 }
 
 .scaffa-tab {
@@ -210,19 +209,19 @@
 }
 
 .scaffa-tab:hover:not(.disabled) {
-  background: rgba(255,255,255,0.05);
-  color: var(--sc-text-2);
+  background: #e2e8f0;
+  color: var(--sc-text-1);
 }
 
 .scaffa-tab.active {
   background: linear-gradient(135deg,
-    color-mix(in srgb, var(--tab-color) 14%, #0b1221),
-    color-mix(in srgb, var(--tab-color) 8%, #0b1221));
-  border-color: color-mix(in srgb, var(--tab-color) 30%, transparent);
+    color-mix(in srgb, var(--tab-color) 16%, #ffffff),
+    color-mix(in srgb, var(--tab-color) 8%, #ffffff));
+  border-color: color-mix(in srgb, var(--tab-color) 35%, transparent);
   color: var(--tab-color);
   box-shadow:
-    0 0 16px color-mix(in srgb, var(--tab-color) 12%, transparent),
-    inset 0 1px 0 rgba(255,255,255,0.06);
+    0 0 12px color-mix(in srgb, var(--tab-color) 10%, transparent),
+    inset 0 1px 0 rgba(255,255,255,0.6);
 }
 
 .scaffa-tab.disabled {
@@ -273,8 +272,8 @@
   align-items: center;
   justify-content: center;
   padding: 100px 32px;
-  background: rgba(255,255,255,0.015);
-  border: 1px dashed rgba(255,255,255,0.08);
+  background: #f8fafc;
+  border: 1px dashed var(--sc-border-md);
   border-radius: var(--sc-radius-xl);
   text-align: center;
   gap: 14px;
@@ -328,7 +327,7 @@
 }
 
 .sc-panel:hover {
-  border-color: rgba(255,255,255,0.09);
+  border-color: var(--sc-border-md);
 }
 
 .sc-panel-title {
@@ -372,7 +371,7 @@
 .sc-textarea {
   width: 100%;
   min-height: 180px;
-  background: rgba(0,0,0,0.3);
+  background: #f8fafc;
   border: 1px solid var(--sc-border);
   border-radius: var(--sc-radius-md);
   padding: 16px 18px;
@@ -383,15 +382,12 @@
   resize: vertical;
   transition: border-color var(--sc-dur), box-shadow var(--sc-dur);
   outline: none;
-  box-shadow: inset 0 2px 8px rgba(0,0,0,0.2);
 }
 
 .sc-textarea:focus {
   border-color: rgba(59,130,246,0.45);
-  box-shadow:
-    inset 0 2px 8px rgba(0,0,0,0.2),
-    0 0 0 3px rgba(59,130,246,0.08),
-    0 0 20px rgba(59,130,246,0.06);
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
 }
 
 .sc-textarea::placeholder { color: var(--sc-text-3); }
@@ -399,7 +395,7 @@
 /* ── Text input ── */
 .sc-input {
   width: 100%;
-  background: rgba(0,0,0,0.3);
+  background: #f8fafc;
   border: 1px solid var(--sc-border);
   border-radius: var(--sc-radius-md);
   padding: 12px 16px;
@@ -409,15 +405,12 @@
   font-weight: 500;
   outline: none;
   transition: border-color var(--sc-dur), box-shadow var(--sc-dur);
-  box-shadow: inset 0 2px 8px rgba(0,0,0,0.15);
 }
 
 .sc-input:focus {
   border-color: rgba(59,130,246,0.45);
-  box-shadow:
-    inset 0 2px 8px rgba(0,0,0,0.15),
-    0 0 0 3px rgba(59,130,246,0.08),
-    0 0 20px rgba(59,130,246,0.06);
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
 }
 
 .sc-input::placeholder { color: var(--sc-text-3); }
@@ -440,9 +433,9 @@
   align-items: center;
   gap: 14px;
   padding: 16px 20px;
-  border: 1px dashed rgba(255,255,255,0.1);
+  border: 1px dashed var(--sc-border-md);
   border-radius: var(--sc-radius-md);
-  background: rgba(0,0,0,0.15);
+  background: #f8fafc;
   cursor: pointer;
   transition: all var(--sc-dur);
 }
@@ -482,7 +475,7 @@
 
 /* ── Select ── */
 .sc-select {
-  background: rgba(0,0,0,0.3);
+  background: #f8fafc;
   border: 1px solid var(--sc-border);
   border-radius: var(--sc-radius-md);
   padding: 11px 16px;
@@ -496,7 +489,7 @@
 }
 
 .sc-select:focus { border-color: rgba(59,130,246,0.45); }
-.sc-select option { background: #0b1221; color: #f8fafc; }
+.sc-select option { background: #ffffff; color: #0f172a; }
 
 /* ── Divider ── */
 .sc-divider {
@@ -585,15 +578,15 @@
 
 /* Ghost */
 .sc-btn-ghost {
-  background: rgba(255,255,255,0.04);
+  background: #f1f5f9;
   border: 1px solid var(--sc-border-md);
   color: var(--sc-text-2);
 }
 
 .sc-btn-ghost:hover:not(:disabled) {
-  background: rgba(255,255,255,0.08);
+  background: #e2e8f0;
   color: var(--sc-text-1);
-  border-color: rgba(255,255,255,0.15);
+  border-color: #94a3b8;
 }
 
 /* Danger */
@@ -642,7 +635,7 @@
   font-size: 12.5px;
   color: var(--sc-text-2);
   font-family: var(--sc-mono);
-  background: rgba(255,255,255,0.02);
+  background: #f8fafc;
   transition: background var(--sc-dur);
 }
 
@@ -659,7 +652,7 @@
 
 .sc-weight-input {
   width: 90px;
-  background: rgba(0,0,0,0.35);
+  background: #ffffff;
   border: 1px solid var(--sc-border);
   border-radius: var(--sc-radius-sm);
   padding: 6px 10px;
@@ -719,7 +712,7 @@
    FOLDER BROWSER
 ══════════════════════════════════════════════════════════════ */
 .sc-folder-browser {
-  background: rgba(0,0,0,0.2);
+  background: #f8fafc;
   border: 1px solid var(--sc-border);
   border-radius: var(--sc-radius-lg);
   overflow: hidden;
@@ -732,7 +725,7 @@
   justify-content: space-between;
   padding: 14px 18px;
   border-bottom: 1px solid var(--sc-border);
-  background: rgba(255,255,255,0.02);
+  background: #f1f5f9;
 }
 
 .sc-folder-path {
@@ -750,7 +743,7 @@
 
 .sc-folder-list::-webkit-scrollbar { width: 4px; }
 .sc-folder-list::-webkit-scrollbar-track { background: transparent; }
-.sc-folder-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 99px; }
+.sc-folder-list::-webkit-scrollbar-thumb { background: rgba(15,23,42,0.15); border-radius: 99px; }
 
 .sc-folder-item {
   display: flex;
@@ -763,7 +756,7 @@
   gap: 10px;
 }
 
-.sc-folder-item:hover { background: rgba(255,255,255,0.04); }
+.sc-folder-item:hover { background: #e2e8f0; }
 
 .sc-folder-item-left {
   display: flex;
@@ -845,15 +838,15 @@
   gap: 12px;
   padding: 11px 16px;
   border-radius: var(--sc-radius-md);
-  background: rgba(255,255,255,0.02);
+  background: #f8fafc;
   border: 1px solid var(--sc-border);
   transition: all var(--sc-dur);
   cursor: pointer;
 }
 
 .sc-spec-item:hover {
-  background: rgba(255,255,255,0.04);
-  border-color: rgba(255,255,255,0.09);
+  background: #f1f5f9;
+  border-color: var(--sc-border-md);
 }
 
 .sc-spec-item.selected {
@@ -904,8 +897,8 @@
 }
 
 .sc-modal {
-  background: #0b1221;
-  border: 1px solid rgba(255,255,255,0.1);
+  background: #ffffff;
+  border: 1px solid var(--sc-border-md);
   border-radius: var(--sc-radius-xl);
   padding: 32px;
   width: 100%;
@@ -952,7 +945,7 @@
 .sc-loading-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(6,11,20,0.85);
+  background: rgba(248,250,252,0.92);
   backdrop-filter: blur(10px);
   display: flex;
   flex-direction: column;

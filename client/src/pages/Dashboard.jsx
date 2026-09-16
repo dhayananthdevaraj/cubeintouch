@@ -153,6 +153,12 @@ export default function Dashboard() {
   path: '/blank-sync', status: 'active',
   gradient: 'linear-gradient(135deg, #f59f00 0%, #f76707 100%)', span: 1,
 },
+{
+  id: 'test-packing', icon: '🧪', title: 'Test Packing',
+  description: 'Auto-pack or manually build a test from the QB — tech stack + topic matching, ST Verified priority, preview, PDF, and Examly test creation.',
+  path: '/test-packing', status: 'active',
+  gradient: 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)', span: 2,
+},
     {
       id: 'reports',
       icon: '📊',

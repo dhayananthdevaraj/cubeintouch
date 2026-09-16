@@ -99,7 +99,9 @@ export default function Topbar() {
       };
       case "/blank-sync":
       return { title: "BlankSync", icon: "✏️", subtitle: "Upload Fill-in-the-Blank Questions · University" };
- 
+      case "/test-packing":
+      return { title: "Test Packing", icon: "🧪", subtitle: "Auto-pack or manually build a test from the QB" };
+
       default:
         return {
           title: "Support Hub",

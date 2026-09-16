@@ -19,7 +19,9 @@ import fetchImageRoutes from "./routes/fetchimage.js";
 import packagerRoutes from "./routes/packager.js";
 import dupDetectRoutes from "./routes/dupdetect.js";
 import fileReformatRoutes from "./routes/filereformat.js";
- 
+import qbMetadataRoutes from "./routes/qbmetadata.js";
+import testPackRoutes from "./routes/testpack.js";
+
 dotenv.config();
 
 const app = express();
@@ -35,7 +37,9 @@ const limiter = rateLimit({
 
 app.use(limiter);
 app.use(cors({ origin: "*" }));
-app.use(express.json({ limit: "2mb" }));
+// 15mb (was 2mb) — enriched Test Packing previews (full COD detail: testcases,
+// reference solutions, sample I/O) for a large batch of questions can exceed 2mb.
+app.use(express.json({ limit: "15mb" }));
 
 app.use("/qc", qcRoutes);
 app.use("/", metadataRoutes);
@@ -50,6 +54,8 @@ app.use("/packager", packagerRoutes);
 app.use("/", fetchImageRoutes);   
 app.use("/dup-detect", dupDetectRoutes);
 app.use("/file-reformat", fileReformatRoutes);
+app.use("/qb-metadata", qbMetadataRoutes);
+app.use("/testpack", testPackRoutes);
 
 app.use((err, req, res, next) => {
   console.error("🔥 SERVER ERROR:", err.message);
@@ -81,7 +87,9 @@ app.listen(PORT, () => {
 ✅ Packager:      /packager/run
 ✅ Dup Detect:    /dup-detect
 ✅ File-reformat:    /file-reformat
- 
+✅ QB Metadata:   /qb-metadata/*
+✅ Test Pack PDF: /testpack/pdf
+
 =================================
   `);
 });
