@@ -1,0 +1,137 @@
+---QUESTION---
+TITLE: Retrieve Shipment Details by ID
+DIFFICULTY: Medium
+LANGUAGE: Java_jdbc
+TAGS: java, jdbc, mysql
+
+DESCRIPTION:
+<p><strong><u>Problem Statement</u></strong></p>
+<p><br></p>
+<p>Priya, a logistics manager at a warehouse company, manages shipment tracking using a MySQL database. Her database table shipment contains the following records:</p>
+<p>(1, 'Laptops', 50, 'Delivered')</p>
+<p>(2, 'Mobile Phones', 100, 'In Transit')</p>
+<p>(3, 'Office Chairs', 20, 'Pending')</p>
+<p>(4, 'Desks', 30, 'Delivered')</p>
+<p>(5, 'Monitors', 60, 'In Transit')</p>
+<p><br></p>
+<p>Priya needs a Java program that takes a shipmentId as input and retrieves the corresponding shipment details — including ID, Item Name, Quantity, and Status — from the shipment table. If no shipment with the given shipmentId exists, the program should output a message stating that no such shipment is found.</p>
+<p><br></p>
+<p>Help her fetch the shipment information accurately.</p>
+<p><br></p>
+<p>The system should connect to a MYSQL database using the following default credentials:</p>
+<ol><li>DB URL: jdbc:mysql://localhost/ri_db</li><li>Username: test</li><li>Password: test123</li></ol>
+
+INPUT_FORMAT:
+<p>The input consists of an integer representing the shipmentId for which the details need to be retrieved.</p>
+
+OUTPUT_FORMAT:
+<p>If the shipment is found, the output should be:</p>
+<p>Shipment Details:</p>
+<p>ID: &lt;shipmentId&gt;</p>
+<p>Item Name: &lt;itemName&gt;</p>
+<p>Quantity: &lt;quantity&gt;</p>
+<p>Status: &lt;status&gt;</p>
+<p><br></p>
+<p>If the shipment is not found, the output should be:</p>
+<p>No shipment found with ID &lt;shipmentId&gt;</p>
+<p><br></p>
+<p><strong>Refer to the sample output for formatting specifications.</strong></p>
+
+CONSTRAINTS:
+The given testcases fall under the following constraints:
+1 ≤ shipmentId ≤ 5 for an existing record; any other positive integer is treated as "not found"
+
+MYSQL_SCHEMA[Java_jdbc]:
+CREATE TABLE shipment (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    item_name VARCHAR(255) NOT NULL,
+    quantity INT NOT NULL,
+    status VARCHAR(50) NOT NULL
+);
+
+INSERT INTO shipment (item_name, quantity, status) VALUES ('Laptops', 50, 'Delivered');
+INSERT INTO shipment (item_name, quantity, status) VALUES ('Mobile Phones', 100, 'In Transit');
+INSERT INTO shipment (item_name, quantity, status) VALUES ('Office Chairs', 20, 'Pending');
+INSERT INTO shipment (item_name, quantity, status) VALUES ('Desks', 30, 'Delivered');
+INSERT INTO shipment (item_name, quantity, status) VALUES ('Monitors', 60, 'In Transit');
+
+HEADER[Java_jdbc]:
+import java.sql.*;
+import java.util.Scanner;
+
+class RetrieveShipmentDetails {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+
+        int shipmentId = scanner.nextInt();
+
+        String url = "jdbc:mysql://localhost/ri_db";
+        String username = "test";
+        String password = "test123";
+
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+FOOTER[Java_jdbc]:
+catch (SQLException e) {
+            System.out.println("SQL Exception occurred: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (pstmt != null) pstmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                System.out.println("Error closing resources: " + e.getMessage());
+            }
+        }
+
+        scanner.close();
+    }
+}
+
+SOLUTION[Java_jdbc]:
+try {
+            // Step 1: Establish the connection
+            conn = DriverManager.getConnection(url, username, password);
+
+            // Step 2: SQL query to retrieve shipment details by ID
+            String query = "SELECT id, item_name, quantity, status FROM shipment WHERE id = ?";
+
+            // Step 3: Create a PreparedStatement to execute the query
+            pstmt = conn.prepareStatement(query);
+            pstmt.setInt(1, shipmentId);
+
+            // Step 4: Execute the query and get the ResultSet
+            rs = pstmt.executeQuery();
+
+            // Step 5: Process the result set and display shipment details
+            if (rs.next()) {
+                int id = rs.getInt("id");
+                String itemName = rs.getString("item_name");
+                int quantity = rs.getInt("quantity");
+                String status = rs.getString("status");
+
+                System.out.println("Shipment Details:");
+                System.out.println("ID: " + id);
+                System.out.println("Item Name: " + itemName);
+                System.out.println("Quantity: " + quantity);
+                System.out.println("Status: " + status);
+            } else {
+                System.out.println("No shipment found with ID " + shipmentId);
+            }
+        }
+
+WHITELIST[Java_jdbc]:
+DriverManager,getConnection,prepareStatement,executeQuery
+
+
+TESTCASE: 1 | Shipment Details:\nID: 1\nItem Name: Laptops\nQuantity: 50\nStatus: Delivered | Easy | 25
+TESTCASE: 3 | Shipment Details:\nID: 3\nItem Name: Office Chairs\nQuantity: 20\nStatus: Pending | Medium | 25
+TESTCASE: 5 | Shipment Details:\nID: 5\nItem Name: Monitors\nQuantity: 60\nStatus: In Transit | Medium | 25
+TESTCASE: 99 | No shipment found with ID 99 | Hard | 25
+
+SAMPLE_IO: 1 | Shipment Details:\nID: 1\nItem Name: Laptops\nQuantity: 50\nStatus: Delivered
+SAMPLE_IO: 11 | No shipment found with ID 11
+---END---
