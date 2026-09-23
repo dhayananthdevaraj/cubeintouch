@@ -3605,18 +3605,13 @@
 
 import { useState, useRef } from "react";
 import { UNIVERSITY_DEPARTMENT_IDS, UNIVERSITY_B_D_ID_OPTIONS } from "../configUniversity";
+import { readToken } from "../utils/tokenStorage";
 import "./QBAccessCorporate.css";
 
 const API = "https://api.examly.io";
 
 export default function QBAccessUniversity({ onBack }) {
-  const [token, setToken] = useState(() => {
-    try {
-      return localStorage.getItem("examly_token_university") || "";
-    } catch {
-      return "";
-    }
-  });
+  const [token, setToken] = useState(() => readToken("examly_token_university"));
 
   const [ui, setUI] = useState(token ? "menu" : "welcome");
   const [tokenInput, setTokenInput] = useState("");
@@ -3699,19 +3694,6 @@ export default function QBAccessUniversity({ onBack }) {
     } catch (err) {
       showAlert("Failed to save token: " + err.message, "danger");
     }
-  };
-
-  const clearToken = () => {
-    try {
-      localStorage.removeItem("examly_token_university");
-    } catch (err) {
-      console.error("Failed to clear token:", err);
-    }
-    setToken("");
-    setUI("welcome");
-    setTokenInput("");
-    resetState();
-    showAlert("Token cleared", "danger");
   };
 
   const resetState = () => {
@@ -4304,7 +4286,6 @@ export default function QBAccessUniversity({ onBack }) {
             </div>
             <div className="qb-menu-actions">
               <button onClick={onBack} className="qb-button qb-button-secondary qb-button-small">← Organizations</button>
-              <button onClick={clearToken} className="qb-button qb-button-danger qb-button-small">🚪 Logout</button>
             </div>
           </div>
 

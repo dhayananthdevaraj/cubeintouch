@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { readToken } from "../utils/tokenStorage";
 import "./CODSync.css"; // reuse the cod-* shell classes (same folder: src/pages)
 import apiConfig from "../apiConfig";
 
@@ -178,8 +179,8 @@ DESCRIPTION:
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 export default function FileSyncPlatform({ platform, onBack }) {
   // Auth
-  const [token, setToken]           = useState(() => { try { return localStorage.getItem(platform.tokenKey) || ""; } catch { return ""; } });
-  const [ui, setUI]                 = useState(() => localStorage.getItem(platform.tokenKey) ? "qb-select" : "welcome");
+  const [token, setToken]           = useState(() => readToken(platform.tokenKey));
+  const [ui, setUI]                 = useState(() => readToken(platform.tokenKey) ? "qb-select" : "welcome");
   const [tokenInput, setTokenInput] = useState("");
 
   // Batch Config (no PCM for file-upload questions)
@@ -275,12 +276,6 @@ export default function FileSyncPlatform({ platform, onBack }) {
       showAlert("Token saved! Loading config data...", "success");
       loadBcData(tok);
     } catch (err) { showAlert("Failed: " + err.message, "danger"); }
-  };
-
-  const clearToken = () => {
-    try { localStorage.removeItem(platform.tokenKey); } catch {}
-    setToken(""); setUI("welcome"); resetAll();
-    showAlert("Logged out", "danger");
   };
 
   const resetAll = () => {
@@ -500,7 +495,6 @@ export default function FileSyncPlatform({ platform, onBack }) {
               {bcLoading && <span className="cod-bc-loading">⏳ Loading...</span>}
               <button onClick={() => setUI("qb-select")} className="cod-button cod-button-secondary cod-button-small">← Back</button>
               <button onClick={onBack}     className="cod-button cod-button-secondary cod-button-small">🏠 Home</button>
-              <button onClick={clearToken} className="cod-button cod-button-danger cod-button-small">🚪 Logout</button>
             </div>
           </div>
 
@@ -661,7 +655,6 @@ export default function FileSyncPlatform({ platform, onBack }) {
             <div><PlatformBadge /><h3 className="cod-title">📚 Question Bank</h3><p className="cod-subtitle">Create a new QB or select an existing one</p></div>
             <div className="cod-header-actions">
               <button onClick={onBack}     className="cod-button cod-button-secondary cod-button-small">🏠 Home</button>
-              <button onClick={clearToken} className="cod-button cod-button-danger cod-button-small">🚪 Logout</button>
             </div>
           </div>
           <div style={{ display: "flex", gap: 8, marginBottom: 24, padding: 4, background: "#f1f3f5", borderRadius: 12 }}>
@@ -749,7 +742,6 @@ export default function FileSyncPlatform({ platform, onBack }) {
             <div className="cod-header-actions">
               <button onClick={() => setUI("batch-config")} className="cod-button cod-button-secondary cod-button-small">← Back</button>
               <button onClick={onBack}     className="cod-button cod-button-secondary cod-button-small">🏠 Home</button>
-              <button onClick={clearToken} className="cod-button cod-button-danger cod-button-small">🚪 Logout</button>
             </div>
           </div>
 
@@ -825,7 +817,6 @@ export default function FileSyncPlatform({ platform, onBack }) {
             <div className="cod-header-actions">
               <button onClick={() => setUI("file-settings")} className="cod-button cod-button-secondary cod-button-small">← Files</button>
               <button onClick={onBack}     className="cod-button cod-button-secondary cod-button-small">🏠 Home</button>
-              <button onClick={clearToken} className="cod-button cod-button-danger cod-button-small">🚪 Logout</button>
             </div>
           </div>
 

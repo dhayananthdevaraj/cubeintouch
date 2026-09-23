@@ -1844,6 +1844,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { QB_ACCESS_CONFIG } from "../config";
+import { readToken } from "../utils/tokenStorage";
 import "./CodeLens.css";
 
 const API      = "https://api.examly.io";
@@ -1892,14 +1893,9 @@ export default function CodeLens() {
     domainRef.current = selectedDomain;
 
     const storageKey = `examly_token_codelens_${selectedDomain}`;
-    try {
-      const saved = localStorage.getItem(storageKey) || "";
-      setToken(saved);
-      setUI(saved ? "main" : "welcome");
-    } catch {
-      setToken("");
-      setUI("welcome");
-    }
+    const saved = readToken(storageKey);
+    setToken(saved);
+    setUI(saved ? "main" : "welcome");
   }, [selectedDomain]);
 
   useEffect(() => {
@@ -1927,16 +1923,6 @@ export default function CodeLens() {
     setTokenInput("");
     setUI("main");
     showAlert("Token saved. CodeLens activated.", "success");
-  };
-
-  const clearToken = () => {
-    const storageKey = `examly_token_codelens_${selectedDomain}`;
-    try { localStorage.removeItem(storageKey); } catch {}
-    setToken("");
-    setUI("welcome");
-    setTokenInput("");
-    resetState();
-    showAlert("Session cleared.", "info");
   };
 
   const handleSwitchDomain = () => {
@@ -2292,7 +2278,6 @@ export default function CodeLens() {
                 </div>
               )}
               <div className="cl-token-badge"><span className="cl-token-dot"/><span>Connected</span></div>
-              <button className="cl-btn-logout" onClick={clearToken}>🚪 Logout</button>
             </div>
           </div>
 

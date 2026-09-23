@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { readToken } from "../utils/tokenStorage";
 import "./CODSync.css";
 import {
   QuestionTypePill,
@@ -1203,8 +1204,8 @@ function buildPayload(q, batchConfig, qbId, userId) {
 export default function CODSyncPlatform({ platform, onBack }) {
 
   // Auth
-  const [token, setToken]           = useState(() => { try { return localStorage.getItem(platform.tokenKey) || ""; } catch { return ""; } });
-  const [ui, setUI]                 = useState(() => localStorage.getItem(platform.tokenKey) ? "qb-select" : "welcome");
+  const [token, setToken]           = useState(() => readToken(platform.tokenKey));
+  const [ui, setUI]                 = useState(() => readToken(platform.tokenKey) ? "qb-select" : "welcome");
   const [tokenInput, setTokenInput] = useState("");
 
   // Batch Config
@@ -1315,12 +1316,6 @@ export default function CODSyncPlatform({ platform, onBack }) {
       showAlert("Token saved! Loading config data...", "success");
       loadBcData(tok);
     } catch (err) { showAlert("Failed: " + err.message, "danger"); }
-  };
-
-  const clearToken = () => {
-    try { localStorage.removeItem(platform.tokenKey); } catch {}
-    setToken(""); setUI("welcome"); resetAll();
-    showAlert("Logged out", "danger");
   };
 
   const resetAll = () => {
@@ -1561,7 +1556,6 @@ export default function CODSyncPlatform({ platform, onBack }) {
             <div><PlatformBadge /><h3 className="cod-title">📚 Question Bank</h3><p className="cod-subtitle">Create a new QB or select an existing one</p></div>
             <div className="cod-header-actions">
               <button onClick={onBack}     className="cod-button cod-button-secondary cod-button-small">← Platforms</button>
-              <button onClick={clearToken} className="cod-button cod-button-danger cod-button-small">🚪 Logout</button>
             </div>
           </div>
           <div style={{ display:"flex", gap:8, marginBottom:24, padding:4, background:"#f1f3f5", borderRadius:12 }}>
@@ -1650,7 +1644,6 @@ export default function CODSyncPlatform({ platform, onBack }) {
               {bcLoading && <span className="cod-bc-loading">⏳ Loading...</span>}
               <button onClick={() => setUI("qb-select")} className="cod-button cod-button-secondary cod-button-small">← QB</button>
               <button onClick={onBack}     className="cod-button cod-button-secondary cod-button-small">← Platforms</button>
-              <button onClick={clearToken} className="cod-button cod-button-danger cod-button-small">🚪 Logout</button>
             </div>
           </div>
           {activeQB && (
@@ -1891,7 +1884,6 @@ export default function CODSyncPlatform({ platform, onBack }) {
             <div className="cod-header-actions">
               <button onClick={() => setUI("batch-config")} className="cod-button cod-button-secondary cod-button-small">← Config</button>
               <button onClick={onBack}     className="cod-button cod-button-secondary cod-button-small">← Platforms</button>
-              <button onClick={clearToken} className="cod-button cod-button-danger cod-button-small">🚪 Logout</button>
             </div>
           </div>
 

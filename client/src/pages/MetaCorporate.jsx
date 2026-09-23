@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { DEPARTMENT_IDS } from "../config";
+import { readToken } from "../utils/tokenStorage";
 import "./MetaCorporate.css";
 
 const API = "https://api.examly.io";
@@ -9,13 +10,7 @@ const AI_API = "https://cubeintouch-backend.onrender.com";
 
 export default function MetaCorporate({ onBack }) {
   // Token Management
-  const [token, setToken] = useState(() => {
-    try {
-      return localStorage.getItem("examly_token_meta") || "";
-    } catch {
-      return "";
-    }
-  });
+  const [token, setToken] = useState(() => readToken("examly_token_meta"));
 
   const [ui, setUI] = useState(token ? "menu" : "welcome");
   const [tokenInput, setTokenInput] = useState("");
@@ -87,19 +82,6 @@ export default function MetaCorporate({ onBack }) {
     } catch (err) {
       showAlert("Failed to save token: " + err.message, "danger");
     }
-  };
-
-  const clearToken = () => {
-    try {
-      localStorage.removeItem("examly_token_meta");
-    } catch (err) {
-      console.error("Failed to clear token:", err);
-    }
-    setToken("");
-    setUI("welcome");
-    setTokenInput("");
-    resetState();
-    showAlert("Token cleared", "danger");
   };
 
   const resetState = () => {
@@ -1000,9 +982,6 @@ async function analyzeWithAI(questions) {
                 </div>
               </div>
             </div>
-            <button onClick={clearToken} className="meta-logout-button">
-              🚪 Logout
-            </button>
           </div>
 
           {/* Step 1: Search QB */}

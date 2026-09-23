@@ -2,11 +2,12 @@
 // src/pages/Dashboard.jsx
 import { useNavigate } from "react-router-dom";
 import { useEffect, useRef } from "react";
+import { readToken } from "../utils/tokenStorage";
 import "./Dashboard.css";
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const token = localStorage.getItem("examly_token");
+  const token = readToken("examly_token");
   const isAuthenticated = !!token;
   const bentoRef = useRef(null);
 

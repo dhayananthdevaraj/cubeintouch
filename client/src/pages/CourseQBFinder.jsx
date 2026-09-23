@@ -2,18 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { DOMAIN_CONFIG } from "../config";
+import { readToken } from "../utils/tokenStorage";
 import "./CourseQBFinder.css";
 
 const API = "https://api.examly.io";
 
 export default function CourseQBFinder() {
-  const [token, setToken] = useState(() => {
-    try {
-      return localStorage.getItem("examly_token") || "";
-    } catch {
-      return "";
-    }
-  });
+  const [token, setToken] = useState(() => readToken("examly_token"));
   const [selectedDomain, setSelectedDomain] = useState(null);
   const [ui, setUI] = useState("domain");
   const [courseName, setCourseName] = useState("");
@@ -88,24 +83,6 @@ useEffect(() => {
     } catch (err) {
       showAlert("Failed to save token: " + err.message, "danger");
     }
-  };
-
-  const clearToken = () => {
-    try {
-      localStorage.removeItem("examly_token");
-    } catch (err) {
-      console.error("Failed to clear token:", err);
-    }
-     setToken("");
-      setSelectedDomain(null);  // ← add this
-      setUI("domain");          
-      setTokenInput("");
-      setCourseName("");        // ← ADD
-      setStatus("");    
-      setModuleTree([]);
-      setSelectedTests(new Set());
-      setQbResults([]);
-      showAlert("Token cleared", "danger");
   };
 
   const activeDeptIds = selectedDomain ? DOMAIN_CONFIG[selectedDomain].department_ids : [];
@@ -2109,23 +2086,6 @@ showAlert(
             </button>
           </div>
         )}
-
-        {/* Logout */}
-        <button
-          onClick={clearToken}
-          style={{
-            background: "rgba(255,255,255,0.12)",
-            border: "1.5px solid rgba(255,255,255,0.25)",
-            color: "white", borderRadius: "8px",
-            padding: "8px 14px", fontSize: "13px",
-            fontWeight: "600", cursor: "pointer",
-            transition: "all 0.2s"
-          }}
-          onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.22)"}
-          onMouseLeave={e => e.currentTarget.style.background = "rgba(255,255,255,0.12)"}
-        >
-          🚪 Logout
-        </button>
       </div>
     </div>
 

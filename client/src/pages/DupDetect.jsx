@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { DEPARTMENT_IDS } from "../config";
 import apiConfig from "../apiConfig";
+import { readToken } from "../utils/tokenStorage";
 import "./DupDetect.css";
 
 const API_BASE = "https://api.examly.io/api";
@@ -18,8 +19,8 @@ const ANALYSIS_STEPS = [
 
 export default function DupDetect() {
   // ── page: "token" | "config" | "running" | "result"
-  const [page,       setPage]       = useState(() => { try { return localStorage.getItem("mcq_qc_token") ? "config" : "token"; } catch { return "token"; } });
-  const [token,      setToken]      = useState(() => { try { return localStorage.getItem("mcq_qc_token") || ""; } catch { return ""; } });
+  const [page,       setPage]       = useState(() => readToken("mcq_qc_token") ? "config" : "token");
+  const [token,      setToken]      = useState(() => readToken("mcq_qc_token"));
   const [tokenInput, setTokenInput] = useState("");
 
   // config
@@ -60,14 +61,6 @@ export default function DupDetect() {
     localStorage.setItem("mcq_qc_token", tokenInput.trim());
     setToken(tokenInput.trim()); setPage("config");
   };
-  const logout = () => {
-    localStorage.removeItem("mcq_qc_token");
-    setToken(""); setTokenInput(""); setPage("token");
-    setResult(null);
-    setQbResults([]); setSelectedQB(null);
-    setTestResults([]); setSelectedTest(null);
-  };
-
   // ── Test search
   const searchTest = async () => {
     if (!testSearch.trim()) return;
@@ -235,7 +228,6 @@ export default function DupDetect() {
             <span className="dd-cfg-session-dot" />
             Session active
           </div>
-          <button className="dd-cfg-logout" onClick={logout}>Logout</button>
         </div>
       </div>
 

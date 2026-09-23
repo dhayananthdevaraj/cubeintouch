@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import * as XLSX from "xlsx";
+import { readToken } from "../../utils/tokenStorage";
 import "./ResultX.css";
 
 const API    = "https://api.examly.io";
@@ -170,9 +171,9 @@ function parseResultData(apiData, url) {
 // ── component ─────────────────────────────────────────────────────────────────
 
 export default function ResultX() {
-  const [token,      setToken]      = useState(() => { try { return localStorage.getItem("examly_token") || ""; } catch { return ""; } });
+  const [token,      setToken]      = useState(() => readToken("examly_token"));
   const [tokenInput, setTokenInput] = useState("");
-  const [ui,         setUi]         = useState(() => { try { return localStorage.getItem("examly_token") ? "upload" : "welcome"; } catch { return "welcome"; } });
+  const [ui,         setUi]         = useState(() => (readToken("examly_token") ? "upload" : "welcome"));
 
   const [rows,      setRows]      = useState([]);
   const [results,   setResults]   = useState([]);
@@ -216,12 +217,6 @@ export default function ResultX() {
     if (!tokenInput.trim()) { showAlert("Token cannot be empty", "danger"); return; }
     localStorage.setItem("examly_token", tokenInput.trim());
     setToken(tokenInput.trim()); setUi("upload"); showAlert("Token saved!", "success");
-  };
-
-  const clearToken = () => {
-    localStorage.removeItem("examly_token");
-    setToken(""); setRows([]); setResults([]); setUi("welcome");
-    showAlert("Logged out", "danger");
   };
 
   const headers = { "Content-Type": "application/json", Authorization: token };
@@ -566,14 +561,9 @@ export default function ResultX() {
       {alert && <div className={`rx-alert rx-alert-${alert.type}`}>{alert.msg}</div>}
 
       {/* ══ Top action bar ══ */}
-      {(ui === "table" || token) && (
+      {ui === "table" && (
         <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end", padding: "8px 16px", background: "var(--c-surface-2)", borderBottom: "1px solid var(--c-border)" }}>
-          {ui === "table" && (
-            <button className="rx-btn rx-btn-ghost" style={{ fontSize: "12px", padding: "6px 13px" }} onClick={() => setUi("upload")}>← Upload New</button>
-          )}
-          {token && (
-            <button className="rx-btn rx-btn-ghost" style={{ fontSize: "12px", padding: "6px 13px" }} onClick={clearToken}>🚪 Logout</button>
-          )}
+          <button className="rx-btn rx-btn-ghost" style={{ fontSize: "12px", padding: "6px 13px" }} onClick={() => setUi("upload")}>← Upload New</button>
         </div>
       )}
 

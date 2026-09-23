@@ -2498,6 +2498,7 @@
 
 import { useState, useEffect } from "react";
 import { CONTENT_DEPARTMENT_IDS, COURSE_DEPARTMENT_IDS, PROJECT_DEPARTMENT_IDS } from "../config";
+import { readToken } from "../utils/tokenStorage";
 
 const API = "https://api.examly.io";
 
@@ -2572,9 +2573,7 @@ function Overlay({ text }) {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function Finder() {
-  const [token, setToken] = useState(() => {
-    try { return localStorage.getItem("examly_token") || ""; } catch { return ""; }
-  });
+  const [token, setToken] = useState(() => readToken("examly_token"));
   const [ui, setUI] = useState(token ? "search" : "welcome");
   const [courseName, setCourseName] = useState("");
   const [status, setStatus] = useState("");
@@ -2634,14 +2633,6 @@ export default function Finder() {
       setTokenInput("");
       addToast("Token saved — you're in!", "success");
     } catch (err) { addToast("Failed to save token: " + err.message, "danger"); }
-  };
-
-  const clearToken = () => {
-    try { localStorage.removeItem("examly_token"); } catch {}
-    setToken(""); setUI("welcome"); setTokenInput("");
-    setContentItems([]); setProjectItems([]);
-    setCourseName(""); setStatus("");
-    addToast("Logged out successfully", "info");
   };
 
   // ── API helpers ────────────────────────────────────────────────────────────
@@ -3118,9 +3109,6 @@ export default function Finder() {
                 <p style={{ fontSize: "11px", color: "#9ca3af", margin: 0 }}>Search Projects & Content Banks</p>
               </div>
             </div>
-            <button onClick={clearToken} className="abtn" style={{ padding: "8px 16px", background: "white", border: "1px solid #e5e7eb", color: "#6b7280", borderRadius: "8px", fontSize: "13px", cursor: "pointer", fontWeight: "600", boxShadow: "0 1px 4px rgba(0,0,0,0.05)" }}>
-              🚪 Logout
-            </button>
           </div>
 
           {/* Search card */}

@@ -1,16 +1,11 @@
 import { useState } from "react";
+import { readToken } from "../utils/tokenStorage";
 import "./MCQUploader.css";
 
 const API = "https://api.examly.io";
 
 export default function MCQUploaderPlatform({ platform, onBack }) {
-  const [token, setToken] = useState(() => {
-    try {
-      return localStorage.getItem(platform.tokenKey) || "";
-    } catch {
-      return "";
-    }
-  });
+  const [token, setToken] = useState(() => readToken(platform.tokenKey));
   const [ui, setUI] = useState(token ? "setup" : "welcome");
   const [tokenInput, setTokenInput] = useState("");
 
@@ -87,19 +82,6 @@ export default function MCQUploaderPlatform({ platform, onBack }) {
     } catch (err) {
       showAlert("Failed to save token: " + err.message, "danger");
     }
-  };
-
-  const clearToken = () => {
-    try {
-      localStorage.removeItem(platform.tokenKey);
-    } catch (err) {
-      console.error("Failed to clear token:", err);
-    }
-    setToken("");
-    setUI("welcome");
-    setTokenInput("");
-    resetAll();
-    showAlert("Token cleared", "danger");
   };
 
   const resetAll = () => {
@@ -784,12 +766,6 @@ export default function MCQUploaderPlatform({ platform, onBack }) {
               >
                 ← Platforms
               </button>
-              <button
-                onClick={clearToken}
-                className="mcq-button mcq-button-danger mcq-button-small"
-              >
-                🚪 Logout
-              </button>
             </div>
           </div>
 
@@ -1027,12 +1003,6 @@ export default function MCQUploaderPlatform({ platform, onBack }) {
                 className="mcq-button mcq-button-secondary mcq-button-small"
               >
                 ← Platforms
-              </button>
-              <button
-                onClick={clearToken}
-                className="mcq-button mcq-button-danger mcq-button-small"
-              >
-                🚪 Logout
               </button>
             </div>
           </div>

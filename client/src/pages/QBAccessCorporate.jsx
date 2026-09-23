@@ -1248,6 +1248,7 @@
 
 import { useState, useEffect } from "react";
 import { QB_ACCESS_CONFIG } from "../config";
+import { readToken } from "../utils/tokenStorage";
 import "./QBAccessCorporate.css";
 
 const API = "https://api.examly.io";
@@ -1290,14 +1291,9 @@ export default function QBAccessCorporate({ onBack }) {
   useEffect(() => {
     if (!selectedDomain) return;
     const storageKey = `examly_token_corporate_${selectedDomain}`; // e.g. examly_token_corporate_LTI
-    try {
-      const saved = localStorage.getItem(storageKey) || "";
-      setToken(saved);
-      setUI(saved ? "menu" : "welcome");
-    } catch {
-      setToken("");
-      setUI("welcome");
-    }
+    const saved = readToken(storageKey);
+    setToken(saved);
+    setUI(saved ? "menu" : "welcome");
   }, [selectedDomain]);
 
   // Derived config from selected domain
@@ -1340,20 +1336,6 @@ export default function QBAccessCorporate({ onBack }) {
     } catch (err) {
       showAlert("Failed to save token: " + err.message, "danger");
     }
-  };
-
-  const clearToken = () => {
-    const storageKey = `examly_token_corporate_${selectedDomain}`;
-    try {
-      localStorage.removeItem(storageKey);
-    } catch (err) {
-      console.error("Failed to clear token:", err);
-    }
-    setToken("");
-    setUI("welcome");
-    setTokenInput("");
-    resetState();
-    showAlert("Token cleared", "danger");
   };
 
   const handleSwitchDomain = () => {
@@ -1997,9 +1979,6 @@ export default function QBAccessCorporate({ onBack }) {
               </div>
               <button onClick={onBack} className="qb-button qb-button-secondary qb-button-small">
                 ← Organizations
-              </button>
-              <button onClick={clearToken} className="qb-button qb-button-danger qb-button-small">
-                🚪 Logout
               </button>
             </div>
           </div>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { DEPARTMENT_IDS } from "../config";
+import { readToken } from "../utils/tokenStorage";
 import "./MCQ_QC.css";
 
 const API_BASE = "https://api.examly.io/api";
@@ -7,13 +8,9 @@ const API_BASE = "https://api.examly.io/api";
 const QC_API = "https://cubeintouch-backend.onrender.com/qc";
 
 export default function MCQ_QC() {
-  const [token, setToken] = useState(() => {
-    try { return localStorage.getItem("mcq_qc_token") || ""; } catch { return ""; }
-  });
+  const [token, setToken] = useState(() => readToken("mcq_qc_token"));
   const [tokenInput, setTokenInput] = useState("");
-  const [showTokenInput, setShowTokenInput] = useState(() => {
-    try { return !localStorage.getItem("mcq_qc_token"); } catch { return true; }
-  });
+  const [showTokenInput, setShowTokenInput] = useState(() => !readToken("mcq_qc_token"));
 
   const [testName, setTestName] = useState("");
   const [alert, setAlert] = useState(null);
@@ -41,16 +38,6 @@ export default function MCQ_QC() {
     showAlert("✅ Token saved!", "success");
   };
 
-  const clearToken = () => {
-    localStorage.removeItem("mcq_qc_token");
-    setToken("");
-    setTokenInput("");
-    setShowTokenInput(true);
-    setResults([]);
-    setParsedMcqs([]);
-    setStats(null);
-    showAlert("Token cleared", "info");
-  };
 
   // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -291,9 +278,6 @@ export default function MCQ_QC() {
           <div className="mcq-token-corner">
             <span className="mcq-token-dot"></span>
             <span className="mcq-session-label">Session Active</span>
-            <button onClick={clearToken} className="mcq-button mcq-button-danger mcq-button-sm">
-              Clear
-            </button>
           </div>
         )}
 

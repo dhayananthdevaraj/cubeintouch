@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { UNIVERSITY_DEPARTMENT_IDS } from "../configUniversity";
+import { readToken } from "../utils/tokenStorage";
 import "./MetaCorporate.css";
 
 const API = "https://api.examly.io";
@@ -10,13 +11,7 @@ const AI_API = "https://cubeintouch-backend.onrender.com";
 
 export default function MetaUniversity({ onBack }) {
   // Token Management
-  const [token, setToken] = useState(() => {
-    try {
-      return localStorage.getItem("examly_token_meta_university") || "";
-    } catch {
-      return "";
-    }
-  });
+  const [token, setToken] = useState(() => readToken("examly_token_meta_university"));
 
   const [ui, setUI] = useState(token ? "menu" : "welcome");
   const [tokenInput, setTokenInput] = useState("");
@@ -88,19 +83,6 @@ export default function MetaUniversity({ onBack }) {
     } catch (err) {
       showAlert("Failed to save token: " + err.message, "danger");
     }
-  };
-
-  const clearToken = () => {
-    try {
-      localStorage.removeItem("examly_token_meta_university");
-    } catch (err) {
-      console.error("Failed to clear token:", err);
-    }
-    setToken("");
-    setUI("welcome");
-    setTokenInput("");
-    resetState();
-    showAlert("Token cleared", "danger");
   };
 
   const resetState = () => {
@@ -861,9 +843,6 @@ const handleNextRange = () => {
                 </div>
               </div>
             </div>
-            <button onClick={clearToken} className="meta-logout-button">
-              🚪 Logout
-            </button>
           </div>
 
           {/* Step 1: Search QB */}

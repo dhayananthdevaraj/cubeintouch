@@ -18,6 +18,7 @@
 // BlankSync, which note Corporate support as a later addition.
 import { useState, useEffect, useMemo } from "react";
 import apiConfig from "../apiConfig";
+import { readToken } from "../utils/tokenStorage";
 import { UNIVERSITY_DEPARTMENT_IDS, UNIVERSITY_B_D_ID_OPTIONS } from "../configUniversity";
 import {
   fetchQuestionsForCandidates,
@@ -51,12 +52,8 @@ const STEPS = [
 
 export default function TestPacking() {
   // ── Auth — unchanged logic, restyled ───────────────────────────────────
-  const [token, setToken] = useState(() => {
-    try { return localStorage.getItem(TOKEN_KEY) || ""; } catch { return ""; }
-  });
-  const [ui, setUi] = useState(() => {
-    try { return localStorage.getItem(TOKEN_KEY) ? "app" : "welcome"; } catch { return "welcome"; }
-  });
+  const [token, setToken] = useState(() => readToken(TOKEN_KEY));
+  const [ui, setUi] = useState(() => (readToken(TOKEN_KEY) ? "app" : "welcome"));
   const [tokenInput, setTokenInput] = useState("");
   const [bdIdOption, setBdIdOption] = useState(UNIVERSITY_B_D_ID_OPTIONS[1]); // "University - admin"
 
@@ -68,12 +65,6 @@ export default function TestPacking() {
     setTokenInput("");
     setUi("app");
     setStep(2);
-  };
-
-  const clearToken = () => {
-    try { localStorage.removeItem(TOKEN_KEY); } catch { /* ignore */ }
-    setToken("");
-    setUi("welcome");
   };
 
   // ── Wizard step (2-5 while ui === "app"; step 1 = the welcome/token gate) ─
@@ -575,7 +566,6 @@ export default function TestPacking() {
           <h1 className="tp-title">Test Packing</h1>
           <p className="tp-subtitle">Assemble tests from the Question Bank — automatically or by hand</p>
         </div>
-        {ui === "app" && <button className="tp-btn tp-btn--ghost tp-btn--sm" onClick={clearToken}>Log out</button>}
       </div>
 
       <Stepper current={currentStepNum} />
