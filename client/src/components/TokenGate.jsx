@@ -7,6 +7,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useGlobalToken } from "../context/useGlobalToken";
 import { decodeJwt, formatClaimName } from "../utils/jwt";
+import LiquidMetalBackground from "./LiquidMetalBackground";
 import "./TokenGate.css";
 
 const COLORS = { indigo: "#6E63D6", blue: "#5B8DEF", coral: "#F0663F", orange: "#FF8A3D" };
@@ -16,46 +17,10 @@ const MARK_ARCS = [
   { r: 24, c: COLORS.coral, f: 0.76, rot: 120 },
   { r: 14, c: COLORS.orange, f: 0.8, rot: 186 },
 ];
-// Background orbital-arc rings — same slow "simulation" as WelcomeLoader, so
-// the paste screen doesn't feel like a flat drop from the cube animation.
-const BG_RINGS = [
-  { r: 130, c: COLORS.orange, f: 0.3, o: 0.4, dur: 30, dir: 1, w: 2 },
-  { r: 190, c: COLORS.coral, f: 0.55, o: 0.3, dur: 40, dir: -1, w: 2 },
-  { r: 255, c: COLORS.blue, f: 0.42, o: 0.22, dur: 54, dir: 1, w: 1.5 },
-  { r: 325, c: COLORS.indigo, f: 0.6, o: 0.16, dur: 68, dir: -1, w: 1.5 },
-];
 const arc = (r, f) => {
   const C = 2 * Math.PI * r;
   return { strokeDasharray: `${(f * C).toFixed(2)} ${C.toFixed(2)}` };
 };
-
-function BackgroundSim() {
-  return (
-    <div className="tg-sim" aria-hidden="true">
-      <svg viewBox="0 0 1000 1000" width="100%" height="100%" preserveAspectRatio="xMidYMid slice">
-        <g transform="translate(500 500)">
-          {BG_RINGS.map((ring, i) => (
-            <circle
-              key={i}
-              cx="0" cy="0" r={ring.r}
-              fill="none"
-              stroke={ring.c}
-              strokeWidth={ring.w}
-              strokeLinecap="round"
-              style={{
-                ...arc(ring.r, ring.f),
-                opacity: ring.o,
-                transformBox: "fill-box",
-                transformOrigin: "center",
-                animation: `${ring.dir > 0 ? "tg-rot" : "tg-rotR"} ${ring.dur}s linear infinite`,
-              }}
-            />
-          ))}
-        </g>
-      </svg>
-    </div>
-  );
-}
 
 // Staged connecting sequence — purely cosmetic, the real save happens once it finishes.
 const CONNECT_STEPS = [
@@ -125,7 +90,7 @@ export default function TokenGate({ mode = "blocking" }) {
 
   return (
     <div className={`tg-root ${isModal ? "tg-root--modal" : ""}`} role="dialog" aria-modal="true" aria-label="Connect to Examly">
-      {!isModal && <BackgroundSim />}
+      {!isModal && <LiquidMetalBackground />}
       {isModal && <div className="tg-backdrop" onClick={connecting ? undefined : closeGate} />}
 
       <div className="tg-card">
