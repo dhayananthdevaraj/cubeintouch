@@ -163,6 +163,7 @@ export default function Sidebar() {
   <span className="nav-indicator"></span>
 </NavLink>
 
+
         {/* specQ — External Tool */}
         <a  
           href="https://qc-automation-frontend.onrender.com/"

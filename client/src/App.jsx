@@ -22,6 +22,7 @@ import WeightGen from "./pages/WeightGen";
 import FileSync from "./pages/FileSync";
 import BlankSync from "./pages/BlankSync";
 import TestPacking from "./pages/TestPacking";
+// import MysqlSchemaFetch from "./pages/MysqlSchemaFetch"; // temporary support tool — safe to remove later
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);

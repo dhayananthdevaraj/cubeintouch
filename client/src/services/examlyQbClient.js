@@ -146,6 +146,7 @@ export async function fetchProgrammingQuestionDetail({ token, qId }) {
     solutions: (answer.solution || []).map((s) => ({
       language: s.language,
       code: s.solutiondata?.[0]?.solution || "",
+      mysqlSchema: s.mysqlSchema || null,
     })),
     tags: (learning.tags || []).map((t) => t.name),
   };
