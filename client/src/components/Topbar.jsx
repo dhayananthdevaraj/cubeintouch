@@ -46,7 +46,7 @@ function ProfileChip() {
             )}
 
             <p className="profile-panel-hint">
-              Platform tokens can reset at any time. If a tool starts failing, update your token here.
+              Your token is valid for today only and clears automatically at midnight. It can also reset sooner on Examly's end — if a tool starts failing, update your token here.
             </p>
 
             <div className="profile-panel-actions">

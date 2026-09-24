@@ -31,6 +31,17 @@ export function formatClaimName(name) {
   return name.replace(/\$/g, " ").replace(/\s+/g, " ").trim();
 }
 
+/** Always "11:59 PM" — built manually so it never falls back to a locale's
+ *  24-hour or lowercase "pm" formatting (which `toLocaleTimeString` can do
+ *  depending on the browser/OS locale). */
+function format12h(d) {
+  const hours24 = d.getHours();
+  const hours12 = hours24 % 12 || 12;
+  const minutes = String(d.getMinutes()).padStart(2, "0");
+  const period = hours24 < 12 ? "AM" : "PM";
+  return `${hours12}:${minutes} ${period}`;
+}
+
 /** "11:59 PM" for today, "Sep 23, 11:59 PM" otherwise. */
 export function formatPastedAt(isoString) {
   if (!isoString) return "";
@@ -39,7 +50,7 @@ export function formatPastedAt(isoString) {
 
   const now = new Date();
   const sameDay = d.toDateString() === now.toDateString();
-  const time = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const time = format12h(d);
   if (sameDay) return time;
 
   const date = d.toLocaleDateString([], { month: "short", day: "numeric" });

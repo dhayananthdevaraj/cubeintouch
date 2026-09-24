@@ -128,7 +128,7 @@ export default function TokenGate({ mode = "blocking" }) {
 
             <p className="tg-hint">
               Saved locally in this browser and shared across every tool — no more re-pasting per page.
-              The platform token can reset at any time; if a request starts failing, come back here and paste a new one.
+              Valid for today only — you'll be asked to paste it again tomorrow. It can also reset sooner on Examly's end; if a request starts failing, come back here and paste a new one.
             </p>
           </>
         ) : (
