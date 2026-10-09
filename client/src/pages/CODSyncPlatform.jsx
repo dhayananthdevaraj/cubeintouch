@@ -1088,6 +1088,18 @@ function parseQuestions(raw) {
     if (!outputFmt)   qErrors.push(`Q${qNum}: Missing OUTPUT_FORMAT`);
     if (testcases.length === 0)
       qErrors.push(`Q${qNum}: No TESTCASE lines found`);
+
+    // Examly's own backend accepts any testcase score total without
+    // complaint (confirmed: it silently accepted 6 testcases scored 10 each,
+    // summing to 60 instead of 100) — so this has to be caught here, before
+    // upload, since the platform won't catch it for us.
+    if (testcases.length > 0) {
+      const scoreSum = testcases.reduce((sum, tc) => sum + (Number(tc.score) || 0), 0);
+      if (scoreSum !== 100) {
+        qErrors.push(`Q${qNum}: Testcase scores sum to ${scoreSum}, need 100 (${testcases.length} testcases)`);
+      }
+    }
+
     if (Object.keys(solutions).length === 0)
       qErrors.push(`Q${qNum}: No SOLUTION[Language] block found`);
 
@@ -1098,6 +1110,7 @@ function parseQuestions(raw) {
     // Only push question if no hard errors
     if (qErrors.length === 0) {
       questions.push({
+        blockNum: qNum, // original block position in the paste, not the index among only the successful ones — keeps this label consistent with the error panel's "QN" when some blocks are skipped
         title,
         difficulty,
         blooms,
@@ -1427,9 +1440,9 @@ export default function CODSyncPlatform({ platform, onBack }) {
             const payload = buildPayload(q, batchConfig, activeQB.qb_id, userId);
             const res     = await fetch(`${API}/api/programming_question/create`, { method:"POST", headers:getHeaders(), body:JSON.stringify(payload) });
             const data    = await res.json();
-            if (data.success) { results.success++; results.ids.push({ index:gi+1, title:q.title, q_id:data.q_id }); }
+            if (data.success) { results.success++; results.ids.push({ index:q.blockNum ?? gi+1, title:q.title, q_id:data.q_id }); }
             else throw new Error(data.message || "Upload failed");
-          } catch (err) { results.failed++; results.errors.push({ index:gi+1, title:q.title, error:err.message }); }
+          } catch (err) { results.failed++; results.errors.push({ index:q.blockNum ?? gi+1, title:q.title, error:err.message }); }
         }));
 
         if (i + BATCH_SIZE < parsedQuestions.length) await sleep(400);
@@ -1973,7 +1986,7 @@ export default function CODSyncPlatform({ platform, onBack }) {
                   <div className="cod-parsed-list">
                     {parsedQuestions.map((q,i) => (
                       <div key={i} className="cod-parsed-item">
-                        <span className="cod-parsed-num">Q{i+1}</span>
+                        <span className="cod-parsed-num">Q{q.blockNum ?? i + 1}</span>
                         <span className="cod-parsed-qtitle">{q.title}</span>
                         <span className="cod-parsed-langs">{q.languages.map(l => <span key={l} className="cod-lang-pill">{l}</span>)}</span>
                         <span className={`cod-diff-pill cod-diff-${q.difficulty.toLowerCase()}`}>{q.difficulty}</span>

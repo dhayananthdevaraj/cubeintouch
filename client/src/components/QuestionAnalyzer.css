@@ -1,0 +1,251 @@
+/* src/components/QuestionAnalyzer.css
+   Full-page view (no modal/backdrop) — mounted directly into CODMedia.jsx's
+   page flow, replacing the feature cards. Reuses several .ctw-* classes from
+   CODMedia.css (buttons, badges, qid chip, muted text, caret) since this
+   component is only ever mounted from CODMedia.jsx, which already loads
+   that stylesheet. */
+
+.qa-page {
+  color-scheme: light;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.qa-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.qa-toolbar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.qa-qb-name { font-size: 13px; font-weight: 700; color: #0f172a; }
+
+.qa-nav { display: flex; align-items: center; gap: 8px; }
+.qa-counter { font-size: 13px; font-weight: 700; color: #0f172a; white-space: nowrap; }
+
+.qa-toolbar-spacer { flex: 1; }
+
+.qa-qtext {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0f172a;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Filter panel ── */
+.qa-filter-panel {
+  border-top: 1px solid #e2e8f0;
+  padding-top: 10px;
+}
+.qa-filter-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.qa-filter-groups {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.qa-filter-group h4 {
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #94a3b8;
+}
+.qa-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  padding: 4px 0;
+  cursor: pointer;
+}
+.qa-filter-unavailable {
+  font-size: 10px;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+/* ── Body / columns ── */
+.qa-body { min-height: 200px; }
+
+.qa-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+.qa-column { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.qa-column-title {
+  margin: 0 0 2px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+}
+
+.qa-status-block {
+  padding: 48px 24px;
+  text-align: center;
+  color: #64748b;
+  font-size: 13px;
+}
+.qa-error-text { color: #dc2626; margin-bottom: 10px; }
+
+.qa-spinner {
+  width: 28px;
+  height: 28px;
+  margin: 0 auto 14px;
+  border: 3px solid #e2e8f0;
+  border-top-color: #4f46e5;
+  border-radius: 50%;
+  animation: qa-spin 0.8s linear infinite;
+}
+@keyframes qa-spin { to { transform: rotate(360deg); } }
+
+.qa-section {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+}
+.qa-section--unavailable { opacity: 0.65; }
+
+.qa-section-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  background: #f8fafc;
+}
+.qa-section-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  color: #0f172a;
+  padding: 0;
+}
+.qa-section-spacer { flex: 1; }
+
+.qa-section-body { padding: 12px; font-size: 13px; }
+
+.qa-empty { color: #94a3b8; font-size: 13px; font-style: italic; margin: 0; }
+
+.qa-html { line-height: 1.6; color: #1e293b; }
+.qa-html :where(p) { margin: 0 0 8px; }
+.qa-html :where(ul, ol) { margin: 0 0 8px; padding-left: 20px; }
+
+.qa-plain {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 12.5px;
+  margin: 0;
+}
+
+.qa-items { display: flex; flex-direction: column; gap: 10px; }
+.qa-item-block { border: 1px solid #f1f5f9; border-radius: 6px; padding: 8px 10px; }
+.qa-item-head { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: #0f172a; margin-bottom: 6px; }
+.qa-item-tag {
+  font-size: 10px;
+  font-weight: 700;
+  color: #4f46e5;
+  background: #eef2ff;
+  border-radius: 10px;
+  padding: 1px 7px;
+}
+.qa-item-row { margin-top: 6px; }
+.qa-item-row > span { display: block; font-size: 10.5px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 2px; }
+.qa-item-row pre {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 12px;
+  background: #f8fafc;
+  border-radius: 5px;
+  padding: 6px 8px;
+  margin: 0;
+  overflow-x: auto;
+}
+
+.qa-code {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 12px;
+  background: #0b1226;
+  color: #d6e4ff;
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin: 0;
+  overflow-x: auto;
+}
+
+/* ── Bottom bar ── */
+.qa-bottom-bar {
+  position: sticky;
+  bottom: 0;
+  margin-top: 16px;
+  padding: 12px 14px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+}
+.qa-bottom-bar .ctw-btn--primary { padding: 10px 28px; }
+
+/* ── Toast ── */
+.qa-toast {
+  position: fixed;
+  bottom: 86px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.2);
+  animation: qa-toast-in 0.15s ease-out;
+}
+.qa-toast--ok { background: #ecfdf5; color: #15803d; border: 1px solid #bbf7d0; }
+.qa-toast--error { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+@keyframes qa-toast-in { from { opacity: 0; transform: translate(-50%, 6px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+@media (max-width: 860px) {
+  .qa-columns { grid-template-columns: 1fr; }
+  .qa-filter-groups { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+  .qa-toolbar-row { gap: 6px; }
+  .qa-toolbar-spacer { display: none; }
+  .qa-nav { width: 100%; justify-content: space-between; }
+}

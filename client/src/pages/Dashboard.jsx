@@ -160,6 +160,12 @@ export default function Dashboard() {
   path: '/test-packing', status: 'active',
   gradient: 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)', span: 2,
 },
+{
+  id: 'cod-media', icon: '🧮', title: 'CodeScope',
+  description: 'Bulk-fix COD testcase difficulty/weightage across a QB, plus a full-page analyzer to preview, filter, and copy any question\'s content for an AI prompt.',
+  path: '/cod-media', status: 'active',
+  gradient: 'linear-gradient(135deg, #14b8a6 0%, #0ea5e9 100%)', span: 1,
+},
     {
       id: 'reports',
       icon: '📊',

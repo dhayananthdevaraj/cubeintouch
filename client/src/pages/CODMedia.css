@@ -1,0 +1,259 @@
+/* src/pages/CODMedia.css */
+.ctw-root {
+  --ctw-bg: #f8fafc;
+  --ctw-card: #ffffff;
+  --ctw-border: #e2e8f0;
+  --ctw-text: #0f172a;
+  --ctw-muted: #64748b;
+  --ctw-primary: #4f46e5;
+  --ctw-primary-hover: #4338ca;
+  --ctw-danger: #dc2626;
+  --ctw-danger-bg: #fef2f2;
+  --ctw-warn: #b45309;
+  --ctw-warn-bg: #fffbeb;
+  --ctw-ok: #15803d;
+
+  /* Without this, Chrome's auto dark-mode re-colors unstyled/under-specified
+     form controls (selects especially) on a dark OS, which is how the
+     difficulty <select> ended up rendering white-text-on-white. */
+  color-scheme: light;
+  background: var(--ctw-bg);
+  color: var(--ctw-text);
+  min-height: 100%;
+  padding: 24px;
+  font-family: inherit;
+}
+
+.ctw-topbar { margin-bottom: 16px; }
+.ctw-title { margin: 0; font-size: 22px; font-weight: 700; }
+.ctw-subtitle { margin: 4px 0 0; color: var(--ctw-muted); font-size: 13px; max-width: 680px; }
+
+.ctw-card {
+  background: var(--ctw-card);
+  border: 1px solid var(--ctw-border);
+  border-radius: 10px;
+  padding: 18px;
+  margin-bottom: 16px;
+}
+
+.ctw-segmented {
+  display: inline-flex;
+  border: 1px solid var(--ctw-border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+.ctw-seg-btn {
+  border: none;
+  background: #fff;
+  padding: 7px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ctw-muted);
+  cursor: pointer;
+}
+.ctw-seg-btn--active { background: var(--ctw-primary); color: #fff; }
+
+.ctw-section-title { margin: 0 0 6px; font-size: 15px; font-weight: 700; }
+
+.ctw-label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+.ctw-muted { color: var(--ctw-muted); font-size: 13px; }
+
+.ctw-input {
+  background: #fff;
+  border: 1px solid var(--ctw-border);
+  border-radius: 8px;
+  color: var(--ctw-text);
+  padding: 9px 12px;
+  font-size: 14px;
+  flex: 1;
+  min-width: 0;
+}
+.ctw-input:focus { outline: none; border-color: var(--ctw-primary); }
+
+.ctw-actions-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+
+.ctw-btn {
+  border: 1px solid var(--ctw-border);
+  border-radius: 8px;
+  padding: 9px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  background: #fff;
+  color: var(--ctw-text);
+}
+.ctw-btn--primary { background: var(--ctw-primary); border-color: var(--ctw-primary); color: #fff; }
+.ctw-btn--primary:hover { background: var(--ctw-primary-hover); }
+.ctw-btn--danger { background: var(--ctw-danger); border-color: var(--ctw-danger); color: #fff; }
+.ctw-btn--ghost { background: transparent; }
+.ctw-btn--ghost:hover { background: #f1f5f9; }
+.ctw-btn--sm { padding: 5px 10px; font-size: 12px; }
+.ctw-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.ctw-status { color: var(--ctw-primary); font-size: 13px; margin: 8px 0 0; }
+
+.ctw-alert { border-radius: 8px; padding: 8px 12px; font-size: 13px; margin: 8px 0 0; display: inline-block; }
+.ctw-alert--error { background: var(--ctw-danger-bg); color: var(--ctw-danger); border: 1px solid #fecaca; }
+.ctw-alert--warn { background: var(--ctw-warn-bg); color: var(--ctw-warn); border: 1px solid #fde68a; }
+
+.ctw-tier-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13px; }
+.ctw-tier-table th { text-align: left; color: var(--ctw-muted); font-weight: 600; padding: 6px 8px; border-bottom: 1px solid var(--ctw-border); }
+.ctw-tier-table td { padding: 6px 8px; border-bottom: 1px solid var(--ctw-border); }
+
+.ctw-select {
+  border: 1px solid var(--ctw-border);
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 13px;
+  background: #fff;
+  color: var(--ctw-text);
+}
+.ctw-num-input {
+  width: 72px;
+  border: 1px solid var(--ctw-border);
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 13px;
+  background: #fff;
+  color: var(--ctw-text);
+}
+
+.ctw-total { font-size: 13px; font-weight: 700; }
+.ctw-total--ok { color: var(--ctw-ok); }
+.ctw-total--bad { color: var(--ctw-danger); }
+
+.ctw-result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--ctw-border);
+}
+
+.ctw-q-list { display: flex; flex-direction: column; gap: 8px; }
+
+.ctw-q-item {
+  border: 1px solid var(--ctw-border);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.ctw-qb-candidate {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--ctw-border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: #fff;
+  cursor: pointer;
+  font: inherit;
+}
+.ctw-qb-candidate:hover { background: #f8fafc; border-color: #cbd5e1; }
+.ctw-qb-candidate--active { border-color: var(--ctw-primary); background: #eef2ff; }
+.ctw-qb-candidate:disabled { opacity: 0.6; cursor: not-allowed; }
+.ctw-qb-candidate-name { font-size: 13.5px; font-weight: 700; color: var(--ctw-text); }
+
+.ctw-q-head { display: flex; gap: 10px; align-items: center; cursor: pointer; }
+.ctw-q-checkbox { cursor: pointer; flex-shrink: 0; }
+
+.ctw-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--ctw-muted);
+  cursor: pointer;
+}
+.ctw-q-caret { color: var(--ctw-muted); font-size: 11px; flex-shrink: 0; }
+.ctw-qid {
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 11px;
+  color: var(--ctw-muted);
+  background: #f1f5f9;
+  border-radius: 5px;
+  padding: 2px 6px;
+  flex-shrink: 0;
+}
+.ctw-qtext {
+  font-size: 13px;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ctw-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ctw-muted);
+  background: #f1f5f9;
+  border-radius: 6px;
+  padding: 3px 8px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.ctw-badge--pending { background: #eef2ff; color: var(--ctw-primary); }
+.ctw-badge--done { background: #ecfdf5; color: var(--ctw-ok); }
+.ctw-badge--error { background: var(--ctw-danger-bg); color: var(--ctw-danger); }
+.ctw-badge--warn { background: var(--ctw-warn-bg); color: var(--ctw-warn); }
+
+.ctw-tc-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12.5px; }
+.ctw-tc-table th { text-align: left; color: var(--ctw-muted); font-weight: 600; padding: 5px 8px; border-bottom: 1px solid var(--ctw-border); }
+.ctw-tc-table td { padding: 5px 8px; border-bottom: 1px solid #f1f5f9; }
+.ctw-tc-changed td { background: #fffbeb; }
+
+/* ── Feature launcher cards (Weightage Modifier / Question Preview Analyzer) ── */
+.ctw-feature-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.ctw-feature-card {
+  margin-bottom: 0;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+.ctw-feature-card--clickable {
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  background: #fff;
+  border: 1px solid var(--ctw-border);
+  border-radius: 10px;
+  padding: 18px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+.ctw-feature-card--clickable:hover {
+  border-color: var(--ctw-primary);
+  box-shadow: 0 6px 18px rgba(79, 70, 229, 0.12);
+  transform: translateY(-1px);
+}
+.ctw-feature-icon {
+  font-size: 22px;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+.ctw-feature-title { margin: 0 0 4px; font-size: 14.5px; font-weight: 700; }
+
+.ctw-back-btn { margin-bottom: 12px; }
+
+@media (max-width: 720px) {
+  .ctw-feature-row { grid-template-columns: 1fr; }
+}

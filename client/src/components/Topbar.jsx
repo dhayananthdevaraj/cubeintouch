@@ -163,6 +163,8 @@ export default function Topbar() {
       return { title: "BlankSync", icon: "✏️", subtitle: "Upload Fill-in-the-Blank Questions · University" };
       case "/test-packing":
       return { title: "Test Packing", icon: "🧪", subtitle: "Auto-pack or manually build a test from the QB" };
+      case "/cod-media":
+      return { title: "CodeScope", icon: "🧮", subtitle: "Bulk-fix testcase weightage and preview/copy question content" };
 
       default:
         return {

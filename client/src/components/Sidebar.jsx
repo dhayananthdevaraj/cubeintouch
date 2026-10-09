@@ -163,6 +163,11 @@ export default function Sidebar() {
   <span className="nav-indicator"></span>
 </NavLink>
 
+<NavLink to="/cod-media" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
+  <span className="nav-icon">{"🧮"}</span>
+  <span className="nav-text">CodeScope</span>
+  <span className="nav-indicator"></span>
+</NavLink>
 
         {/* specQ — External Tool */}
         <a  

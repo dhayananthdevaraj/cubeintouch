@@ -25,6 +25,7 @@ import WeightGen from "./pages/WeightGen";
 import FileSync from "./pages/FileSync";
 import BlankSync from "./pages/BlankSync";
 import TestPacking from "./pages/TestPacking";
+import CODMedia from "./pages/CODMedia";
 // import MysqlSchemaFetch from "./pages/MysqlSchemaFetch"; // temporary support tool — safe to remove later
 
 function AppShell() {
@@ -61,6 +62,7 @@ function AppShell() {
                <Route path="/file-sync" element={<FileSync />} />
                <Route path="/blank-sync" element={<BlankSync />} />
                <Route path="/test-packing" element={<TestPacking />} />
+               <Route path="/cod-media" element={<CODMedia />} />
             </Routes>
           </div>
         </div>
