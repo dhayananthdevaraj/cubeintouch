@@ -147,6 +147,8 @@
 }
 .tgy-input:focus { outline: none; border-color: var(--tgy-primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12); }
 
+.tgy-batch-textarea { width: 100%; font-family: inherit; resize: vertical; min-height: 110px; line-height: 1.5; }
+
 .tgy-actions-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
 
 .tgy-btn {

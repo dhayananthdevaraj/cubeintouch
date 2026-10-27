@@ -57,6 +57,12 @@ import "./Taggy.css";
 const FETCH_BATCH_SIZE = 3; // how many question-detail fetches run concurrently per batch
 const FETCH_BATCH_COOLDOWN_MS = 700; // pause between batches, easing load on Examly's API
 const APPLY_CONCURRENCY = 3;
+const MAX_BATCH_SOURCES = 10; // max QB/Test names a single Batch run resolves
+
+/** One name per line, trimmed, deduped, capped at MAX_BATCH_SOURCES — the live counter in the UI uses this same parse so what's shown always matches what Process All will actually do. */
+function parseBatchNames(input) {
+  return [...new Set(input.split("\n").map((n) => n.trim()).filter(Boolean))].slice(0, MAX_BATCH_SOURCES);
+}
 
 const STEPS = [
   { key: "search", label: "Find source" },
@@ -162,10 +168,13 @@ export default function Taggy() {
   const [orgType, setOrgType] = useState("university");
   const [method, setMethod] = useState("qb"); // "qb" | "test"
 
+  const [inputMode, setInputMode] = useState("single"); // "single" | "batch"
   const [qbName, setQbName] = useState("");
   const [qbCandidates, setQbCandidates] = useState(null);
   const [testName, setTestName] = useState("");
   const [testCandidates, setTestCandidates] = useState(null);
+  const [batchInput, setBatchInput] = useState(""); // batch mode: one QB/Test name per line
+  const [batchIssues, setBatchIssues] = useState([]); // [{name, message}] — names that were skipped and why
 
   const [sourceLabel, setSourceLabel] = useState("");
   const [testSections, setTestSections] = useState([]); // [{name, ids}] — ALL sections, test-method only
@@ -192,6 +201,7 @@ export default function Taggy() {
   const selectedQuestions = readyQuestions.filter((q) => selected.has(q.id));
   const allReadySelected = readyQuestions.length > 0 && selectedQuestions.length === readyQuestions.length;
   const tagsToApply = parseTagInput(tagInput);
+  const distinctSources = new Set(questions.map((q) => q.sourceLabel).filter(Boolean)).size;
 
   function toggleSelected(id) {
     setSelected((prev) => {
@@ -212,6 +222,7 @@ export default function Taggy() {
     setTestQuestionsById(new Map());
     setCheckedSections(new Set());
     setSourceLabel("");
+    setBatchIssues([]);
     setError("");
     setStatus("");
     setFetchProgress({ done: 0, total: 0 });
@@ -221,6 +232,7 @@ export default function Taggy() {
   function clearEverything() {
     setQbCandidates(null);
     setTestCandidates(null);
+    setBatchInput("");
     resetAllDownstream();
   }
 
@@ -238,7 +250,8 @@ export default function Taggy() {
   }
 
   function backToSearch() { setView("search"); }
-  function backToCandidates() { setView("candidates"); }
+  /** Batch results have no candidate-picker step to go back to (names are resolved automatically) — go straight to search instead. */
+  function backToCandidates() { setView(candidates ? "candidates" : "search"); }
 
   /** Fetches one question's detail. `q.codOnly` (set only for test-sourced items — see buildTestInitialItems) makes an unrecognized type fail outright instead of falling back to mcq_question, since Test search no longer supports MCQ at all. */
   async function fetchOneDetail(q) {
@@ -414,6 +427,80 @@ export default function Taggy() {
     }
   }
 
+  // ── Method 3: Batch (up to MAX_BATCH_SOURCES QB or Test names, processed one at a time) ──
+  /**
+   * Resolves each name SEQUENTIALLY (not in parallel) — deliberately, both
+   * because an exact-match search followed immediately by fetching that
+   * source's questions is the same two-step flow a single search does, and
+   * because hammering the search endpoint for 10 names at once has no
+   * upside. A name matching anything other than exactly one QB/Test is
+   * skipped (recorded in batchIssues) rather than guessed at — ambiguous
+   * names still need the single-search picker. Every successfully resolved
+   * source's questions are combined into ONE list (tagged with sourceLabel so
+   * multi-source results stay distinguishable), then fetched via the same
+   * batched-with-cooldown fetchDetailsFor every other path already uses.
+   */
+  async function handleBatchProcess() {
+    const names = parseBatchNames(batchInput);
+    if (!names.length) { setError(`Enter at least one ${method === "qb" ? "QB" : "test"} name (one per line).`); return; }
+    setError("");
+    resetAllDownstream();
+    setView("results");
+
+    const combinedInitial = [];
+    const issues = [];
+
+    for (let i = 0; i < names.length; i++) {
+      const name = names[i];
+      setStatus(`Resolving ${i + 1}/${names.length}: "${name}"...`);
+      try {
+        if (method === "qb") {
+          const banks = await searchQuestionBanksByName({ token, departmentIds, qbName: name });
+          if (!banks.length) { issues.push({ name, message: "No QB found" }); continue; }
+          if (banks.length > 1) { issues.push({ name, message: `${banks.length} QBs matched — ambiguous, use Single search to pick one` }); continue; }
+          const qb = banks[0];
+          const fetched = await fetchQuestionsForQb({ token, qb });
+          if (!fetched.length) { issues.push({ name, message: "QB has no questions" }); continue; }
+          fetched.forEach((q) => {
+            const typeHint = classifyQuestionType(q.questionType);
+            if (typeHint === "mcq") {
+              combinedInitial.push({
+                id: q.id, questionText: q.questionText, error: null, typeHint, sourceLabel: qb.qb_name,
+                raw: normalizeMcqListItem(q.raw), qType: "mcq", loading: false,
+              });
+            } else {
+              combinedInitial.push({ id: q.id, questionText: q.questionText, raw: null, loading: true, error: null, typeHint, sourceLabel: qb.qb_name });
+            }
+          });
+        } else {
+          const tests = await searchTestsByName({ token, departmentIds, testName: name });
+          if (!tests.length) { issues.push({ name, message: "No test found" }); continue; }
+          if (tests.length > 1) { issues.push({ name, message: `${tests.length} tests matched — ambiguous, use Single search to pick one` }); continue; }
+          const test = tests[0];
+          const detail = await fetchTestDetail({ token, testId: test.testId });
+          const { sections: allSections, itemsById } = extractTestSections(detail);
+          const sections = excludeMcqFromSections(allSections, itemsById);
+          if (!allSections.length) { issues.push({ name, message: "Test has no question sections" }); continue; }
+          if (!sections.length) { issues.push({ name, message: "No COD/programming questions (Test search is COD-only)" }); continue; }
+          const ids = sections.flatMap((s) => s.ids);
+          buildTestInitialItems(ids, itemsById).forEach((item) => combinedInitial.push({ ...item, sourceLabel: test.testName }));
+        }
+      } catch (err) {
+        issues.push({ name, message: err.message || "Failed" });
+      }
+    }
+
+    setBatchIssues(issues);
+    setSourceLabel(`Batch — ${names.length - issues.length} of ${names.length} source(s) resolved`);
+
+    if (!combinedInitial.length) {
+      setStatus("");
+      setError(`No questions found across any of the ${names.length} name(s) provided.`);
+      return;
+    }
+    await fetchDetailsFor(combinedInitial);
+  }
+
   // ── Tag update popup ─────────────────────────────────────────────────────
   function openModal() {
     setTagInput("");
@@ -514,22 +601,44 @@ export default function Taggy() {
             </button>
           </div>
 
-          {method === "qb" ? (
-            <>
-              <label className="tgy-label">Question Bank name</label>
-              <div className="tgy-actions-row">
-                <input className="tgy-input" value={qbName} onChange={(e) => setQbName(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleSearchQb()} placeholder="Exact or near QB name..." autoFocus />
-                <button className="tgy-btn tgy-btn--primary" onClick={handleSearchQb} disabled={!!status}>Search QBs</button>
-              </div>
-            </>
+          <div className="tgy-segmented" style={{ marginTop: 4 }}>
+            <button className={inputMode === "single" ? "tgy-seg-btn tgy-seg-btn--active" : "tgy-seg-btn"} onClick={() => setInputMode("single")}>Single</button>
+            <button className={inputMode === "batch" ? "tgy-seg-btn tgy-seg-btn--active" : "tgy-seg-btn"} onClick={() => setInputMode("batch")}>Batch (up to {MAX_BATCH_SOURCES})</button>
+          </div>
+
+          {inputMode === "single" ? (
+            method === "qb" ? (
+              <>
+                <label className="tgy-label">Question Bank name</label>
+                <div className="tgy-actions-row">
+                  <input className="tgy-input" value={qbName} onChange={(e) => setQbName(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleSearchQb()} placeholder="Exact or near QB name..." autoFocus />
+                  <button className="tgy-btn tgy-btn--primary" onClick={handleSearchQb} disabled={!!status}>Search QBs</button>
+                </div>
+              </>
+            ) : (
+              <>
+                <label className="tgy-label">Test name</label>
+                <div className="tgy-actions-row">
+                  <input className="tgy-input" value={testName} onChange={(e) => setTestName(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleSearchTest()} placeholder="Exact or near test name..." autoFocus />
+                  <button className="tgy-btn tgy-btn--primary" onClick={handleSearchTest} disabled={!!status}>Search Tests</button>
+                </div>
+              </>
+            )
           ) : (
             <>
-              <label className="tgy-label">Test name</label>
+              <label className="tgy-label">
+                {method === "qb" ? "Question Bank names" : "Test names"} — one per line, up to {MAX_BATCH_SOURCES}.
+                A name matching anything other than exactly one {method === "qb" ? "QB" : "test"} is skipped (shown after processing) — use Single search for those.
+              </label>
+              <textarea className="tgy-input tgy-batch-textarea" value={batchInput} onChange={(e) => setBatchInput(e.target.value)}
+                placeholder={method === "qb" ? "QB name 1\nQB name 2\n..." : "Test name 1\nTest name 2\n..."} rows={6} />
               <div className="tgy-actions-row">
-                <input className="tgy-input" value={testName} onChange={(e) => setTestName(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleSearchTest()} placeholder="Exact or near test name..." autoFocus />
-                <button className="tgy-btn tgy-btn--primary" onClick={handleSearchTest} disabled={!!status}>Search Tests</button>
+                <span className="tgy-muted">{parseBatchNames(batchInput).length}/{MAX_BATCH_SOURCES} name(s) ready</span>
+                <button className="tgy-btn tgy-btn--primary" onClick={handleBatchProcess} disabled={!!status || !parseBatchNames(batchInput).length}>
+                  Process All
+                </button>
               </div>
             </>
           )}
@@ -587,6 +696,15 @@ export default function Taggy() {
             )}
           </div>
 
+          {batchIssues.length > 0 && (
+            <div className="tgy-alert tgy-alert--warn" style={{ display: "block" }}>
+              <strong>{batchIssues.length} name(s) skipped:</strong>
+              <ul style={{ margin: "6px 0 0", paddingLeft: 18 }}>
+                {batchIssues.map((issue) => <li key={issue.name}>{issue.name} — {issue.message}</li>)}
+              </ul>
+            </div>
+          )}
+
           {method === "test" && testSections.length > 0 && (
             <div className="tgy-sections-filter">
               <span className="tgy-label" style={{ marginBottom: 0 }}>
@@ -624,6 +742,7 @@ export default function Taggy() {
                       <div className="tgy-q-head">
                         <span className="tgy-qid">{q.id}</span>
                         <span className="tgy-qtext">{q.questionText || "..."}</span>
+                        {distinctSources > 1 && q.sourceLabel && <span className="tgy-muted">· {q.sourceLabel}</span>}
                         {result && (
                           <span className={`tgy-badge tgy-badge--${result.status}`}>
                             {result.status === "pending" ? "Updating…" : result.status === "done" ? "Updated" : `Failed: ${result.message}`}
