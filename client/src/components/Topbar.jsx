@@ -165,6 +165,8 @@ export default function Topbar() {
       return { title: "Test Packing", icon: "🧪", subtitle: "Auto-pack or manually build a test from the QB" };
       case "/cod-media":
       return { title: "CodeScope", icon: "🧮", subtitle: "Bulk-fix testcase weightage and preview/copy question content" };
+      case "/taggy":
+      return { title: "Taggy", icon: "🏷️", subtitle: "Bulk-update tags on COD questions, by QB or by Test" };
 
       default:
         return {

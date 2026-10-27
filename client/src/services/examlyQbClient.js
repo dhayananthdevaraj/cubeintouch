@@ -123,6 +123,53 @@ function parseJsonSafe(str, fallback) {
   try { return JSON.parse(str); } catch { return fallback; }
 }
 
+/** Search tests by name — POST /api/v2/tests/filter. Returns every match (same test name can exist across departments), for the caller to disambiguate. */
+export async function searchTestsByName({ token, departmentIds, testName }) {
+  const res = await fetch(`${API}/api/v2/tests/filter`, {
+    method: "POST",
+    headers: headersFor(token),
+    body: JSON.stringify({
+      page: 1,
+      limit: 25,
+      search: testName,
+      branch_id: "All",
+      department_id: departmentIds,
+      mainDepartmentUser: true,
+    }),
+  });
+  if (!res.ok) throw new Error(`Test search failed for "${testName}" (HTTP ${res.status})`);
+  const json = await res.json();
+  return json?.data || [];
+}
+
+/** Full test detail — GET /api/v2/test/{testId} — used only to read its per-section question-id groups (e.g. `questions: [{ COD: [qId, ...] }]`). */
+export async function fetchTestDetail({ token, testId }) {
+  const res = await fetch(`${API}/api/v2/test/${testId}`, { headers: headersFor(token) });
+  if (!res.ok) throw new Error(`Failed to fetch test detail (HTTP ${res.status})`);
+  return res.json();
+}
+
+/**
+ * Every COD/programming question id in a test's `questions` groups, plus the
+ * names of any OTHER section types found (MCQ, etc.) so a caller can tell
+ * the user those exist but aren't included — this only extracts COD ids
+ * because that's the only question type this codebase has a confirmed,
+ * working update path for (update_programming_question).
+ */
+export function extractCodQuestionIdsFromTest(testDetail) {
+  const groups = Array.isArray(testDetail?.questions) ? testDetail.questions : [];
+  const codIds = [];
+  const otherTypes = new Set();
+  groups.forEach((group) => {
+    Object.entries(group || {}).forEach(([type, ids]) => {
+      if (!Array.isArray(ids)) return;
+      if (type === "COD") codIds.push(...ids);
+      else otherTypes.add(type);
+    });
+  });
+  return { codIds: [...new Set(codIds)], otherTypes: [...otherTypes] };
+}
+
 /** Matches Examly's question_type for coding/programming questions — same check TestPacking.jsx uses locally. */
 export const CODING_TYPE_RE = /programming|coding/i;
 

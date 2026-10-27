@@ -7,6 +7,7 @@ const FRAMEWORKS = {
     sub: "JUnit @Test",
     icon: "☕",
     defaultWeight: 1,
+    ext: "java",
     regex: /@Test[\s\S]*?\bvoid\s+([A-Za-z0-9_]+)\s*\([^)]*\)\s*(?:throws\s+[A-Za-z0-9_,\s]+)?\s*\{/g,
   },
   react: {
@@ -14,6 +15,7 @@ const FRAMEWORKS = {
     sub: "Jest test/it",
     icon: "⚛️",
     defaultWeight: 1,
+    ext: "test.jsx",
     regex: /\b(?:test|it)\s*\(\s*['"`]([^'"`]+)['"`]\s*,/g,
   },
   dotnet: {
@@ -21,6 +23,7 @@ const FRAMEWORKS = {
     sub: "NUnit [Test]",
     icon: "🔷",
     defaultWeight: 1,
+    ext: "cs",
     regex: /\[Test[^\]]*\]\s*(?:\[[^\]]*\]\s*)*public\s+(?:async\s+)?(?:void|Task)\s+([A-Za-z0-9_]+)\s*\(/g,
   },
   puppeteer: {
@@ -30,6 +33,18 @@ const FRAMEWORKS = {
     defaultWeight: 1,
     ext: "js",
     regex: /console\.log\(\s*['"`]TESTCASE:([A-Za-z0-9_]+):(?:success|failure)['"`]\s*\)/g,
+  },
+  python: {
+    label: "Python",
+    sub: "pytest def test_",
+    icon: "🐍",
+    defaultWeight: 1,
+    ext: "py",
+    // pytest's own discovery rule IS the test-case definition: any (optionally
+    // async) top-level or class-method function named test_* — fixtures
+    // (@pytest.fixture) and plain helpers never match this name pattern, so
+    // they're excluded for free without needing to special-case decorators.
+    regex: /\b(?:async\s+)?def\s+(test_[A-Za-z0-9_]*)\s*\(/g,
   },
 };
 
@@ -226,7 +241,7 @@ export default function WeightGen() {
             <span className="wg-editor-dots">
               <span></span><span></span><span></span>
             </span>
-            <span className="wg-editor-label">test-source.{FRAMEWORKS[framework].ext || (framework === "dotnet" ? "cs" : framework === "react" ? "test.jsx" : "java")}</span>
+            <span className="wg-editor-label">test-source.{FRAMEWORKS[framework].ext}</span>
             <span className="wg-editor-lines">{lineCount} lines</span>
           </div>
           <textarea

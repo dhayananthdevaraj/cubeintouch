@@ -166,6 +166,12 @@ export default function Dashboard() {
   path: '/cod-media', status: 'active',
   gradient: 'linear-gradient(135deg, #14b8a6 0%, #0ea5e9 100%)', span: 1,
 },
+{
+  id: 'taggy', icon: '🏷️', title: 'Taggy',
+  description: 'Bulk-update tags on COD questions, found by QB or by Test name, with a guided search-pick-update flow.',
+  path: '/taggy', status: 'active',
+  gradient: 'linear-gradient(135deg, #f472b6 0%, #a78bfa 100%)', span: 1,
+},
     {
       id: 'reports',
       icon: '📊',
