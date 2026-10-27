@@ -1,24 +1,28 @@
 // src/pages/Taggy.jsx
 //
-// Bulk tag updater for ANY question type Taggy knows how to fetch/update —
-// currently programming/coding questions (programming_question) and MCQs
-// (mcq_question); a type it doesn't recognize just fails its own fetch and
-// shows why, rather than being silently excluded. Two ways to find the
-// questions to tag:
+// Bulk tag updater, with two ways to find the questions to tag — DIFFERENT
+// question types are supported depending on which one, by design:
 //   1. Search by QB name (reuses searchQuestionBanksByName/fetchQuestionsForQb,
-//      the same functions CODMedia.jsx already uses). A QB's own question
-//      list DOES carry a reliable per-question `question_type`, so each
-//      question is routed directly to the matching fetch via
+//      the same functions CODMedia.jsx already uses) — supports BOTH
+//      COD/programming (programming_question) and MCQ (mcq_question). A QB's
+//      own question list DOES carry a reliable per-question `question_type`,
+//      so each question is routed directly to the matching fetch via
 //      classifyQuestionType/fetchQuestionByHint — no guessing needed here.
 //   2. Search by Test name (searchTestsByName -> fetchTestDetail ->
-//      extractTestSections). A test's `questions` field only gives bare ids
-//      grouped by SECTION NAME, with no per-question type — and that name is
-//      NOT a reliable type signal (confirmed: a section literally named
-//      "Programming" can hold questions Examly's own authoring UI calls
-//      "MCQ - Single Correct"). So every section's ids are attempted blind via
-//      fetchRawQuestionAnyType, which tries programming first and falls back
-//      to mcq — whichever one genuinely isn't either fails its own fetch and
-//      shows why inline.
+//      extractTestSections) — COD/programming ONLY. MCQ support here was
+//      tried and dropped: a test's own per-question data (itemsById) has
+//      real text but no `tags` field at all, and the single-id mcq_question
+//      GET needed to fill that gap kept disagreeing with other test
+//      endpoints on which fields even exist — too fragile to keep. A
+//      section's own NAME is NOT a reliable type signal either way
+//      (confirmed: a section literally named "Programming" can hold
+//      questions Examly's own authoring UI calls "MCQ - Single Correct") —
+//      classifyTestListItemType reads the test's own declared/nested type per
+//      question instead, and buildTestInitialItems/excludeMcqFromSections
+//      drop anything that comes back MCQ before it's ever shown or fetched.
+//      An id with no recognizable type is still attempted (codOnly
+//      fetchQuestionByHint fails outright if it isn't genuinely programming,
+//      rather than ever falling back to mcq_question).
 //
 // Flow is a 3-step wizard — "search" -> "candidates" -> "results" — each
 // step fully REPLACES the previous one (no vertical stacking), with a Back
@@ -35,6 +39,7 @@ import {
   searchTestsByName,
   fetchTestDetail,
   extractTestSections,
+  classifyTestListItemType,
   fetchQuestionByHint,
   buildQuestionUpdatePayload,
   updateProgrammingQuestion,
@@ -49,7 +54,8 @@ import { DEPARTMENT_IDS } from "../config";
 import { UNIVERSITY_DEPARTMENT_IDS } from "../configUniversity";
 import "./Taggy.css";
 
-const FETCH_CONCURRENCY = 4;
+const FETCH_BATCH_SIZE = 3; // how many question-detail fetches run concurrently per batch
+const FETCH_BATCH_COOLDOWN_MS = 700; // pause between batches, easing load on Examly's API
 const APPLY_CONCURRENCY = 3;
 
 const STEPS = [
@@ -67,6 +73,34 @@ function currentTags(raw, qType) {
 
 function parseTagInput(input) {
   return [...new Set(input.split(",").map((t) => t.trim()).filter(Boolean))];
+}
+
+/**
+ * Build fetchDetailsFor's `initial` items for a batch of test-sourced ids —
+ * COD/programming only (Test search no longer handles MCQ at all; use QB
+ * search for those). An id extractTestSections' itemsById confirms is MCQ is
+ * dropped before it ever reaches a fetch; an id with no recognizable type is
+ * still attempted (codOnly fetchQuestionByHint fails outright if it turns
+ * out not to be genuinely programming, rather than falling back to mcq).
+ * Seeded with the item's real question text up front so the UI never shows
+ * blank while its own per-id fetch is in flight.
+ */
+function buildTestInitialItems(ids, itemsMap) {
+  return ids
+    .filter((id) => classifyTestListItemType(itemsMap.get(id)) !== "mcq")
+    .map((id) => {
+      const item = itemsMap.get(id);
+      const typeHint = classifyTestListItemType(item);
+      const questionText = item ? extractQuestionText(item.question_data) : "";
+      return { id, raw: null, loading: true, error: null, typeHint, questionText, codOnly: true };
+    });
+}
+
+/** Drops confirmed-MCQ ids from every section (Test search is COD-only) and drops any section left with nothing. Section counts shown in the UI reflect only what's actually attempted here. */
+function excludeMcqFromSections(sections, itemsById) {
+  return sections
+    .map((s) => ({ name: s.name, ids: s.ids.filter((id) => classifyTestListItemType(itemsById.get(id)) !== "mcq") }))
+    .filter((s) => s.ids.length > 0);
 }
 
 /**
@@ -135,6 +169,7 @@ export default function Taggy() {
 
   const [sourceLabel, setSourceLabel] = useState("");
   const [testSections, setTestSections] = useState([]); // [{name, ids}] — ALL sections, test-method only
+  const [testQuestionsById, setTestQuestionsById] = useState(() => new Map()); // id -> rich item from extractTestSections' itemsById, test-method only
   const [checkedSections, setCheckedSections] = useState(() => new Set()); // names of sections currently included in the fetch
   const [status, setStatus] = useState("");
   const [fetchProgress, setFetchProgress] = useState({ done: 0, total: 0 }); // drives the loader's progress bar during fetchDetailsFor
@@ -174,6 +209,7 @@ export default function Taggy() {
     setSelected(new Set());
     setApplyResults({});
     setTestSections([]);
+    setTestQuestionsById(new Map());
     setCheckedSections(new Set());
     setSourceLabel("");
     setError("");
@@ -204,28 +240,30 @@ export default function Taggy() {
   function backToSearch() { setView("search"); }
   function backToCandidates() { setView("candidates"); }
 
+  /** Fetches one question's detail. `q.codOnly` (set only for test-sourced items — see buildTestInitialItems) makes an unrecognized type fail outright instead of falling back to mcq_question, since Test search no longer supports MCQ at all. */
+  async function fetchOneDetail(q) {
+    if (q.raw) return { raw: q.raw, qType: q.qType }; // already resolved (QB-sourced MCQs — see handleSelectQb)
+    return fetchQuestionByHint({ token, qId: q.id, typeHint: q.typeHint, codOnly: q.codOnly });
+  }
+
+  /**
+   * Batch-and-cooldown instead of one continuous concurrent pool — FETCH_BATCH_SIZE
+   * requests at a time, then a pause before the next batch, easing load on
+   * Examly's API rather than firing everything at once.
+   */
   async function fetchDetailsFor(initial) {
     setQuestions(initial);
     setSelected(new Set(initial.map((q) => q.id)));
     setStatus(`Fetching question detail for ${initial.length} question(s)...`);
     setFetchProgress({ done: 0, total: initial.length });
 
-    let idx = 0;
     let done = 0;
-    async function worker() {
-      while (idx < initial.length) {
-        const myIdx = idx++;
-        const q = initial[myIdx];
-        // Already resolved without a network call (QB-sourced MCQs reuse the
-        // list fetch's own data via normalizeMcqListItem — see handleSelectQb)
-        if (q.raw) {
-          done++;
-          setStatus(`Fetching question detail... ${done}/${initial.length}`);
-          setFetchProgress({ done, total: initial.length });
-          continue;
-        }
+    for (let start = 0; start < initial.length; start += FETCH_BATCH_SIZE) {
+      const batch = initial.slice(start, start + FETCH_BATCH_SIZE).map((q, i) => ({ q, myIdx: start + i }));
+
+      await Promise.all(batch.map(async ({ q, myIdx }) => {
         try {
-          const { raw: entity, qType } = await fetchQuestionByHint({ token, qId: q.id, typeHint: q.typeHint });
+          const { raw: entity, qType } = await fetchOneDetail(q);
           const text = q.questionText || extractQuestionText(entity.learning?.question_data || entity.question_data);
           setQuestions((prev) => {
             const next = [...prev];
@@ -243,9 +281,12 @@ export default function Taggy() {
           setStatus(`Fetching question detail... ${done}/${initial.length}`);
           setFetchProgress({ done, total: initial.length });
         }
+      }));
+
+      if (start + FETCH_BATCH_SIZE < initial.length) {
+        await new Promise((resolve) => setTimeout(resolve, FETCH_BATCH_COOLDOWN_MS));
       }
     }
-    await Promise.all(Array.from({ length: Math.min(FETCH_CONCURRENCY, initial.length) }, worker));
     setStatus("");
     setFetchProgress({ done: 0, total: 0 });
   }
@@ -323,27 +364,37 @@ export default function Taggy() {
     setSourceLabel(test.testName);
     setStatus(`Fetching test "${test.testName}"...`);
     try {
+      // fetchTestDetail's response already embeds real per-question data
+      // (text + a type-specific key, per item) alongside the section
+      // grouping itself — extractTestSections hands both back in one pass,
+      // so there's no need for (and, confirmed, no reliability in) a second
+      // separate call to re-fetch the same data.
       const detail = await fetchTestDetail({ token, testId: test.testId });
-      const sections = extractTestSections(detail);
+      const { sections: allSections, itemsById } = extractTestSections(detail);
+      // Test search is COD-only (MCQ stays QB-search-only) — drop confirmed-MCQ
+      // ids and any section left empty by that before anything is shown/fetched.
+      const sections = excludeMcqFromSections(allSections, itemsById);
       setTestSections(sections);
+      setTestQuestionsById(itemsById);
 
-      if (!sections.length) {
+      if (!allSections.length) {
         setStatus("");
         setError(`Test "${test.testName}" has no question sections.`);
         return;
       }
+      if (!sections.length) {
+        setStatus("");
+        setError(`Test "${test.testName}" has no COD/programming questions — Test search only supports COD (use QB search for MCQ).`);
+        return;
+      }
 
-      // Every section is attempted — a section's display name is not a reliable
-      // type signal (confirmed: a section named "Programming" can actually hold
-      // "MCQ - Single Correct" questions that still fetch/update fine through
-      // programming_question). Real per-question fetch failures below are what
-      // actually determines support, not a name guess up front.
+      // Every section is attempted — nothing is pre-excluded by the section's
+      // own name.
       const allSectionNames = sections.map((s) => s.name);
       setCheckedSections(new Set(allSectionNames));
 
       const ids = sections.flatMap((s) => s.ids);
-      const initial = ids.map((id) => ({ id, questionText: "", raw: null, loading: true, error: null, typeHint: null }));
-      await fetchDetailsFor(initial);
+      await fetchDetailsFor(buildTestInitialItems(ids, itemsById));
     } catch (err) {
       setError(err.message || "Failed to fetch."); setStatus("");
     }
@@ -356,8 +407,7 @@ export default function Taggy() {
 
     const ids = testSections.filter((s) => next.has(s.name)).flatMap((s) => s.ids);
     if (ids.length) {
-      const initial = ids.map((id) => ({ id, questionText: "", raw: null, loading: true, error: null, typeHint: null }));
-      fetchDetailsFor(initial);
+      fetchDetailsFor(buildTestInitialItems(ids, testQuestionsById));
     } else {
       setQuestions([]);
       setSelected(new Set());
@@ -434,7 +484,7 @@ export default function Taggy() {
       <div className="tgy-topbar">
         <div>
           <h1 className="tgy-title">Taggy</h1>
-          <p className="tgy-subtitle">Bulk-update tags on COD or MCQ questions, found by QB or by Test name — writes directly to Examly.</p>
+          <p className="tgy-subtitle">Bulk-update tags on COD or MCQ questions found by QB, or COD-only by Test name — writes directly to Examly.</p>
         </div>
       </div>
 
@@ -540,9 +590,9 @@ export default function Taggy() {
           {method === "test" && testSections.length > 0 && (
             <div className="tgy-sections-filter">
               <span className="tgy-label" style={{ marginBottom: 0 }}>
-                Sections ({testSections.reduce((sum, s) => sum + s.ids.length, 0)} questions total) — a section's
-                name doesn't reliably indicate support, so every section is attempted; any question that fails to
-                load shows why below.
+                Sections ({testSections.reduce((sum, s) => sum + s.ids.length, 0)} COD/programming question(s) total) —
+                Test search only supports COD (use QB search for MCQ); a section's name doesn't reliably indicate
+                support either way, so any question that still fails to load shows why below.
               </span>
               <div className="tgy-sections-chips">
                 {testSections.map((s) => (
