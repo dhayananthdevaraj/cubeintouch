@@ -142,7 +142,7 @@ export async function searchTestsByName({ token, departmentIds, testName }) {
   return json?.data || [];
 }
 
-/** Full test detail — GET /api/v2/test/{testId} — used only to read its per-section question-id groups (e.g. `questions: [{ COD: [qId, ...] }]`). */
+/** Full test detail — GET /api/v2/test/{testId} — used only to read its per-section `questions` groups. */
 export async function fetchTestDetail({ token, testId }) {
   const res = await fetch(`${API}/api/v2/test/${testId}`, { headers: headersFor(token) });
   if (!res.ok) throw new Error(`Failed to fetch test detail (HTTP ${res.status})`);
@@ -150,28 +150,77 @@ export async function fetchTestDetail({ token, testId }) {
 }
 
 /**
- * Every COD/programming question id in a test's `questions` groups, plus the
- * names of any OTHER section types found (MCQ, etc.) so a caller can tell
- * the user those exist but aren't included — this only extracts COD ids
- * because that's the only question type this codebase has a confirmed,
- * working update path for (update_programming_question).
+ * Every section of a test, as { name, ids } — ALL sections, unfiltered. No
+ * attempt is made here to guess which sections are "COD" — confirmed
+ * unreliable in practice: a section literally named "Programming" can
+ * contain questions Examly's own authoring UI labels "MCQ - Single Correct",
+ * yet they're still backed by the same programming_question entity and
+ * fetch/update through it just fine. Section display names are not a type
+ * signal at all. The only trustworthy test is actually attempting
+ * fetchRawProgrammingQuestion per id and letting a real success/failure
+ * decide — which is what the caller does with every id this returns.
  */
-export function extractCodQuestionIdsFromTest(testDetail) {
+export function extractTestSections(testDetail) {
   const groups = Array.isArray(testDetail?.questions) ? testDetail.questions : [];
-  const codIds = [];
-  const otherTypes = new Set();
+  const sections = [];
+
   groups.forEach((group) => {
-    Object.entries(group || {}).forEach(([type, ids]) => {
-      if (!Array.isArray(ids)) return;
-      if (type === "COD") codIds.push(...ids);
-      else otherTypes.add(type);
+    if (!group || typeof group !== "object") return;
+
+    if (Array.isArray(group.non_group_questions)) {
+      const ids = group.non_group_questions.map((q) => q?.q_id).filter(Boolean);
+      if (ids.length) sections.push({ name: group.name || "Unnamed section", ids });
+      return;
+    }
+
+    Object.entries(group).forEach(([label, value]) => {
+      if (!Array.isArray(value) || !value.length) return;
+      const ids = value.map((item) => (typeof item === "string" ? item : item?.q_id)).filter(Boolean);
+      if (ids.length) sections.push({ name: label, ids });
     });
   });
-  return { codIds: [...new Set(codIds)], otherTypes: [...otherTypes] };
+
+  return sections;
 }
 
 /** Matches Examly's question_type for coding/programming questions — same check TestPacking.jsx uses locally. */
 export const CODING_TYPE_RE = /programming|coding/i;
+const MCQ_TYPE_RE = /mcq/i;
+
+/** Classify a real `question_type` string (from a QB's own question list, which DOES carry one reliably) into the type Taggy knows how to fetch/update. Returns null for anything else — not yet supported, left to fail its own fetch rather than being silently skipped. */
+export function classifyQuestionType(questionType) {
+  if (CODING_TYPE_RE.test(questionType || "")) return "programming";
+  if (MCQ_TYPE_RE.test(questionType || "")) return "mcq";
+  return null;
+}
+
+function parseMaybeJson(value, fallback) {
+  if (typeof value !== "string") return value ?? fallback;
+  try { return JSON.parse(value); } catch { return fallback; }
+}
+
+/**
+ * Normalize an MCQ item from fetchQuestionsForQb's `raw` (the exact shape
+ * POST /api/v2/questionfilter returns per non_group_question) into the flat
+ * entity shape buildMcqUpdatePayload/currentTags expect — grounded in
+ * MetaCorporate.jsx's/MetaUniversity.jsx's own confirmed-working
+ * update_mcq_question flow, which builds its payload directly from this SAME
+ * list item with no separate per-id GET at all (some fields — options,
+ * answer, hint, answer_explanation — arrive JSON-stringified there; this
+ * parses them back). Used so a QB-sourced MCQ never has to depend on a
+ * single-id mcq_question GET whose response shape is unconfirmed.
+ */
+export function normalizeMcqListItem(raw) {
+  return {
+    ...raw,
+    options: parseMaybeJson(raw.options, raw.options),
+    answer: parseMaybeJson(raw.answer, raw.answer),
+    hint: parseMaybeJson(raw.hint, []),
+    answer_explanation: parseMaybeJson(raw.answer_explanation, { args: [] }),
+    tags: (raw.tags || []).map((t) => (typeof t === "string" ? t : t?.name)).filter(Boolean),
+    createdBy: raw.createdBy || raw.created_by || null,
+  };
+}
 
 /**
  * Raw, UNMODIFIED entity from GET /api/programming_question/{q_id} — unlike
@@ -190,6 +239,95 @@ export async function fetchRawProgrammingQuestion({ token, qId }) {
   const entity = json?.data?.entity;
   if (!entity) throw new Error("Unexpected response from programming_question endpoint");
   return entity;
+}
+
+/**
+ * Raw, UNMODIFIED entity from GET /api/mcq_question/{q_id} — confirmed via a
+ * real browser capture of Examly's own authoring UI editing an MCQ: flat
+ * (no answer/learning sub-namespaces like programming's shape), with `tags`
+ * as a plain top-level array. Round-trips into POST /api/update_mcq_question/
+ * {q_id} the same way fetchRawProgrammingQuestion does for update_programming_
+ * question.
+ */
+export async function fetchRawMcqQuestion({ token, qId }) {
+  const res = await fetch(`${API}/api/mcq_question/${qId}`, { headers: headersFor(token) });
+  if (!res.ok) throw new Error(`Failed to fetch question detail (HTTP ${res.status})`);
+
+  const json = await res.json();
+  const entity = json?.data?.entity;
+  if (!entity) throw new Error("Unexpected response from mcq_question endpoint");
+  return entity;
+}
+
+// Exact key set captured from a real update_mcq_question POST body (Examly's
+// own authoring UI) — not guessed. Notably excludes q_id/qb_id/question_type,
+// same drop pattern confirmed for update_programming_question.
+const MCQ_UPDATE_FIELDS = [
+  "answer", "answer_explanation", "blooms_taxonomy", "course_outcome", "createdBy",
+  "hint", "linked_concepts", "manual_difficulty", "options", "program_outcome",
+  "question_data", "question_editor_type", "question_media", "sub_topic_id",
+  "subject_id", "tags", "topic_id",
+];
+
+/** Build the POST body for update_mcq_question from a raw entity — picks exactly the confirmed field set above and normalizes tags to plain strings. */
+export function buildMcqUpdatePayload(entity) {
+  const payload = {};
+  MCQ_UPDATE_FIELDS.forEach((key) => { payload[key] = entity[key]; });
+  payload.tags = (entity.tags || []).map((t) => (typeof t === "string" ? t : t?.name)).filter(Boolean);
+  return payload;
+}
+
+/** POST the full (mostly-unchanged) MCQ question back — writes to a live Examly question, not reversible from here. */
+export async function updateMcqQuestion({ token, qId, payload }) {
+  const res = await fetch(`${API}/api/update_mcq_question/${qId}`, {
+    method: "POST",
+    headers: headersFor(token),
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(`Failed to update question (HTTP ${res.status})`);
+  return res.json().catch(() => ({}));
+}
+
+// GET /api/programming_question/{id} does NOT 404 for a non-programming id —
+// it still returns the shared question row, but with BOTH answer and learning
+// as literal `null` (confirmed directly: this is exactly what crashed
+// buildQuestionUpdatePayload reading `null.question_editor_type` on a real
+// test section named "Programming" that actually held an MCQ). A genuine
+// programming entity always has real data under at least one of these — this
+// codebase's own buildQuestionUpdatePayload already depends on that being
+// true for every COD question it has ever successfully updated — so their
+// presence, not any guessed field, is the trustworthy signal here.
+function isGenuineProgrammingEntity(entity) {
+  if (!entity) return false;
+  const hasAnswer = !!(entity.answer && typeof entity.answer === "object");
+  const hasLearning = !!(entity.learning && typeof entity.learning === "object");
+  return hasAnswer || hasLearning;
+}
+
+/**
+ * Fetch a question's raw entity without assuming its type up front, for
+ * sources (test sections) that carry no reliable per-question type at all.
+ * Tries programming first (cheapest — one request) and only pays for a
+ * second request to mcq_question when the first comes back genuinely hollow.
+ * If a source DOES know the real type already (a QB's own question list),
+ * use fetchQuestionByHint instead to skip this guesswork entirely.
+ */
+export async function fetchRawQuestionAnyType({ token, qId }) {
+  try {
+    const entity = await fetchRawProgrammingQuestion({ token, qId });
+    if (isGenuineProgrammingEntity(entity)) return { raw: entity, qType: "programming" };
+  } catch {
+    // Not fetchable as programming either — fall through and let the mcq attempt's own error surface instead.
+  }
+  const raw = await fetchRawMcqQuestion({ token, qId });
+  return { raw, qType: "mcq" };
+}
+
+/** Fetch a question, routing directly by a known type ("programming" | "mcq") when the caller already has one (e.g. from a QB's real per-question question_type) — falls back to the blind fetchRawQuestionAnyType when the type is unknown or unrecognized. */
+export async function fetchQuestionByHint({ token, qId, typeHint }) {
+  if (typeHint === "programming") return { raw: await fetchRawProgrammingQuestion({ token, qId }), qType: "programming" };
+  if (typeHint === "mcq") return { raw: await fetchRawMcqQuestion({ token, qId }), qType: "mcq" };
+  return fetchRawQuestionAnyType({ token, qId });
 }
 
 // update_programming_question's schema uses DIFFERENT field names than GET
@@ -227,7 +365,12 @@ const FORBIDDEN_FOR_UPDATE = ["q_id", "question_type", "answer_explanation"];
  * instead of being silently dropped.
  */
 export function buildQuestionUpdatePayload(entity, { manualDifficultyFallback = "Medium" } = {}) {
-  const { answer = {}, learning = {}, ...rest } = entity;
+  // `= {}` destructuring defaults only cover `undefined` — a hollow non-
+  // programming entity (see isGenuineProgrammingEntity) comes back with
+  // these as literal `null`, which would otherwise crash every read below.
+  const { answer: rawAnswer, learning: rawLearning, ...rest } = entity;
+  const answer = rawAnswer || {};
+  const learning = rawLearning || {};
   const merged = { ...rest, ...learning, ...answer };
 
   // `question_data`/`tags` belong to `learning` — make sure learning's

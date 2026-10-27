@@ -1,39 +1,48 @@
 // src/pages/Taggy.jsx
 //
-// Bulk tag updater for COD/programming questions. Two ways to find the
+// Bulk tag updater for ANY question type Taggy knows how to fetch/update —
+// currently programming/coding questions (programming_question) and MCQs
+// (mcq_question); a type it doesn't recognize just fails its own fetch and
+// shows why, rather than being silently excluded. Two ways to find the
 // questions to tag:
 //   1. Search by QB name (reuses searchQuestionBanksByName/fetchQuestionsForQb,
-//      the same functions CODMedia.jsx already uses).
+//      the same functions CODMedia.jsx already uses). A QB's own question
+//      list DOES carry a reliable per-question `question_type`, so each
+//      question is routed directly to the matching fetch via
+//      classifyQuestionType/fetchQuestionByHint — no guessing needed here.
 //   2. Search by Test name (searchTestsByName -> fetchTestDetail ->
-//      extractCodQuestionIdsFromTest, since a test's own detail only gives
-//      question ids grouped by section type, not full question content).
+//      extractTestSections). A test's `questions` field only gives bare ids
+//      grouped by SECTION NAME, with no per-question type — and that name is
+//      NOT a reliable type signal (confirmed: a section literally named
+//      "Programming" can hold questions Examly's own authoring UI calls
+//      "MCQ - Single Correct"). So every section's ids are attempted blind via
+//      fetchRawQuestionAnyType, which tries programming first and falls back
+//      to mcq — whichever one genuinely isn't either fails its own fetch and
+//      shows why inline.
 //
 // Flow is a 3-step wizard — "search" -> "candidates" -> "results" — each
 // step fully REPLACES the previous one (no vertical stacking), with a Back
 // button one step at a time, matching CODMedia's view-switching pattern.
 //
-// Either way, once a source is picked, every question's raw detail is
-// fetched via the SAME fetchRawProgrammingQuestion used across the app, and
-// tag updates go through the SAME buildQuestionUpdatePayload +
-// updateProgrammingQuestion pair already hardened against update_programming_
-// question's real-world quirks (question_editor_type/manual_difficulty
-// fallbacks, renamed/forbidden fields) — only `tags` is actually changed.
-//
-// Only COD/programming questions are supported here (the only question type
-// this codebase has a confirmed, working update path for) — a test that also
-// has MCQ/other sections surfaces a note rather than silently ignoring them.
+// Tag updates go through the per-type build+update pair already hardened
+// against each endpoint's real-world quirks — only `tags` is actually
+// changed, and (see computeNewTags) a tag that case-insensitively matches one
+// the question already has is skipped rather than duplicated.
 import { useState } from "react";
 import {
   searchQuestionBanksByName,
   fetchQuestionsForQb,
   searchTestsByName,
   fetchTestDetail,
-  extractCodQuestionIdsFromTest,
-  fetchRawProgrammingQuestion,
+  extractTestSections,
+  fetchQuestionByHint,
   buildQuestionUpdatePayload,
   updateProgrammingQuestion,
+  buildMcqUpdatePayload,
+  updateMcqQuestion,
   extractQuestionText,
-  CODING_TYPE_RE,
+  classifyQuestionType,
+  normalizeMcqListItem,
 } from "../services/examlyQbClient";
 import { useGlobalToken } from "../context/useGlobalToken";
 import { DEPARTMENT_IDS } from "../config";
@@ -49,19 +58,52 @@ const STEPS = [
   { key: "results", label: "Update tags" },
 ];
 
-function currentTags(raw) {
+/** Tag storage shape differs by type: programming nests under learning/answer, mcq keeps a flat top-level array. */
+function currentTags(raw, qType) {
   if (!raw) return [];
-  const { answer = {}, learning = {} } = raw;
-  return (learning.tags || answer.tags || []).map((t) => (typeof t === "string" ? t : t?.name)).filter(Boolean);
+  const list = qType === "mcq" ? raw.tags : (raw.learning?.tags || raw.answer?.tags);
+  return (list || []).map((t) => (typeof t === "string" ? t : t?.name)).filter(Boolean);
 }
 
 function parseTagInput(input) {
   return [...new Set(input.split(",").map((t) => t.trim()).filter(Boolean))];
 }
 
+/**
+ * "Add" mode skips any tag the question already has — case-insensitively, so
+ * "stverified" doesn't get duplicated alongside an existing "STVerified" —
+ * and keeps the existing tag's original casing rather than the input's.
+ * Confirmed requirement: a batch tagged "stverified,tverified,v4" against a
+ * question that already has stverified+tverified should only add v4.
+ */
 function computeNewTags(existingTags, tagsToApply, mode) {
   if (mode === "replace") return [...new Set(tagsToApply)];
-  return [...new Set([...existingTags, ...tagsToApply])];
+
+  const seen = new Set();
+  const result = [];
+  [...existingTags, ...tagsToApply].forEach((t) => {
+    const key = t.toLowerCase();
+    if (!seen.has(key)) { seen.add(key); result.push(t); }
+  });
+  return result;
+}
+
+/** Shown whenever an async step is in flight — a determinate progress bar once there's a real done/total count (fetchDetailsFor), an indeterminate shimmer otherwise (e.g. the initial search/test-detail call). */
+function Loader({ message, progress }) {
+  const hasProgress = progress && progress.total > 0;
+  const pct = hasProgress ? Math.round((progress.done / progress.total) * 100) : 0;
+  return (
+    <div className="tgy-loader">
+      <div className="tgy-loader-ring" />
+      <div className="tgy-loader-body">
+        <p className="tgy-loader-text">{message}</p>
+        <div className={`tgy-loader-track ${hasProgress ? "" : "tgy-loader-track--indeterminate"}`}>
+          <div className="tgy-loader-fill" style={hasProgress ? { width: `${pct}%` } : undefined} />
+        </div>
+        {hasProgress && <span className="tgy-loader-count">{progress.done}/{progress.total}</span>}
+      </div>
+    </div>
+  );
 }
 
 function Stepper({ current }) {
@@ -92,8 +134,10 @@ export default function Taggy() {
   const [testCandidates, setTestCandidates] = useState(null);
 
   const [sourceLabel, setSourceLabel] = useState("");
-  const [otherSectionsNote, setOtherSectionsNote] = useState("");
+  const [testSections, setTestSections] = useState([]); // [{name, ids}] — ALL sections, test-method only
+  const [checkedSections, setCheckedSections] = useState(() => new Set()); // names of sections currently included in the fetch
   const [status, setStatus] = useState("");
+  const [fetchProgress, setFetchProgress] = useState({ done: 0, total: 0 }); // drives the loader's progress bar during fetchDetailsFor
   const [error, setError] = useState("");
 
   const [questions, setQuestions] = useState([]); // {id, questionText, raw, loading, error}
@@ -129,10 +173,12 @@ export default function Taggy() {
     setQuestions([]);
     setSelected(new Set());
     setApplyResults({});
-    setOtherSectionsNote("");
+    setTestSections([]);
+    setCheckedSections(new Set());
     setSourceLabel("");
     setError("");
     setStatus("");
+    setFetchProgress({ done: 0, total: 0 });
   }
 
   /** Full wipe, including the candidate list — used when the search itself changes (method/org), since a QB result list is meaningless once you're searching tests instead, and vice versa. */
@@ -162,6 +208,7 @@ export default function Taggy() {
     setQuestions(initial);
     setSelected(new Set(initial.map((q) => q.id)));
     setStatus(`Fetching question detail for ${initial.length} question(s)...`);
+    setFetchProgress({ done: 0, total: initial.length });
 
     let idx = 0;
     let done = 0;
@@ -169,12 +216,20 @@ export default function Taggy() {
       while (idx < initial.length) {
         const myIdx = idx++;
         const q = initial[myIdx];
+        // Already resolved without a network call (QB-sourced MCQs reuse the
+        // list fetch's own data via normalizeMcqListItem — see handleSelectQb)
+        if (q.raw) {
+          done++;
+          setStatus(`Fetching question detail... ${done}/${initial.length}`);
+          setFetchProgress({ done, total: initial.length });
+          continue;
+        }
         try {
-          const entity = await fetchRawProgrammingQuestion({ token, qId: q.id });
-          const text = q.questionText || extractQuestionText(entity.learning?.question_data);
+          const { raw: entity, qType } = await fetchQuestionByHint({ token, qId: q.id, typeHint: q.typeHint });
+          const text = q.questionText || extractQuestionText(entity.learning?.question_data || entity.question_data);
           setQuestions((prev) => {
             const next = [...prev];
-            next[myIdx] = { ...next[myIdx], raw: entity, questionText: text, loading: false };
+            next[myIdx] = { ...next[myIdx], raw: entity, qType, questionText: text, loading: false };
             return next;
           });
         } catch (err) {
@@ -186,11 +241,13 @@ export default function Taggy() {
         } finally {
           done++;
           setStatus(`Fetching question detail... ${done}/${initial.length}`);
+          setFetchProgress({ done, total: initial.length });
         }
       }
     }
     await Promise.all(Array.from({ length: Math.min(FETCH_CONCURRENCY, initial.length) }, worker));
     setStatus("");
+    setFetchProgress({ done: 0, total: 0 });
   }
 
   // ── Method 1: QB search ──────────────────────────────────────────────────
@@ -217,12 +274,26 @@ export default function Taggy() {
     setStatus(`Fetching questions from "${qb.qb_name}"...`);
     try {
       const fetched = await fetchQuestionsForQb({ token, qb });
-      const codQuestions = fetched.filter((q) => CODING_TYPE_RE.test(q.questionType || ""));
-      if (!codQuestions.length) {
-        setStatus(""); setError(`QB "${qb.qb_name}" has no COD/programming questions.`);
+      if (!fetched.length) {
+        setStatus(""); setError(`QB "${qb.qb_name}" has no questions.`);
         return;
       }
-      const initial = codQuestions.map((q) => ({ id: q.id, questionText: q.questionText, raw: null, loading: true, error: null }));
+      // QB's own list carries a real per-question question_type, so route
+      // each one directly instead of guessing — only COD/MCQ are actually
+      // fetchable today; anything else surfaces its own fetch failure below.
+      // MCQs skip a per-id fetch entirely — the list item already carries
+      // everything needed (see normalizeMcqListItem), so there's no need to
+      // depend on a single-id mcq_question GET at all for this path.
+      const initial = fetched.map((q) => {
+        const typeHint = classifyQuestionType(q.questionType);
+        if (typeHint === "mcq") {
+          return {
+            id: q.id, questionText: q.questionText, error: null, typeHint,
+            raw: normalizeMcqListItem(q.raw), qType: "mcq", loading: false,
+          };
+        }
+        return { id: q.id, questionText: q.questionText, raw: null, loading: true, error: null, typeHint };
+      });
       await fetchDetailsFor(initial);
     } catch (err) {
       setError(err.message || "Failed to fetch."); setStatus("");
@@ -253,19 +324,43 @@ export default function Taggy() {
     setStatus(`Fetching test "${test.testName}"...`);
     try {
       const detail = await fetchTestDetail({ token, testId: test.testId });
-      const { codIds, otherTypes } = extractCodQuestionIdsFromTest(detail);
-      if (otherTypes.length) {
-        setOtherSectionsNote(`This test also has ${otherTypes.join(", ")} section(s) — not shown here; Taggy only supports COD/programming questions.`);
-      }
-      if (!codIds.length) {
+      const sections = extractTestSections(detail);
+      setTestSections(sections);
+
+      if (!sections.length) {
         setStatus("");
-        setError(`Test "${test.testName}" has no COD/programming questions${otherTypes.length ? ` (found: ${otherTypes.join(", ")})` : ""}.`);
+        setError(`Test "${test.testName}" has no question sections.`);
         return;
       }
-      const initial = codIds.map((id) => ({ id, questionText: "", raw: null, loading: true, error: null }));
+
+      // Every section is attempted — a section's display name is not a reliable
+      // type signal (confirmed: a section named "Programming" can actually hold
+      // "MCQ - Single Correct" questions that still fetch/update fine through
+      // programming_question). Real per-question fetch failures below are what
+      // actually determines support, not a name guess up front.
+      const allSectionNames = sections.map((s) => s.name);
+      setCheckedSections(new Set(allSectionNames));
+
+      const ids = sections.flatMap((s) => s.ids);
+      const initial = ids.map((id) => ({ id, questionText: "", raw: null, loading: true, error: null, typeHint: null }));
       await fetchDetailsFor(initial);
     } catch (err) {
       setError(err.message || "Failed to fetch."); setStatus("");
+    }
+  }
+
+  function toggleTestSection(name) {
+    const next = new Set(checkedSections);
+    if (next.has(name)) next.delete(name); else next.add(name);
+    setCheckedSections(next);
+
+    const ids = testSections.filter((s) => next.has(s.name)).flatMap((s) => s.ids);
+    if (ids.length) {
+      const initial = ids.map((id) => ({ id, questionText: "", raw: null, loading: true, error: null, typeHint: null }));
+      fetchDetailsFor(initial);
+    } else {
+      setQuestions([]);
+      setSelected(new Set());
     }
   }
 
@@ -299,14 +394,24 @@ export default function Taggy() {
       while (idx < tagTargets.length) {
         const q = tagTargets[idx++];
         try {
-          const existing = currentTags(q.raw);
+          const existing = currentTags(q.raw, q.qType);
           const newTags = computeNewTags(existing, tagsToApply, tagMode);
-          const payload = buildQuestionUpdatePayload(q.raw);
-          payload.tags = newTags;
-          await updateProgrammingQuestion({ token, qId: q.id, payload });
-          setQuestions((prev) => prev.map((qq) => (qq.id === q.id
-            ? { ...qq, raw: { ...qq.raw, learning: { ...qq.raw.learning, tags: newTags.map((name) => ({ name })) } } }
-            : qq)));
+
+          if (q.qType === "mcq") {
+            const payload = buildMcqUpdatePayload(q.raw);
+            payload.tags = newTags;
+            await updateMcqQuestion({ token, qId: q.id, payload });
+            setQuestions((prev) => prev.map((qq) => (qq.id === q.id
+              ? { ...qq, raw: { ...qq.raw, tags: newTags } }
+              : qq)));
+          } else {
+            const payload = buildQuestionUpdatePayload(q.raw);
+            payload.tags = newTags;
+            await updateProgrammingQuestion({ token, qId: q.id, payload });
+            setQuestions((prev) => prev.map((qq) => (qq.id === q.id
+              ? { ...qq, raw: { ...qq.raw, learning: { ...qq.raw.learning, tags: newTags.map((name) => ({ name })) } } }
+              : qq)));
+          }
           setApplyResults((prev) => ({ ...prev, [q.id]: { status: "done" } }));
         } catch (err) {
           setApplyResults((prev) => ({ ...prev, [q.id]: { status: "error", message: err.message || "Failed" } }));
@@ -329,7 +434,7 @@ export default function Taggy() {
       <div className="tgy-topbar">
         <div>
           <h1 className="tgy-title">Taggy</h1>
-          <p className="tgy-subtitle">Bulk-update tags on COD questions, found by QB or by Test name — writes directly to Examly.</p>
+          <p className="tgy-subtitle">Bulk-update tags on COD or MCQ questions, found by QB or by Test name — writes directly to Examly.</p>
         </div>
       </div>
 
@@ -378,7 +483,7 @@ export default function Taggy() {
               </div>
             </>
           )}
-          {status && <p className="tgy-status">{status}</p>}
+          {status && <Loader message={status} />}
           {error && <p className="tgy-alert tgy-alert--error">{error}</p>}
         </div>
       )}
@@ -414,7 +519,9 @@ export default function Taggy() {
             <div>
               <strong>{sourceLabel}</strong>
               {questions.length > 0 && (
-                <span className="tgy-muted"> — {questions.length} COD question(s), {readyQuestions.length} ready, {selectedQuestions.length} selected</span>
+                <span className="tgy-muted">
+                  {" "}— {questions.length} question(s) {method === "test" ? "attempted" : "found"}, {readyQuestions.length} ready, {selectedQuestions.length} selected
+                </span>
               )}
             </div>
             {questions.length > 0 && (
@@ -430,9 +537,30 @@ export default function Taggy() {
             )}
           </div>
 
-          {status && <p className="tgy-status">{status}</p>}
+          {method === "test" && testSections.length > 0 && (
+            <div className="tgy-sections-filter">
+              <span className="tgy-label" style={{ marginBottom: 0 }}>
+                Sections ({testSections.reduce((sum, s) => sum + s.ids.length, 0)} questions total) — a section's
+                name doesn't reliably indicate support, so every section is attempted; any question that fails to
+                load shows why below.
+              </span>
+              <div className="tgy-sections-chips">
+                {testSections.map((s) => (
+                  <label key={s.name} className="tgy-section-chip">
+                    <input
+                      type="checkbox"
+                      checked={checkedSections.has(s.name)}
+                      onChange={() => toggleTestSection(s.name)}
+                    />
+                    {s.name} ({s.ids.length})
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {status && <Loader message={status} progress={fetchProgress} />}
           {error && <p className="tgy-alert tgy-alert--error">{error}</p>}
-          {otherSectionsNote && <p className="tgy-alert tgy-alert--warn">{otherSectionsNote}</p>}
 
           {questions.length > 0 && (
             <div className="tgy-list">
@@ -456,8 +584,8 @@ export default function Taggy() {
                       {q.error && <p className="tgy-alert tgy-alert--error">{q.error}</p>}
                       {q.raw && (
                         <div className="tgy-tags">
-                          {currentTags(q.raw).length
-                            ? currentTags(q.raw).map((t) => <span key={t} className="tgy-tag-chip">{t}</span>)
+                          {currentTags(q.raw, q.qType).length
+                            ? currentTags(q.raw, q.qType).map((t) => <span key={t} className="tgy-tag-chip">{t}</span>)
                             : <span className="tgy-muted">No tags</span>}
                         </div>
                       )}
