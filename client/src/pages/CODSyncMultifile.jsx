@@ -18,7 +18,7 @@ export const MULTIFILE_LANGUAGES = [
   { value: "Java with Oracledb",         label: "Java with Oracledb" },
   { value: "Oracledb Standalone",        label: "Oracledb Standalone" },
   { value: ".NET with MsSql (2019)",     label: ".NET with MsSql (2019)" },
-  { value: "SQL Server (2019)",          label: "SQL Server (2019)" },
+  { value: "SqlServer",                  label: "SqlServer" },
   { value: "C++",                        label: "C++" },
   { value: "CassandraDB Standalone",     label: "CassandraDB Standalone" },
   { value: "MySQL (8.0)",                label: "MySQL (8.0)" },
@@ -50,7 +50,7 @@ const DEFAULT_FILENAME = {
   "Mongodb Standalone":      "query.js",
   "Oracledb Standalone":     "query.sql",
   ".NET with MsSql (2019)":  "Program.cs",
-  "SQL Server (2019)":       "main.sql",
+  "SqlServer":               "main.sql",
   "C++":                     "main.cpp",
   "CassandraDB Standalone":  "query.cql",
   "MySQL (8.0)":             "file.sql",
@@ -426,6 +426,62 @@ TESTCASE: null|EMPLOYEE_NAME\\tDEPARTMENT\\tTOTAL_SALES\\tAVG_SALES_ALL_EMPLOYEE
 SAMPLE_IO: null|EMPLOYEE_NAME\\tDEPARTMENT\\tTOTAL_SALES\\tAVG_SALES_ALL_EMPLOYEES\\nEva Menon\\tMobiles\\t13500.00\\t5875.00\\nAlice Roy\\tElectronics\\t10500.00\\t5875.00\\n
 ---END---`;
 
+// ─── FORMAT TEMPLATE FOR MULTIFILE (SQL Server) ──────────────────────────────
+// LANGUAGE/SOLUTION_FILE use the exact dropdown value "SqlServer" — confirmed
+// as the platform's real API identifier (not the earlier "SQL Server (2019)"
+// guess). No MULTIFILE_LANG_API entry needed since the label already equals
+// the API value (see DEFAULT_FILENAME, which maps this language to
+// "main.sql"). Deliberately
+// a DIFFERENT technique than the MySQL example (ROW_NUMBER() window function
+// instead of LIMIT/subqueries) since SQL Server has no LIMIT — top-N-per-group
+// needs PARTITION BY, which is the thing most worth showing as a reference.
+const MULTIFILE_FORMAT_EXAMPLE_SQLSERVER = `---QUESTION---
+TITLE: Top 2 Highest Paid Employees Per Department
+DIFFICULTY: Medium
+LANGUAGE: SqlServer
+TAGS: SQL Server, T-SQL, Window Function, ROW_NUMBER
+
+DESCRIPTION:
+Write a T-SQL query to find the top 2 highest-paid employees in each department.
+Display DEPARTMENT, EMPLOYEE_NAME, SALARY, ordered by DEPARTMENT ascending and then SALARY descending.
+Break ties on equal salary by EMPLOYEE_NAME ascending.
+
+INPUT_FORMAT:
+Table EMPLOYEES (EMPLOYEE_ID, EMPLOYEE_NAME, DEPARTMENT, SALARY) is pre-populated as described.
+
+OUTPUT_FORMAT:
+Refer to sample output for formatting.
+
+CONSTRAINTS:
+SQL Server has no LIMIT — use ROW_NUMBER() OVER (PARTITION BY ... ORDER BY ...) to get the top N rows per group instead.
+
+INITIAL_QUERY[SqlServer]:
+-- Write your query here
+SELECT ...
+
+SOLUTION_FILE[SqlServer]:
+<filename>main.sql</filename>
+<content>
+SELECT DEPARTMENT, EMPLOYEE_NAME, SALARY
+FROM (
+    SELECT
+        DEPARTMENT,
+        EMPLOYEE_NAME,
+        SALARY,
+        ROW_NUMBER() OVER (
+            PARTITION BY DEPARTMENT
+            ORDER BY SALARY DESC, EMPLOYEE_NAME ASC
+        ) AS rn
+    FROM EMPLOYEES
+) ranked
+WHERE rn <= 2
+ORDER BY DEPARTMENT ASC, SALARY DESC;
+</content>
+
+TESTCASE: null|DEPARTMENT\\tEMPLOYEE_NAME\\tSALARY\\nElectronics\\tAlice Roy\\t75000.00\\nElectronics\\tEva Menon\\t68000.00\\nMobiles\\tRavi Kumar\\t82000.00\\nMobiles\\tSara Khan\\t79000.00\\n|Medium|100
+SAMPLE_IO: null|DEPARTMENT\\tEMPLOYEE_NAME\\tSALARY\\nElectronics\\tAlice Roy\\t75000.00\\nElectronics\\tEva Menon\\t68000.00\\nMobiles\\tRavi Kumar\\t82000.00\\nMobiles\\tSara Khan\\t79000.00\\n
+---END---`;
+
 // ─── FORMAT TEMPLATE FOR MULTIFILE (JavaScript File Based) ───────────────────
 // LANGUAGE uses the dropdown label "Javascript File Based"; the tool maps it to
 // the platform's API value "JavaScript" automatically (see MULTIFILE_LANG_API).
@@ -538,9 +594,12 @@ export function QuestionTypePill({ mode, onChange }) {
 function MultifileFormatCard() {
   const [copied, setCopied] = useState(false);
   const [expanded, setExpanded] = useState(false);
-  const [example, setExample] = useState("sql"); // 'sql' | 'js'
+  const [example, setExample] = useState("sql"); // 'sql' | 'mssql' | 'js'
 
-  const activeExample = example === "js" ? MULTIFILE_FORMAT_EXAMPLE_JS : MULTIFILE_FORMAT_EXAMPLE;
+  const activeExample =
+    example === "js" ? MULTIFILE_FORMAT_EXAMPLE_JS :
+    example === "mssql" ? MULTIFILE_FORMAT_EXAMPLE_SQLSERVER :
+    MULTIFILE_FORMAT_EXAMPLE;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(activeExample).then(() => {
@@ -618,8 +677,9 @@ function MultifileFormatCard() {
           {/* Example language tabs */}
           <div style={{ display: "flex", gap: 6, marginBottom: 8 }}>
             {[
-              { k: "sql", label: "🗄️ SQL (MySQL)" },
-              { k: "js",  label: "🟨 JavaScript (File Based)" },
+              { k: "sql",   label: "🗄️ SQL (MySQL)" },
+              { k: "mssql", label: "🧊 SQL Server" },
+              { k: "js",    label: "🟨 JavaScript (File Based)" },
             ].map(t => (
               <button
                 key={t.k}
@@ -668,7 +728,7 @@ function MultifileFormatCard() {
         <span style={{ fontSize: 10, fontWeight: 700, color: "#9ca3af", alignSelf: "center", marginRight: 4 }}>
           Supported:
         </span>
-        {["MySQL (8.0)", "PostgreSQL (13.6)", "Python", "Java (11)", "Java (17)", "Java (21)", "Javascript File Based", "C++", "SQL Server (2019)", "R (3.5)", "Scala", "+ more"].map(lang => (
+        {["MySQL (8.0)", "PostgreSQL (13.6)", "Python", "Java (11)", "Java (17)", "Java (21)", "Javascript File Based", "C++", "SqlServer", "R (3.5)", "Scala", "+ more"].map(lang => (
           <span key={lang} style={{
             background: "rgba(99,102,241,0.08)",
             border: "1px solid rgba(99,102,241,0.2)",
